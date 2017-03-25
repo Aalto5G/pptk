@@ -6,6 +6,14 @@ DIRMISC := misc
 LCMISC := misc
 MODULES += MISC
 
+DIRHASHLIST := hashlist
+LCHASHLIST := hashlist
+MODULES += HASHLIST
+
+DIRHASHTABLE := hashtable
+LCHASHTABLE := hashtable
+MODULES += HASHTABLE
+
 CFLAGS := -g
 
 .PHONY: all clean distclean unit
