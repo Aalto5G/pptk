@@ -44,4 +44,4 @@ clean_DYNARR:
 distclean_DYNARR: clean_DYNARR
 	rm -f $(DIRDYNARR)/libdynarr.a $(DIRDYNARR)/dynarrtest
 
--include $(DYNARR_DEP)
+-include $(DIRDYNARR)/*.d

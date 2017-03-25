@@ -50,6 +50,6 @@ clean_MISC:
 	rm -f $(MISC_OBJ) $(MISC_DEP)
 
 distclean_MISC: clean_MISC
-	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest
+	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest
 
--include $(MISC_DEP)
+-include $(DIRMISC)/*.d

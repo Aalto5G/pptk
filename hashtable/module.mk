@@ -42,6 +42,6 @@ clean_HASHTABLE:
 	rm -f $(HASHTABLE_OBJ) $(HASHTABLE_DEP)
 
 distclean_HASHTABLE: clean_HASHTABLE
-	rm -f $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/containeroftest
+	rm -f $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/hashtest
 
--include $(HASHTABLE_DEP)
+-include $(DIRHASHTABLE)/*.d

@@ -42,6 +42,6 @@ clean_LINKEDLIST:
 	rm -f $(LINKEDLIST_OBJ) $(LINKEDLIST_DEP)
 
 distclean_LINKEDLIST: clean_LINKEDLIST
-	rm -f $(DIRLINKEDLIST)/liblinkedlist.a $(DIRLINKEDLIST)/containeroftest
+	rm -f $(DIRLINKEDLIST)/liblinkedlist.a $(DIRLINKEDLIST)/listtest
 
--include $(LINKEDLIST_DEP)
+-include $(DIRLINKEDLIST)/*.d

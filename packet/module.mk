@@ -42,6 +42,6 @@ clean_PACKET:
 	rm -f $(PACKET_OBJ) $(PACKET_DEP)
 
 distclean_PACKET: clean_PACKET
-	rm -f $(DIRPACKET)/libpacket.a
+	rm -f $(DIRPACKET)/libpacket.a $(DIRPACKET)/packettest
 
--include $(PACKET_DEP)
+-include $(DIRPACKET)/*.d

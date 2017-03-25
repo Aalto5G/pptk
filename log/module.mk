@@ -42,6 +42,6 @@ clean_LOG:
 	rm -f $(LOG_OBJ) $(LOG_DEP)
 
 distclean_LOG: clean_LOG
-	rm -f $(DIRLOG)/liblog.a $(DIRLOG)/containeroftest
+	rm -f $(DIRLOG)/liblog.a $(DIRLOG)/logtest
 
--include $(LOG_DEP)
+-include $(DIRLOG)/*.d

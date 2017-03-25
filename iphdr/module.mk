@@ -42,6 +42,6 @@ clean_IPHDR:
 	rm -f $(IPHDR_OBJ) $(IPHDR_DEP)
 
 distclean_IPHDR: clean_IPHDR
-	rm -f $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/containeroftest
+	rm -f $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest
 
--include $(IPHDR_DEP)
+-include $(DIRIPHDR)/*.d

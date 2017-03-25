@@ -41,4 +41,4 @@ clean_HASHLIST:
 distclean_HASHLIST: clean_HASHLIST
 	rm -f $(DIRHASHLIST)/libhashlist.a
 
--include $(HASHLIST_DEP)
+-include $(DIRHASHLIST)/*.d
