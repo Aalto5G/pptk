@@ -13,7 +13,10 @@ int main(int argc, char **argv)
   }
   for (i = 0; i < DYNARR_SIZE(&ar); i++)
   {
-    printf("%d\n", DYNARR_GET(&ar, i));
+    if (DYNARR_GET(&ar, i) != i)
+    {
+      abort();
+    }
   }
   return 0;
 }

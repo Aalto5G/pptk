@@ -7,9 +7,16 @@ DYNARR_SRC := $(patsubst %,$(DIRDYNARR)/%,$(DYNARR_SRC))
 DYNARR_OBJ_LIB := $(patsubst %.c,%.o,$(DYNARR_SRC_LIB))
 DYNARR_OBJ := $(patsubst %.c,%.o,$(DYNARR_SRC))
 
-.PHONY: DYNARR clean_DYNARR distclean_DYNARR
+.PHONY: DYNARR clean_DYNARR distclean_DYNARR unit_DYNARR $(LCDYNARR) clean_$(LCDYNARR) distclean_$(LCDYNARR) unit_$(LCDYNARR)
+
+$(LCDYNARR): DYNARR
+clean_$(LCDYNARR): clean_DYNARR
+distclean_$(LCDYNARR): distclean_DYNARR
 
 DYNARR: $(DIRDYNARR)/libdynarr.a $(DIRDYNARR)/dynarrtest
+
+unit_DYNARR: $(DIRDYNARR)/dynarrtest
+	$(DIRDYNARR)/dynarrtest
 
 $(DIRDYNARR)/libdynarr.a: $(DYNARR_OBJ_LIB)
 	rm -f $@
