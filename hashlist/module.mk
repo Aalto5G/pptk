@@ -39,6 +39,6 @@ clean_HASHLIST:
 	rm -f $(HASHLIST_OBJ) $(HASHLIST_DEP)
 
 distclean_HASHLIST: clean_HASHLIST
-	rm -f $(DIRHASHLIST)/libhashlist.a $(DIRHASHLIST)/hashlisttest
+	rm -f $(DIRHASHLIST)/libhashlist.a
 
 -include $(HASHLIST_DEP)
