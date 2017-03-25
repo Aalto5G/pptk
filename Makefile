@@ -1,6 +1,8 @@
 CC := cc
 #CC := clang
 
+.SUFFIXES:
+
 DIRDYNARR := dynarr
 LCDYNARR := dynarr
 MODULES += DYNARR
