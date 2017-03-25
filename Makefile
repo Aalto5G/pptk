@@ -21,6 +21,10 @@ DIRLINKEDLIST := linkedlist
 LCLINKEDLIST := linkedlist
 MODULES += LINKEDLIST
 
+DIRLOG := log
+LCLOG := log
+MODULES += LOG
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
