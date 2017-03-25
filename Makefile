@@ -1,3 +1,6 @@
+CC := cc
+#CC := clang
+
 DIRDYNARR := dynarr
 LCDYNARR := dynarr
 MODULES += DYNARR

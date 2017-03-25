@@ -1,5 +1,5 @@
 MISC_SRC_LIB := 
-MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c
+MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c
 
 MISC_SRC_LIB := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC_LIB))
 MISC_SRC := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC))
@@ -20,11 +20,12 @@ $(LCMISC): MISC
 clean_$(LCMISC): clean_MISC
 distclean_$(LCMISC): distclean_MISC
 
-MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest
+MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest
 
-unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest
+unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest
 	$(DIRMISC)/containeroftest
 	$(DIRMISC)/murmurtest
+	$(DIRMISC)/branchpredicttest
 
 $(DIRMISC)/libmisc.a: $(MISC_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	rm -f $@
@@ -34,6 +35,9 @@ $(DIRMISC)/containeroftest: $(DIRMISC)/containeroftest.o $(DIRMISC)/libmisc.a $(
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
 $(DIRMISC)/murmurtest: $(DIRMISC)/murmurtest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
+
+$(DIRMISC)/branchpredicttest: $(DIRMISC)/branchpredicttest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
 $(MISC_OBJ): %.o: %.c $(MISC_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
