@@ -14,6 +14,10 @@ DIRHASHTABLE := hashtable
 LCHASHTABLE := hashtable
 MODULES += HASHTABLE
 
+DIRLINKEDLIST := linkedlist
+LCLINKEDLIST := linkedlist
+MODULES += LINKEDLIST
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
