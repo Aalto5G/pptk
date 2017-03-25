@@ -10,7 +10,9 @@ MISC_OBJ := $(patsubst %.c,%.o,$(MISC_SRC))
 MISC_DEP_LIB := $(patsubst %.c,%.d,$(MISC_SRC_LIB))
 MISC_DEP := $(patsubst %.c,%.d,$(MISC_SRC))
 
-CFLAGS_MISC := -I$(DIRHASHLIST)
+CFLAGS_MISC :=
+
+MAKEFILES_MISC := $(DIRMISC)/module.mk
 
 .PHONY: MISC clean_MISC distclean_MISC unit_MISC $(LCMISC) clean_$(LCMISC) distclean_$(LCMISC) unit_$(LCMISC)
 
@@ -24,24 +26,24 @@ unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest
 	$(DIRMISC)/containeroftest
 	$(DIRMISC)/murmurtest
 
-$(DIRMISC)/libmisc.a: $(MISC_OBJ_LIB)
+$(DIRMISC)/libmisc.a: $(MISC_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	rm -f $@
-	ar rvs $@ $^
+	ar rvs $@ $(filter %.o,$^)
 
-$(DIRMISC)/containeroftest: $(DIRMISC)/containeroftest.o $(DIRMISC)/libmisc.a
-	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS_MISC)
+$(DIRMISC)/containeroftest: $(DIRMISC)/containeroftest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
-$(DIRMISC)/murmurtest: $(DIRMISC)/murmurtest.o $(DIRMISC)/libmisc.a
-	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS_MISC)
+$(DIRMISC)/murmurtest: $(DIRMISC)/murmurtest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
-$(MISC_OBJ): %.o: %.c $(MISC_DEP)
+$(MISC_OBJ): %.o: %.c $(MISC_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_MISC)
 
-$(MISC_DEP): %.d: %.c
+$(MISC_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_MISC)
 
 clean_MISC:
-	rm -f $(MISC_OBJ)
+	rm -f $(MISC_OBJ) $(MISC_DEP)
 
 distclean_MISC: clean_MISC
 	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest

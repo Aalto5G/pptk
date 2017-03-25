@@ -10,6 +10,10 @@ DYNARR_OBJ := $(patsubst %.c,%.o,$(DYNARR_SRC))
 DYNARR_DEP_LIB := $(patsubst %.c,%.d,$(DYNARR_SRC_LIB))
 DYNARR_DEP := $(patsubst %.c,%.d,$(DYNARR_SRC))
 
+CFLAGS_DYNARR :=
+
+MAKEFILES_DYNARR := $(DIRDYNARR)/module.mk
+
 .PHONY: DYNARR clean_DYNARR distclean_DYNARR unit_DYNARR $(LCDYNARR) clean_$(LCDYNARR) distclean_$(LCDYNARR) unit_$(LCDYNARR)
 
 $(LCDYNARR): DYNARR
@@ -21,21 +25,21 @@ DYNARR: $(DIRDYNARR)/libdynarr.a $(DIRDYNARR)/dynarrtest
 unit_DYNARR: $(DIRDYNARR)/dynarrtest
 	$(DIRDYNARR)/dynarrtest
 
-$(DIRDYNARR)/libdynarr.a: $(DYNARR_OBJ_LIB)
+$(DIRDYNARR)/libdynarr.a: $(DYNARR_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
 	rm -f $@
-	ar rvs $@ $^
+	ar rvs $@ $(filter %.o,$^)
 
-$(DIRDYNARR)/dynarrtest: $(DIRDYNARR)/dynarrtest.o $(DIRDYNARR)/libdynarr.a
-	$(CC) $(CFLAGS) -o $@ $^
+$(DIRDYNARR)/dynarrtest: $(DIRDYNARR)/dynarrtest.o $(DIRDYNARR)/libdynarr.a $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_DYNARR)
 
-$(DYNARR_OBJ): %.o: %.c $(DYNARR_DEP)
-	$(CC) $(CFLAGS) -c -o $*.o $*.c
+$(DYNARR_OBJ): %.o: %.c $(DYNARR_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
+	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_DYNARR)
 
-$(DYNARR_DEP): %.d: %.c
-	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c
+$(DYNARR_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
+	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_DYNARR)
 
 clean_DYNARR:
-	rm -f $(DYNARR_OBJ)
+	rm -f $(DYNARR_OBJ) $(DYNARR_DEP)
 
 distclean_DYNARR: clean_DYNARR
 	rm -f $(DIRDYNARR)/libdynarr.a $(DIRDYNARR)/dynarrtest

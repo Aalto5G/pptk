@@ -10,6 +10,10 @@ HASHLIST_OBJ := $(patsubst %.c,%.o,$(HASHLIST_SRC))
 HASHLIST_DEP_LIB := $(patsubst %.c,%.d,$(HASHLIST_SRC_LIB))
 HASHLIST_DEP := $(patsubst %.c,%.d,$(HASHLIST_SRC))
 
+CFLAGS_HASHLIST :=
+
+MAKEFILES_HASHLIST := $(DIRHASHLIST)/module.mk
+
 .PHONY: HASHLIST clean_HASHLIST distclean_HASHLIST unit_HASHLIST $(LCHASHLIST) clean_$(LCHASHLIST) distclean_$(LCHASHLIST) unit_$(LCHASHLIST)
 
 $(LCHASHLIST): HASHLIST
@@ -21,18 +25,18 @@ HASHLIST: $(DIRHASHLIST)/libhashlist.a
 unit_HASHLIST:
 	@true
 
-$(DIRHASHLIST)/libhashlist.a: $(HASHLIST_OBJ_LIB)
+$(DIRHASHLIST)/libhashlist.a: $(HASHLIST_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_HASHLIST)
 	rm -f $@
-	ar rvs $@ $^
+	ar rvs $@ $(filter %.o,$^)
 
-$(HASHLIST_OBJ): %.o: %.c $(HASHLIST_DEP)
-	$(CC) $(CFLAGS) -c -o $*.o $*.c
+$(HASHLIST_OBJ): %.o: %.c $(HASHLIST_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_HASHLIST)
+	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_HASHLIST)
 
-$(HASHLIST_DEP): %.d: %.c
-	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c
+$(HASHLIST_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_HASHLIST)
+	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_HASHLIST)
 
 clean_HASHLIST:
-	rm -f $(HASHLIST_OBJ)
+	rm -f $(HASHLIST_OBJ) $(HASHLIST_DEP)
 
 distclean_HASHLIST: clean_HASHLIST
 	rm -f $(DIRHASHLIST)/libhashlist.a $(DIRHASHLIST)/hashlisttest

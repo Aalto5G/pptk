@@ -12,6 +12,8 @@ HASHTABLE_DEP := $(patsubst %.c,%.d,$(HASHTABLE_SRC))
 
 CFLAGS_HASHTABLE := -I$(DIRHASHLIST) -I$(DIRMISC)
 
+MAKEFILES_HASHTABLE := $(DIRHASHTABLE)/module.mk
+
 .PHONY: HASHTABLE clean_HASHTABLE distclean_HASHTABLE unit_HASHTABLE $(LCHASHTABLE) clean_$(LCHASHTABLE) distclean_$(LCHASHTABLE) unit_$(LCHASHTABLE)
 
 $(LCHASHTABLE): HASHTABLE
@@ -23,27 +25,21 @@ HASHTABLE: $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/hashtest
 unit_HASHTABLE: $(DIRHASHTABLE)/hashtest
 	$(DIRHASHTABLE)/hashtest
 
-$(DIRHASHTABLE)/libhashtable.a: $(HASHTABLE_OBJ_LIB)
+$(DIRHASHTABLE)/libhashtable.a: $(HASHTABLE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
 	rm -f $@
-	ar rvs $@ $^
+	ar rvs $@ $(filter %.o,$^)
 
-$(DIRHASHTABLE)/containeroftest: $(DIRHASHTABLE)/containeroftest.o $(DIRHASHTABLE)/libhashtable.a
-	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS_HASHTABLE)
+$(DIRHASHTABLE)/hashtest: $(DIRHASHTABLE)/hashtest.o $(DIRHASHTABLE)/libhashtable.a $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE)
 
-$(DIRHASHTABLE)/murmurtest: $(DIRHASHTABLE)/murmurtest.o $(DIRHASHTABLE)/libhashtable.a
-	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS_HASHTABLE)
-
-$(DIRHASHTABLE)/hashtest: $(DIRHASHTABLE)/hashtest.o $(DIRHASHTABLE)/libhashtable.a
-	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS_HASHTABLE)
-
-$(HASHTABLE_OBJ): %.o: %.c $(HASHTABLE_DEP)
+$(HASHTABLE_OBJ): %.o: %.c $(HASHTABLE_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_HASHTABLE)
 
-$(HASHTABLE_DEP): %.d: %.c
+$(HASHTABLE_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_HASHTABLE)
 
 clean_HASHTABLE:
-	rm -f $(HASHTABLE_OBJ)
+	rm -f $(HASHTABLE_OBJ) $(HASHTABLE_DEP)
 
 distclean_HASHTABLE: clean_HASHTABLE
 	rm -f $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/containeroftest
