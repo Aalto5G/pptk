@@ -40,9 +40,25 @@ static inline void ether_set_type(void *pkt, uint16_t type)
   hdr_set16n(&cpkt[12], type);
 }
 
+static inline void *ether_payload(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[14];
+}
+
+static inline const void *ether_const_payload(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[14];
+}
+
+#define ETHER_HDR_LEN 14
+
 #define ETHER_TYPE_IP ((uint16_t)0x0800)
 #define ETHER_TYPE_ARP ((uint16_t)0x0806)
 #define ETHER_TYPE_IPV6 ((uint16_t)0x86DD)
+
+#define IP_HDR_MINLEN 20
 
 static inline uint8_t ip_version(const void *pkt)
 {
@@ -247,6 +263,16 @@ static inline void ip_set_dst(void *pkt, uint32_t dst)
 {
   char *cpkt = pkt;
   return hdr_set32n(&cpkt[16], dst);
+}
+
+static inline void *ip_payload(void *pkt)
+{
+  return ((char*)pkt) + ip_hdr_len(pkt);
+}
+
+static inline const void *ip_const_payload(const void *pkt)
+{
+  return ((const char*)pkt) + ip_hdr_len(pkt);
 }
 
 #endif
