@@ -1,6 +1,7 @@
 #include "linkedlist.h"
 #include "containerof.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 struct entry {
   struct linked_list_node node;
@@ -16,6 +17,10 @@ int main(int argc, char **argv)
   linked_list_head_init(&head);
   for (i = 0; i < 10; i++)
   {
+    if (linked_list_size(&head) != i)
+    {
+      abort();
+    }
     linked_list_add_tail(&entries[i].node, &head);
     entries[i].i = i;
     LINKED_LIST_FOR_EACH(node, &head)
@@ -35,6 +40,10 @@ int main(int argc, char **argv)
   }
   for (i = 0; i < 10; i++)
   {
+    if (linked_list_size(&head) != i)
+    {
+      abort();
+    }
     linked_list_add_head(&entries[i].node, &head);
     entries[i].i = i;
     LINKED_LIST_FOR_EACH(node, &head)

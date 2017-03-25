@@ -1,6 +1,8 @@
 #ifndef _LINKEDLIST_H_
 #define _LINKEDLIST_H_
 
+#include <stddef.h>
+
 struct linked_list_node {
   struct linked_list_node *prev;
   struct linked_list_node *next;
@@ -69,5 +71,16 @@ static inline void linked_list_delete(struct linked_list_node *node)
   for (iter = (head)->node.prev, tmp = iter->prev; \
        iter != &(head)->node; \
        iter = tmp, tmp = iter->prev)
+
+static inline size_t linked_list_size(struct linked_list_head *head)
+{
+  struct linked_list_node *node;
+  size_t sz = 0;
+  LINKED_LIST_FOR_EACH(node, head)
+  {
+    sz++;
+  }
+  return sz;
+}
 
 #endif
