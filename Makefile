@@ -31,6 +31,10 @@ DIRIPHDR := iphdr
 LCIPHDR := iphdr
 MODULES += IPHDR
 
+DIRPACKET := packet
+LCPACKET := packet
+MODULES += PACKET
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit

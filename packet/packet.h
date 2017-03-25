@@ -1,6 +1,9 @@
 #ifndef _PACKET_H_
 #define _PACKET_H_
 
+#include "linkedlist.h"
+#include <stddef.h>
+
 enum packet_direction {
   PACKET_DIRECTION_UPLINK = 0,
   PACKET_DIRECTION_DOWNLINK = 0,
@@ -23,7 +26,7 @@ const void *packet_const_data(const struct packet *pkt)
   return ((const char*)pkt) + sizeof(struct packet);
 }
 
-void *packet_size(size_t sz)
+size_t packet_size(size_t sz)
 {
   return sz + sizeof(struct packet);
 }
