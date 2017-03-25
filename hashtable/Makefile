@@ -1,14 +1,13 @@
-TOPLEVEL:=..
 MODULE:=HASHTABLE
 
 all:
-	cd $(TOPLEVEL); $(MAKE) $(MODULE)
+	while [ `pwd` != "/" -a \! -e INCLUSIVE_MAKE_ROOT ]; do cd ..; done; $(MAKE) $(MODULE)
 
 clean:
-	cd $(TOPLEVEL); $(MAKE) clean_$(MODULE)
+	while [ `pwd` != "/" -a \! -e INCLUSIVE_MAKE_ROOT ]; do cd ..; done; $(MAKE) clean_$(MODULE)
 
 distclean:
-	cd $(TOPLEVEL); $(MAKE) distclean_$(MODULE)
+	while [ `pwd` != "/" -a \! -e INCLUSIVE_MAKE_ROOT ]; do cd ..; done; $(MAKE) distclean_$(MODULE)
 
 unit:
-	cd $(TOPLEVEL); $(MAKE) unit_$(MODULE)
+	while [ `pwd` != "/" -a \! -e INCLUSIVE_MAKE_ROOT ]; do cd ..; done; $(MAKE) unit_$(MODULE)
