@@ -14,7 +14,7 @@ DIRHASHTABLE := hashtable
 LCHASHTABLE := hashtable
 MODULES += HASHTABLE
 
-CFLAGS := -g
+CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
 
