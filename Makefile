@@ -27,6 +27,10 @@ DIRLOG := log
 LCLOG := log
 MODULES += LOG
 
+DIRIPHDR := iphdr
+LCIPHDR := iphdr
+MODULES += IPHDR
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
