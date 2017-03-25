@@ -2,6 +2,10 @@ DIRDYNARR := dynarr
 LCDYNARR := dynarr
 MODULES += DYNARR
 
+DIRMISC := misc
+LCMISC := misc
+MODULES += MISC
+
 .PHONY: all clean distclean unit
 
 all: $(MODULES)
