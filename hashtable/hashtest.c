@@ -55,6 +55,28 @@ int main(int argc, char **argv)
   hash_table_delete(&table, &e3.node);
   hash_table_delete(&table, &e4.node);
   hash_table_free(&table);
+  printf("====\n");
+
+  hash_table_init(&table, 1, entry_hash_fn, NULL);
+  hash_table_add_nogrow(&table, &e1.node, entry_hash(&e1));
+  hash_table_add_nogrow(&table, &e2.node, entry_hash(&e2));
+  hash_table_add_nogrow(&table, &e3.node, entry_hash(&e3));
+  hash_table_add_nogrow(&table, &e4.node, entry_hash(&e4));
+  HASH_TABLE_FOR_EACH_POSSIBLE(&table, node, hashval)
+  {
+    struct entry *e = CONTAINER_OF(node, struct entry, node);
+    printf("candidate\n");
+    if (e->x == e4.x && e->y == e4.y)
+    {
+      printf("ok\n");
+    }
+  }
+  hash_table_delete(&table, &e1.node);
+  hash_table_delete(&table, &e2.node);
+  hash_table_delete(&table, &e3.node);
+  hash_table_delete(&table, &e4.node);
+  hash_table_free(&table);
+  printf("====\n");
 
   hash_table_init(&table, 1, entry_hash_fn, NULL);
   hash_table_add_nogrow(&table, &e1.node, entry_hash(&e1));

@@ -1,6 +1,8 @@
 #ifndef _HASHLIST_H_
 #define _HASHLIST_H_
 
+#include <stddef.h>
+
 struct hash_list_node {
   struct hash_list_node **pprev;
   struct hash_list_node *next;

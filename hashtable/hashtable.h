@@ -85,12 +85,12 @@ static inline void hash_table_add_nogrow(
 }
 
 #define HASH_TABLE_FOR_EACH(table, bucket, x) \
-  for ((bkt) = 0, x = NULL; x == NULL && (bkt) < (table)->bucketcnt; (bkt)++) \
-    HASH_LIST_FOR_EACH(x, &(table)->buckets[bkt])
+  for ((bucket) = 0, x = NULL; x == NULL && (bucket) < (table)->bucketcnt; (bucket)++) \
+    HASH_LIST_FOR_EACH(x, &(table)->buckets[bucket])
 
 #define HASH_TABLE_FOR_EACH_SAFE(table, bucket, x, n) \
-  for ((bkt) = 0, x = NULL; x == NULL && (bkt) < (table)->bucketcnt; (bkt)++) \
-    HASH_LIST_FOR_EACH_SAFE(x, n, &(table)->buckets[bkt])
+  for ((bucket) = 0, x = NULL; x == NULL && (bucket) < (table)->bucketcnt; (bucket)++) \
+    HASH_LIST_FOR_EACH_SAFE(x, n, &(table)->buckets[bucket])
 
 #define HASH_TABLE_FOR_EACH_POSSIBLE(table, x, hashval) \
   HASH_LIST_FOR_EACH(x, &((table)->buckets[hashval & ((table)->bucketcnt - 1)]))
