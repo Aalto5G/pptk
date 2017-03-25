@@ -7,6 +7,9 @@ DYNARR_SRC := $(patsubst %,$(DIRDYNARR)/%,$(DYNARR_SRC))
 DYNARR_OBJ_LIB := $(patsubst %.c,%.o,$(DYNARR_SRC_LIB))
 DYNARR_OBJ := $(patsubst %.c,%.o,$(DYNARR_SRC))
 
+DYNARR_DEP_LIB := $(patsubst %.c,%.d,$(DYNARR_SRC_LIB))
+DYNARR_DEP := $(patsubst %.c,%.d,$(DYNARR_SRC))
+
 .PHONY: DYNARR clean_DYNARR distclean_DYNARR unit_DYNARR $(LCDYNARR) clean_$(LCDYNARR) distclean_$(LCDYNARR) unit_$(LCDYNARR)
 
 $(LCDYNARR): DYNARR
@@ -25,11 +28,16 @@ $(DIRDYNARR)/libdynarr.a: $(DYNARR_OBJ_LIB)
 $(DIRDYNARR)/dynarrtest: $(DIRDYNARR)/dynarrtest.o $(DIRDYNARR)/libdynarr.a
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(DYNARR_OBJ): %.o: %.c
+$(DYNARR_OBJ): %.o: %.c $(DYNARR_DEP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
+
+$(DYNARR_DEP): %.d: %.c
+	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c
 
 clean_DYNARR:
 	rm -f $(DYNARR_OBJ)
 
 distclean_DYNARR: clean_DYNARR
 	rm -f $(DIRDYNARR)/libdynarr.a $(DIRDYNARR)/dynarrtest
+
+-include $(DYNARR_DEP)
