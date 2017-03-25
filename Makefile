@@ -6,6 +6,8 @@ DIRMISC := misc
 LCMISC := misc
 MODULES += MISC
 
+CFLAGS := -g
+
 .PHONY: all clean distclean unit
 
 all: $(MODULES)
