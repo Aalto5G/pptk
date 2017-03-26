@@ -1,5 +1,5 @@
 IPHDR_SRC_LIB := ipcksum.c
-IPHDR_SRC := $(IPHDR_SRC_LIB) iphdrtest.c ipcksumtest.c
+IPHDR_SRC := $(IPHDR_SRC_LIB) iphdrtest.c ipcksumtest.c ipcksumperf.c
 
 IPHDR_SRC_LIB := $(patsubst %,$(DIRIPHDR)/%,$(IPHDR_SRC_LIB))
 IPHDR_SRC := $(patsubst %,$(DIRIPHDR)/%,$(IPHDR_SRC))
@@ -22,9 +22,10 @@ distclean_$(LCIPHDR): distclean_IPHDR
 
 IPHDR: $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest
 
-unit_IPHDR: $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest
+unit_IPHDR: $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest $(DIRIPHDR)/ipcksumperf
 	$(DIRIPHDR)/iphdrtest
 	$(DIRIPHDR)/ipcksumtest
+	$(DIRIPHDR)/ipcksumperf
 
 $(DIRIPHDR)/libiphdr.a: $(IPHDR_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
 	rm -f $@
@@ -34,6 +35,9 @@ $(DIRIPHDR)/iphdrtest: $(DIRIPHDR)/iphdrtest.o $(DIRIPHDR)/libiphdr.a $(MAKEFILE
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHDR)
 
 $(DIRIPHDR)/ipcksumtest: $(DIRIPHDR)/ipcksumtest.o $(DIRIPHDR)/libiphdr.a $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHDR)
+
+$(DIRIPHDR)/ipcksumperf: $(DIRIPHDR)/ipcksumperf.o $(DIRIPHDR)/libiphdr.a $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHDR)
 
 $(IPHDR_OBJ): %.o: %.c $(IPHDR_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
@@ -46,6 +50,6 @@ clean_IPHDR:
 	rm -f $(IPHDR_OBJ) $(IPHDR_DEP)
 
 distclean_IPHDR: clean_IPHDR
-	rm -f $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest
+	rm -f $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest $(DIRIPHDR)/ipcksumperf
 
 -include $(DIRIPHDR)/*.d
