@@ -20,7 +20,7 @@ $(LCIPHDR): IPHDR
 clean_$(LCIPHDR): clean_IPHDR
 distclean_$(LCIPHDR): distclean_IPHDR
 
-IPHDR: $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest
+IPHDR: $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest $(DIRIPHDR)/ipcksumperf
 
 unit_IPHDR: $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest $(DIRIPHDR)/ipcksumperf
 	$(DIRIPHDR)/iphdrtest

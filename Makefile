@@ -55,6 +55,10 @@ DIRRANDOM := random
 LCRANDOM := random
 MODULES += RANDOM
 
+DIRDATABUF := databuf
+LCDATABUF := databuf
+MODULES += DATABUF
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
