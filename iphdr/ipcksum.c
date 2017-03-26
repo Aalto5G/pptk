@@ -27,12 +27,12 @@ uint16_t tcp_hdr_cksum_calc(
   {
     abort();
   }
-  u32 = ip_src(iphdr);
+  u32 = htonl(ip_src(iphdr));
   ip_cksum_feed32ptr(&ctx, &u32);
-  u32 = ip_dst(iphdr);
+  u32 = htonl(ip_dst(iphdr));
   ip_cksum_feed32ptr(&ctx, &u32);
-  ip_cksum_add16(&ctx, htons(6)); // FIXME verify
-  ip_cksum_add16(&ctx, tcplen);
+  ip_cksum_add16(&ctx, htons(6));
+  ip_cksum_add16(&ctx, htons(tcplen));
   ip_cksum_feed(&ctx, tcphdr, tcplen);
   return ip_cksum_postprocess(&ctx);
 }
