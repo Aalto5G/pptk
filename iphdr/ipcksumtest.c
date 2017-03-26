@@ -31,13 +31,26 @@ int main(int argc, char **argv)
   {
     abort();
   }
+
   if (ip_hdr_cksum_calc(iphdr, sizeof(iphdr)-1) != 0)
   {
     abort();
   }
-  if (tcp_hdr_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1) != 0)
+  if (tcp_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1) != 0)
   {
     abort();
   }
+
+  ip_set_hdr_cksum_calc(iphdr, sizeof(iphdr)-1);
+  if (ip_hdr_cksum_calc(iphdr, sizeof(iphdr)-1) != 0)
+  {
+    abort();
+  }
+  tcp_set_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1);
+  if (tcp_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1) != 0)
+  {
+    abort();
+  }
+
   return 0;
 }

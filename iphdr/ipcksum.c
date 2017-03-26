@@ -18,7 +18,7 @@ uint16_t ip_hdr_cksum_calc(const void *iphdr, uint16_t iplen)
   return ip_cksum_postprocess(&ctx);
 }
 
-uint16_t tcp_hdr_cksum_calc(
+uint16_t tcp_cksum_calc(
   const void *iphdr, uint16_t iplen, const void *tcphdr, uint16_t tcplen)
 {
   struct ip_cksum_ctx ctx = IP_CKSUM_CTX_INITER;

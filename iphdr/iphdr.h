@@ -275,4 +275,40 @@ static inline const void *ip_const_payload(const void *pkt)
   return ((const char*)pkt) + ip_hdr_len(pkt);
 }
 
+static inline uint16_t tcp_src_port(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[0]);
+}
+
+static inline uint16_t tcp_dst_port(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[2]);
+}
+
+static inline void tcp_set_src_port(void *pkt, uint16_t src_port)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[0], src_port);
+}
+
+static inline void tcp_set_dst_port(void *pkt, uint16_t dst_port)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[2], dst_port);
+}
+
+static inline uint16_t tcp_cksum(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[16]);
+}
+
+static inline void tcp_set_cksum(void *pkt, uint16_t checksum)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[16], checksum);
+}
+
 #endif

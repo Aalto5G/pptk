@@ -73,7 +73,34 @@ static inline void ip_cksum_feed(struct ip_cksum_ctx *ctx, const void *buf, size
 
 uint16_t ip_hdr_cksum_calc(const void *iphdr, uint16_t iplen);
 
-uint16_t tcp_hdr_cksum_calc(
+uint16_t tcp_cksum_calc(
   const void *iphdr, uint16_t iplen, const void *tcphdr, uint16_t tcplen);
+
+static inline void ip_set_hdr_cksum_calc(void *iphdr, uint16_t iplen)
+{
+  uint16_t cksum;
+  if (iplen < 20)
+  {
+    abort();
+  }
+  ip_set_hdr_cksum(iphdr, 0);
+  cksum = ip_hdr_cksum_calc(iphdr, iplen);
+  ip_set_hdr_cksum(iphdr, cksum);
+}
+
+static inline void tcp_set_cksum_calc(
+  const void *iphdr, uint16_t iplen, void *tcphdr, uint16_t tcplen)
+{
+  if (iplen < 20)
+  {
+    abort();
+  }
+  if (tcplen < 20)
+  {
+    abort();
+  }
+  tcp_set_cksum(tcphdr, 0);
+  tcp_set_cksum(tcphdr, tcp_cksum_calc(iphdr, iplen, tcphdr, tcplen));
+}
 
 #endif
