@@ -15,6 +15,22 @@ struct globals {
 
 struct globals globals;
 
+const char *log_level_string(enum log_level level)
+{
+  switch (level)
+  {
+    case LOG_LEVEL_EMERG: return "EMERG";
+    case LOG_LEVEL_ALERT: return "ALERT";
+    case LOG_LEVEL_CRIT: return "CRIT";
+    case LOG_LEVEL_ERR: return "ERR";
+    case LOG_LEVEL_WARNING: return "WARNING";
+    case LOG_LEVEL_NOTICE: return "NOTICE";
+    case LOG_LEVEL_INFO: return "INFO";
+    case LOG_LEVEL_DEBUG: return "DEBUG";
+    default: return "UNKNOWN";
+  }
+}
+
 void log_impl_vlog(enum log_level level, const char *compname, const char *file, size_t line, const char *function, const char *buf, va_list ap)
 {
   struct timeval tv;
@@ -31,7 +47,7 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
   localtime_r(&tv.tv_sec, &tm);
   strftime(timebuf, sizeof(timebuf), "%d.%m.%Y %H:%M:%S", &tm);
   vsnprintf(msgbuf, sizeof(msgbuf), buf, ap);
-  snprintf(linebuf, sizeof(linebuf), "%s.%.6d {%s} [%s] <%s:%s:%zu> %s", timebuf, (int)tv.tv_usec, globals.progname, compname, file, function, line, msgbuf);
+  snprintf(linebuf, sizeof(linebuf), "%s.%.6d {%s} [%s] (%s) <%s:%s:%zu> %s", timebuf, (int)tv.tv_usec, globals.progname, compname, log_level_string(level), file, function, line, msgbuf);
   if (globals.f && level <= atomic_load(&global_log_file_level))
   {
     fprintf(globals.f, "%s\n", linebuf);
