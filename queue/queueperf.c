@@ -39,7 +39,7 @@ void *consumer(void *ud)
     cnt = queue_deq_many(&queue, buf, cachesize);
     for (i = 0; i < cnt; i++)
     {
-      if (buf[cnt] != NULL)
+      if (buf[i] != NULL)
       {
         abort();
       }
