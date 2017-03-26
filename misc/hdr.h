@@ -69,7 +69,7 @@ static inline void hdr_set32n(void *buf, uint32_t val)
 
 static inline void hdr_set16n(void *buf, uint16_t val)
 {
-  hdr_set16h(buf, htonl(val));
+  hdr_set16h(buf, htons(val));
 }
 
 #endif
