@@ -35,6 +35,14 @@ DIRPACKET := packet
 LCPACKET := packet
 MODULES += PACKET
 
+DIRARP := arp
+LCARP := arp
+MODULES += ARP
+
+DIRPORTS := ports
+LCPORTS := ports
+MODULES += PORTS
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
