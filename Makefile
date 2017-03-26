@@ -47,6 +47,10 @@ DIRQUEUE := queue
 LCQUEUE := queue
 MODULES += QUEUE
 
+DIRALLOC := alloc
+LCALLOC := alloc
+MODULES += ALLOC
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
