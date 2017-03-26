@@ -299,6 +299,18 @@ static inline void tcp_set_dst_port(void *pkt, uint16_t dst_port)
   hdr_set16n(&cpkt[2], dst_port);
 }
 
+static inline uint32_t tcp_seq_num(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get32n(&cpkt[4]);
+}
+
+static inline uint32_t tcp_ack_num(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get32n(&cpkt[8]);
+}
+
 static inline int tcp_ack(const void *pkt)
 {
   const char *cpkt = pkt;
