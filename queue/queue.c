@@ -198,3 +198,49 @@ size_t queue_deq_many(struct queue *queue, void **out, size_t sz)
   }
   return i;
 }
+
+size_t queue_timeddeq_many(
+  struct queue *queue, void **out, size_t sz, struct timespec *ts)
+{
+  int was_full;
+  size_t i = 0;
+  if (pthread_mutex_lock(&queue->mtx) != 0)
+  {
+    abort();
+  }
+  while (queue_is_empty(queue))
+  {
+    int status;
+    status = pthread_cond_timedwait(&queue->empty, &queue->mtx, ts);
+    if (status == ETIMEDOUT)
+    {
+      goto out;
+    }
+    else if (status != 0)
+    {
+      abort();
+    }
+  }
+  was_full = queue_is_full(queue);
+  while (!queue_is_empty(queue) && i < sz)
+  {
+    out[i++] = queue->buf[queue->start++];
+    if (queue->start >= queue->bufsiz)
+    {
+      queue->start = 0;
+    }
+  }
+  if (was_full)
+  {
+    if (pthread_cond_broadcast(&queue->full) != 0)
+    {
+      abort();
+    }
+  }
+out:
+  if (pthread_mutex_unlock(&queue->mtx) != 0)
+  {
+    abort();
+  }
+  return i;
+}

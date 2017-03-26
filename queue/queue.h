@@ -69,4 +69,7 @@ static inline void queue_cache_enq_one(struct queue_cache *cache, void *item)
 
 size_t queue_deq_many(struct queue *queue, void **out, size_t sz);
 
+size_t queue_timeddeq_many(
+  struct queue *queue, void **out, size_t sz, struct timespec *ts);
+
 #endif
