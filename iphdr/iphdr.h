@@ -299,6 +299,30 @@ static inline void tcp_set_dst_port(void *pkt, uint16_t dst_port)
   hdr_set16n(&cpkt[2], dst_port);
 }
 
+static inline int tcp_ack(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return !!(hdr_get8h(&cpkt[13]) & (1<<4));
+}
+
+static inline int tcp_rst(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return !!(hdr_get8h(&cpkt[13]) & (1<<2));
+}
+
+static inline int tcp_syn(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return !!(hdr_get8h(&cpkt[13]) & (1<<1));
+}
+
+static inline int tcp_fin(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return !!(hdr_get8h(&cpkt[13]) & (1<<0));
+}
+
 static inline uint16_t tcp_cksum(const void *pkt)
 {
   const char *cpkt = pkt;
