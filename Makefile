@@ -51,6 +51,10 @@ DIRALLOC := alloc
 LCALLOC := alloc
 MODULES += ALLOC
 
+DIRRANDOM := random
+LCRANDOM := random
+MODULES += RANDOM
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
