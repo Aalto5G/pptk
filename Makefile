@@ -43,6 +43,10 @@ DIRPORTS := ports
 LCPORTS := ports
 MODULES += PORTS
 
+DIRQUEUE := queue
+LCQUEUE := queue
+MODULES += QUEUE
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
