@@ -13,6 +13,7 @@ int main(int argc, char **argv)
   char *buf3 = "abcdefghijklmnopqrstuvwxyz";
   char iphdr[] = "\x45\x0\x0\x14\x0\x1\x0\x0\x40\x0\x7c\xe7\x7f\x0\x0\x1\x7f\x0\x0\x1";
   char iptcphdr[] = "\x45\x0\x0\x2b\x0\x1\x0\x0\x40\x6\x7c\xca\x7f\x0\x0\x1\x7f\x0\x0\x1\x0\x14\x0\x50\x0\x0\x0\x0\x0\x0\x0\x0\x50\x2\x20\x0\xbc\x9\x0\x0\x66\x6f\x6f";
+  char ipudphdr[] = "\x45\x0\x0\x1f\x0\x1\x0\x0\x40\x11\x7c\xcb\x7f\x0\x0\x1\x7f\x0\x0\x1\x0\x35\x0\x35\x0\xb\x2b\xfc\x66\x6f\x6f";
   struct ip_cksum_ctx ctx = IP_CKSUM_CTX_INITER;
   struct ip_cksum_ctx ctx2 = IP_CKSUM_CTX_INITER;
   struct ip_cksum_ctx ctx3 = IP_CKSUM_CTX_INITER;
@@ -40,6 +41,10 @@ int main(int argc, char **argv)
   {
     abort();
   }
+  if (udp_cksum_calc(ipudphdr, 20, ipudphdr+20, sizeof(ipudphdr)-20-1) != 0)
+  {
+    abort();
+  }
 
   ip_set_hdr_cksum_calc(iphdr, sizeof(iphdr)-1);
   if (ip_hdr_cksum_calc(iphdr, sizeof(iphdr)-1) != 0)
@@ -48,6 +53,11 @@ int main(int argc, char **argv)
   }
   tcp_set_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1);
   if (tcp_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1) != 0)
+  {
+    abort();
+  }
+  udp_set_cksum_calc(ipudphdr, 20, ipudphdr+20, sizeof(ipudphdr)-20-1);
+  if (udp_cksum_calc(ipudphdr, 20, ipudphdr+20, sizeof(ipudphdr)-20-1) != 0)
   {
     abort();
   }

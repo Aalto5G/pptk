@@ -66,3 +66,22 @@ uint16_t tcp_cksum_calc(
   ip_cksum_feed(&ctx, tcphdr, tcplen);
   return ip_cksum_postprocess(&ctx);
 }
+
+uint16_t udp_cksum_calc(
+  const void *iphdr, uint16_t iplen, const void *udphdr, uint16_t udplen)
+{
+  struct ip_cksum_ctx ctx = IP_CKSUM_CTX_INITER;
+  uint32_t u32;
+  if (iplen < 20)
+  {
+    abort();
+  }
+  u32 = htonl(ip_src(iphdr));
+  ip_cksum_feed32ptr(&ctx, &u32);
+  u32 = htonl(ip_dst(iphdr));
+  ip_cksum_feed32ptr(&ctx, &u32);
+  ip_cksum_add16(&ctx, htons(17));
+  ip_cksum_add16(&ctx, htons(udplen));
+  ip_cksum_feed(&ctx, udphdr, udplen);
+  return ip_cksum_postprocess(&ctx);
+}

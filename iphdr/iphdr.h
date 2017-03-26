@@ -311,4 +311,46 @@ static inline void tcp_set_cksum(void *pkt, uint16_t checksum)
   hdr_set16n(&cpkt[16], checksum);
 }
 
+static inline uint16_t udp_src_port(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[0]);
+}
+
+static inline uint16_t udp_dst_port(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[2]);
+}
+
+static inline void udp_set_src_port(void *pkt, uint16_t src_port)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[0], src_port);
+}
+
+static inline void udp_set_dst_port(void *pkt, uint16_t dst_port)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[2], dst_port);
+}
+
+static inline uint16_t udp_total_len(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[4]);
+}
+
+static inline uint16_t udp_cksum(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[6]);
+}
+
+static inline void udp_set_cksum(void *pkt, uint16_t cksum)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[6], cksum);
+}
+
 #endif
