@@ -5,8 +5,8 @@
 #include <time.h>
 #include <ctype.h>
 
-atomic_int global_log_file_level;
-atomic_int global_log_console_level;
+atomic_int global_log_file_level = ATOMIC_VAR_INIT(LOG_LEVEL_INFO);
+atomic_int global_log_console_level = ATOMIC_VAR_INIT(LOG_LEVEL_NOTICE);
 
 struct globals {
   FILE *f;
