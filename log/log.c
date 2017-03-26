@@ -22,12 +22,17 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
   char msgbuf[16384] = {0};
   char linebuf[16384] = {0};
   char timebuf[256] = {0};
+  const char *progname = globals.progname;
+  if (progname == NULL)
+  {
+    progname = "A.OUT";
+  }
   gettimeofday(&tv, NULL);
   localtime_r(&tv.tv_sec, &tm);
   strftime(timebuf, sizeof(timebuf), "%d.%m.%Y %H:%M:%S", &tm);
   vsnprintf(msgbuf, sizeof(msgbuf), buf, ap);
   snprintf(linebuf, sizeof(linebuf), "%s.%.6d {%s} [%s] <%s:%s:%zu> %s", timebuf, (int)tv.tv_usec, globals.progname, compname, file, function, line, msgbuf);
-  if (level <= atomic_load(&global_log_file_level))
+  if (globals.f && level <= atomic_load(&global_log_file_level))
   {
     fprintf(globals.f, "%s\n", linebuf);
     fflush(globals.f);
