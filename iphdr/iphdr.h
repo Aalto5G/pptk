@@ -70,8 +70,8 @@ static inline void ip_set_version(void *pkt, uint8_t version)
 {
   char *cpkt = pkt;
   unsigned char uch = cpkt[0];
-  uch &= ~0xF;
-  uch |= version & 0xF;
+  uch &= ~0xF0;
+  uch |= (version & 0xF) << 4;
   cpkt[0] = uch;
 }
 
