@@ -20,32 +20,21 @@ void random_mt_twist(struct random_mt_ctx *ctx)
 {
   int i;
   uint32_t y;
+  static uint32_t mag01[2]={0x0U, 0x9908b0dfU};
   for (i = 0; i < 227; i++)
   {
     y = (ctx->mt[i] & 0x80000000) + (ctx->mt[(i + 1)] & 0x7fffffff);
-    ctx->mt[i] = ctx->mt[i + 397] ^ (y >> 1);
-    if ((y & 1) != 0)
-    {
-      ctx->mt[i] = ctx->mt[i] ^ 0x9908b0df;
-    }
+    ctx->mt[i] = ctx->mt[i + 397] ^ (y >> 1) ^ mag01[y&1];
   }
   for (i = 227; i < 623; i++)
   {
     y = (ctx->mt[i] & 0x80000000) + (ctx->mt[(i + 1)] & 0x7fffffff);
-    ctx->mt[i] = ctx->mt[(i + 397) - 624] ^ (y >> 1);
-    if ((y & 1) != 0)
-    {
-      ctx->mt[i] = ctx->mt[i] ^ 0x9908b0df;
-    }
+    ctx->mt[i] = ctx->mt[(i + 397) - 624] ^ (y >> 1) ^ mag01[y&1];
   }
   for (i = 623; i < 624; i++)
   {
     y = (ctx->mt[i] & 0x80000000) + (ctx->mt[(i + 1) - 624] & 0x7fffffff);
-    ctx->mt[i] = ctx->mt[(i + 397) - 624] ^ (y >> 1);
-    if ((y & 1) != 0)
-    {
-      ctx->mt[i] = ctx->mt[i] ^ 0x9908b0df;
-    }
+    ctx->mt[i] = ctx->mt[(i + 397) - 624] ^ (y >> 1) ^ mag01[y&1];
   }
   ctx->index = 0;
 }
