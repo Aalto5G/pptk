@@ -1,4 +1,4 @@
-PORTS_SRC_LIB :=
+PORTS_SRC_LIB := ports.c
 PORTS_SRC := $(PORTS_SRC_LIB)
 
 PORTS_SRC_LIB := $(patsubst %,$(DIRPORTS)/%,$(PORTS_SRC_LIB))
@@ -10,7 +10,7 @@ PORTS_OBJ := $(patsubst %.c,%.o,$(PORTS_SRC))
 PORTS_DEP_LIB := $(patsubst %.c,%.d,$(PORTS_SRC_LIB))
 PORTS_DEP := $(patsubst %.c,%.d,$(PORTS_SRC))
 
-CFLAGS_PORTS := -I$(DIRHASHLIST) -I$(DIRMISC)
+CFLAGS_PORTS := -I$(DIRHASHLIST) -I$(DIRMISC) -I$(DIRPACKET) -I$(DIRLINKEDLIST)
 
 MAKEFILES_PORTS := $(DIRPORTS)/module.mk
 
