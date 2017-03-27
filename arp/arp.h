@@ -32,6 +32,14 @@ struct arp_cache {
   struct hash_table hash;
 };
 
+static inline void arp_cache_init(struct arp_cache *cache)
+{
+  if (hash_table_init(&cache->hash, 1024, arp_entry_hash_fn, NULL) != 0)
+  {
+    abort();
+  }
+}
+
 void arp_cache_drain(struct arp_entry *entry, struct port *port);
 
 static inline struct arp_entry *arp_cache_get(

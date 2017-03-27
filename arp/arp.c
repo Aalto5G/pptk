@@ -21,7 +21,10 @@ void arp_cache_drain(struct arp_entry *entry, struct port *port)
     void *ether = packet_data(pkt);
     memcpy(ether_dst(ether), entry->mac, 6);
     linked_list_delete(node);
-    port->portfunc(pkt, port->userdata);
+    if (port)
+    {
+      port->portfunc(pkt, port->userdata);
+    }
   }
 }
 
@@ -69,10 +72,7 @@ void arp_cache_put(
     {
       memcpy(entry->mac, mac, 6);
       entry->valid = 1;
-      if (port)
-      {
-        arp_cache_drain(entry, port);
-      }
+      arp_cache_drain(entry, port);
       return;
     }
   }
