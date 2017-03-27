@@ -6,7 +6,7 @@
 
 enum packet_direction {
   PACKET_DIRECTION_UPLINK = 0,
-  PACKET_DIRECTION_DOWNLINK = 0,
+  PACKET_DIRECTION_DOWNLINK = 1,
 };
 
 struct packet {
