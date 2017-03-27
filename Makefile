@@ -59,6 +59,10 @@ DIRDATABUF := databuf
 LCDATABUF := databuf
 MODULES += DATABUF
 
+DIRTUNTAP := tuntap
+LCTUNTAP := tuntap
+MODULES += TUNTAP
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit

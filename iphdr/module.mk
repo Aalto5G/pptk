@@ -19,6 +19,7 @@ MAKEFILES_IPHDR := $(DIRIPHDR)/module.mk
 $(LCIPHDR): IPHDR
 clean_$(LCIPHDR): clean_IPHDR
 distclean_$(LCIPHDR): distclean_IPHDR
+unit_$(LCIPHDR): unit_IPHDR
 
 IPHDR: $(DIRIPHDR)/libiphdr.a $(DIRIPHDR)/iphdrtest $(DIRIPHDR)/ipcksumtest $(DIRIPHDR)/ipcksumperf
 

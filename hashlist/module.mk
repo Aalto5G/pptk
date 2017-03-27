@@ -19,6 +19,7 @@ MAKEFILES_HASHLIST := $(DIRHASHLIST)/module.mk
 $(LCHASHLIST): HASHLIST
 clean_$(LCHASHLIST): clean_HASHLIST
 distclean_$(LCHASHLIST): distclean_HASHLIST
+unit_$(LCHASHLIST): unit_HASHLIST
 
 HASHLIST: $(DIRHASHLIST)/libhashlist.a
 

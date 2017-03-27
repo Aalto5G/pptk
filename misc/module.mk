@@ -19,6 +19,7 @@ MAKEFILES_MISC := $(DIRMISC)/module.mk
 $(LCMISC): MISC
 clean_$(LCMISC): clean_MISC
 distclean_$(LCMISC): distclean_MISC
+unit_$(LCMISC): unit_MISC
 
 MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest
 

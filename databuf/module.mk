@@ -19,6 +19,7 @@ MAKEFILES_DATABUF := $(DIRDATABUF)/module.mk
 $(LCDATABUF): DATABUF
 clean_$(LCDATABUF): clean_DATABUF
 distclean_$(LCDATABUF): distclean_DATABUF
+unit_$(LCDATABUF): unit_DATABUF
 
 DATABUF: $(DIRDATABUF)/libdatabuf.a $(DIRDATABUF)/databuftest
 

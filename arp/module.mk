@@ -19,6 +19,7 @@ MAKEFILES_ARP := $(DIRARP)/module.mk
 $(LCARP): ARP
 clean_$(LCARP): clean_ARP
 distclean_$(LCARP): distclean_ARP
+unit_$(LCARP): unit_ARP
 
 ARP: $(DIRARP)/libarp.a
 

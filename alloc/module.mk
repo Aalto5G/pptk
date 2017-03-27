@@ -21,6 +21,7 @@ MAKEFILES_ALLOC := $(DIRALLOC)/module.mk
 $(LCALLOC): ALLOC
 clean_$(LCALLOC): clean_ALLOC
 distclean_$(LCALLOC): distclean_ALLOC
+unit_$(LCALLOC): unit_ALLOC
 
 ALLOC: $(DIRALLOC)/liballoc.a $(DIRALLOC)/llperfst
 

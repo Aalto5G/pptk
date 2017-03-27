@@ -19,6 +19,7 @@ MAKEFILES_PACKET := $(DIRPACKET)/module.mk
 $(LCPACKET): PACKET
 clean_$(LCPACKET): clean_PACKET
 distclean_$(LCPACKET): distclean_PACKET
+unit_$(LCPACKET): unit_PACKET
 
 PACKET: $(DIRPACKET)/libpacket.a $(DIRPACKET)/packettest
 

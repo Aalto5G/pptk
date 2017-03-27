@@ -19,6 +19,7 @@ MAKEFILES_PORTS := $(DIRPORTS)/module.mk
 $(LCPORTS): PORTS
 clean_$(LCPORTS): clean_PORTS
 distclean_$(LCPORTS): distclean_PORTS
+unit_$(LCPORTS): unit_PORTS
 
 PORTS: $(DIRPORTS)/libports.a
 

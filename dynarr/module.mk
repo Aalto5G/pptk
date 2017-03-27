@@ -19,6 +19,7 @@ MAKEFILES_DYNARR := $(DIRDYNARR)/module.mk
 $(LCDYNARR): DYNARR
 clean_$(LCDYNARR): clean_DYNARR
 distclean_$(LCDYNARR): distclean_DYNARR
+unit_$(LCDYNARR): unit_DYNARR
 
 DYNARR: $(DIRDYNARR)/libdynarr.a $(DIRDYNARR)/dynarrtest
 

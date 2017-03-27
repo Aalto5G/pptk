@@ -21,6 +21,7 @@ MAKEFILES_RANDOM := $(DIRRANDOM)/module.mk
 $(LCRANDOM): RANDOM
 clean_$(LCRANDOM): clean_RANDOM
 distclean_$(LCRANDOM): distclean_RANDOM
+unit_$(LCRANDOM): unit_RANDOM
 
 RANDOM: $(DIRRANDOM)/librandom.a $(DIRRANDOM)/random_mt_test
 

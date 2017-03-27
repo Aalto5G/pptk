@@ -19,6 +19,7 @@ MAKEFILES_LOG := $(DIRLOG)/module.mk
 $(LCLOG): LOG
 clean_$(LCLOG): clean_LOG
 distclean_$(LCLOG): distclean_LOG
+unit_$(LCLOG): unit_LOG
 
 LOG: $(DIRLOG)/liblog.a $(DIRLOG)/logtest
 

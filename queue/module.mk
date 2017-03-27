@@ -19,6 +19,7 @@ MAKEFILES_QUEUE := $(DIRQUEUE)/module.mk
 $(LCQUEUE): QUEUE
 clean_$(LCQUEUE): clean_QUEUE
 distclean_$(LCQUEUE): distclean_QUEUE
+unit_$(LCQUEUE): unit_QUEUE
 
 QUEUE: $(DIRQUEUE)/libqueue.a $(DIRQUEUE)/queueperf
 
