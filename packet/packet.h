@@ -16,17 +16,17 @@ struct packet {
   // after this: packet data
 };
 
-void *packet_data(struct packet *pkt)
+static inline void *packet_data(struct packet *pkt)
 {
   return ((char*)pkt) + sizeof(struct packet);
 }
 
-const void *packet_const_data(const struct packet *pkt)
+static inline const void *packet_const_data(const struct packet *pkt)
 {
   return ((const char*)pkt) + sizeof(struct packet);
 }
 
-size_t packet_size(size_t sz)
+static inline size_t packet_size(size_t sz)
 {
   return sz + sizeof(struct packet);
 }
