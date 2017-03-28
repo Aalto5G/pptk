@@ -37,7 +37,9 @@ int main(int argc, char **argv)
   for (i = 0; i < 1000000; i++)
   {
     uint32_t new_src = rand();
+    uint32_t new_dst = rand();
     ip_set_src_cksum_update(iptcphdr, 20, 6, iptcphdr+20, sizeof(iptcphdr)-20-1, new_src);
+    ip_set_dst_cksum_update(iptcphdr, 20, 6, iptcphdr+20, sizeof(iptcphdr)-20-1, new_dst);
     if (ip_hdr_cksum_calc(iptcphdr, 20) != 0)
     {
       abort();
@@ -46,6 +48,15 @@ int main(int argc, char **argv)
     {
       abort();
     }
+  }
+  ip_decr_ttl_cksum_update(iptcphdr);
+  if (ip_hdr_cksum_calc(iptcphdr, 20) != 0)
+  {
+    abort();
+  }
+  if (tcp_cksum_calc(iptcphdr, 20, iptcphdr+20, sizeof(iptcphdr)-20-1) != 0)
+  {
+    abort();
   }
 
   if (ip_hdr_cksum_calc(iphdr, sizeof(iphdr)-1) != 0)
