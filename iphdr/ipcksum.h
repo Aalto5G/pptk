@@ -122,7 +122,7 @@ static inline void ip_set_src_cksum_update(
   void *iphdr, uint16_t iplen, uint8_t proto, void *payhdr, uint16_t paylen, uint32_t src)
 {
   uint32_t old_src = ip_src(iphdr);
-  uint32_t old_cksum = ip_hdr_cksum(iphdr);
+  uint16_t old_cksum = ip_hdr_cksum(iphdr);
   old_cksum = ip_update_cksum32(old_cksum, old_src, src);
   ip_set_hdr_cksum(iphdr, old_cksum);
   if (proto == 6)
@@ -144,7 +144,7 @@ static inline void ip_set_dst_cksum_update(
   void *iphdr, uint16_t iplen, uint8_t proto, void *payhdr, uint16_t paylen, uint32_t dst)
 {
   uint32_t old_dst = ip_dst(iphdr);
-  uint32_t old_cksum = ip_hdr_cksum(iphdr);
+  uint16_t old_cksum = ip_hdr_cksum(iphdr);
   old_cksum = ip_update_cksum32(old_cksum, old_dst, dst);
   ip_set_hdr_cksum(iphdr, old_cksum);
   if (proto == 6)
@@ -162,24 +162,25 @@ static inline void ip_set_dst_cksum_update(
   ip_set_dst(iphdr, dst);
 }
 
-static inline void ip_decr_ttl_cksum_update(void)
-{
-  // FIXME implement
-}
-
-#if 0
-static inline int ip_decr_ttl(void *pkt)
+static inline int ip_decr_ttl_cksum_update(void *pkt)
 {
   uint8_t ttl;
+  uint8_t proto;
+  uint16_t whole_field_old, whole_field_new;
+  uint16_t old_cksum = ip_hdr_cksum(pkt);
   ttl = ip_ttl(pkt);
+  proto = ip_proto(pkt);
   if (ttl == 0)
   {
     abort();
   }
+  whole_field_old = (ttl<<8)|proto;
   ttl--;
+  whole_field_new = (ttl<<8)|proto;
+  old_cksum = ip_update_cksum32(old_cksum, whole_field_old, whole_field_new);
+  ip_set_hdr_cksum(pkt, old_cksum);
   ip_set_ttl(pkt, ttl);
   return ttl > 0;
 }
-#endif
 
 #endif
