@@ -93,4 +93,93 @@ static inline void udp_set_cksum_calc(
   udp_set_cksum(udphdr, udp_cksum_calc(iphdr, iplen, udphdr, udplen));
 }
 
+static inline uint16_t ip_update_cksum16(
+  uint16_t old_cksum16, uint16_t old16, uint16_t new16)
+{
+  uint32_t old_cksum = old_cksum16;
+  old_cksum = (uint16_t)~old_cksum;
+  old_cksum += old16;
+  old_cksum += new16;
+  while (old_cksum >> 16)
+  {
+    old_cksum = (old_cksum & 0xffff) + (old_cksum >> 16);
+  }
+  old_cksum = (uint16_t)~old_cksum;
+  return old_cksum;
+}
+
+static inline uint32_t ip_update_cksum32(
+  uint16_t old_cksum, uint32_t old32, uint32_t new32)
+{
+  uint16_t new1 = (new32>>16), old1 = ~(old32>>16);
+  uint16_t new2 = (new32&0xFFFF), old2 = ~(old32&0xFFFF);
+  uint16_t x;
+  x = ip_update_cksum16(ip_update_cksum16(old_cksum, old1, new1), old2, new2);
+  return x;
+}
+
+static inline void ip_set_src_cksum_update(
+  void *iphdr, uint16_t iplen, uint8_t proto, void *payhdr, uint16_t paylen, uint32_t src)
+{
+  uint32_t old_src = ip_src(iphdr);
+  uint32_t old_cksum = ip_hdr_cksum(iphdr);
+  old_cksum = ip_update_cksum32(old_cksum, old_src, src);
+  ip_set_hdr_cksum(iphdr, old_cksum);
+  if (proto == 6)
+  {
+    old_cksum = tcp_cksum(payhdr);
+    old_cksum = ip_update_cksum32(old_cksum, old_src, src);
+    tcp_set_cksum(payhdr, old_cksum);
+  }
+  else if (proto == 17)
+  {
+    old_cksum = udp_cksum(payhdr);
+    old_cksum = ip_update_cksum32(old_cksum, old_src, src);
+    udp_set_cksum(payhdr, old_cksum);
+  }
+  ip_set_src(iphdr, src);
+}
+
+static inline void ip_set_dst_cksum_update(
+  void *iphdr, uint16_t iplen, uint8_t proto, void *payhdr, uint16_t paylen, uint32_t dst)
+{
+  uint32_t old_dst = ip_dst(iphdr);
+  uint32_t old_cksum = ip_hdr_cksum(iphdr);
+  old_cksum = ip_update_cksum32(old_cksum, old_dst, dst);
+  ip_set_hdr_cksum(iphdr, old_cksum);
+  if (proto == 6)
+  {
+    old_cksum = tcp_cksum(payhdr);
+    old_cksum = ip_update_cksum32(old_cksum, old_dst, dst);
+    tcp_set_cksum(payhdr, old_cksum);
+  }
+  else if (proto == 17)
+  {
+    old_cksum = udp_cksum(payhdr);
+    old_cksum = ip_update_cksum32(old_cksum, old_dst, dst);
+    udp_set_cksum(payhdr, old_cksum);
+  }
+  ip_set_dst(iphdr, dst);
+}
+
+static inline void ip_decr_ttl_cksum_update(void)
+{
+  // FIXME implement
+}
+
+#if 0
+static inline int ip_decr_ttl(void *pkt)
+{
+  uint8_t ttl;
+  ttl = ip_ttl(pkt);
+  if (ttl == 0)
+  {
+    abort();
+  }
+  ttl--;
+  ip_set_ttl(pkt, ttl);
+  return ttl > 0;
+}
+#endif
+
 #endif
