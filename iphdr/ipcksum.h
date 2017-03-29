@@ -98,7 +98,7 @@ static inline uint16_t ip_update_cksum16(
 {
   uint32_t old_cksum = old_cksum16;
   old_cksum = (uint16_t)~old_cksum;
-  old_cksum += old16;
+  old_cksum += (uint16_t)~old16;
   old_cksum += new16;
   while (old_cksum >> 16)
   {
@@ -111,8 +111,8 @@ static inline uint16_t ip_update_cksum16(
 static inline uint32_t ip_update_cksum32(
   uint16_t old_cksum, uint32_t old32, uint32_t new32)
 {
-  uint16_t new1 = (new32>>16), old1 = ~(old32>>16);
-  uint16_t new2 = (new32&0xFFFF), old2 = ~(old32&0xFFFF);
+  uint16_t new1 = (new32>>16), old1 = (old32>>16);
+  uint16_t new2 = (new32&0xFFFF), old2 = (old32&0xFFFF);
   uint16_t x;
   x = ip_update_cksum16(ip_update_cksum16(old_cksum, old1, new1), old2, new2);
   return x;
@@ -138,6 +138,46 @@ static inline void ip_set_src_cksum_update(
     udp_set_cksum(payhdr, old_cksum);
   }
   ip_set_src(iphdr, src);
+}
+
+static inline void tcp_set_src_port_cksum_update(
+  void *tcphdr, uint16_t tcplen, uint16_t src_port)
+{
+  uint16_t old_src_port = tcp_src_port(tcphdr);
+  uint16_t old_cksum = tcp_cksum(tcphdr);
+  old_cksum = ip_update_cksum16(old_cksum, old_src_port, src_port);
+  tcp_set_cksum(tcphdr, old_cksum);
+  tcp_set_src_port(tcphdr, src_port);
+}
+
+static inline void tcp_set_dst_port_cksum_update(
+  void *tcphdr, uint16_t tcplen, uint16_t dst_port)
+{
+  uint16_t old_dst_port = tcp_dst_port(tcphdr);
+  uint16_t old_cksum = tcp_cksum(tcphdr);
+  old_cksum = ip_update_cksum16(old_cksum, old_dst_port, dst_port);
+  tcp_set_cksum(tcphdr, old_cksum);
+  tcp_set_dst_port(tcphdr, dst_port);
+}
+
+static inline void udp_set_src_port_cksum_update(
+  void *udphdr, uint16_t udplen, uint16_t src_port)
+{
+  uint16_t old_src_port = udp_src_port(udphdr);
+  uint16_t old_cksum = udp_cksum(udphdr);
+  old_cksum = ip_update_cksum16(old_cksum, old_src_port, src_port);
+  udp_set_cksum(udphdr, old_cksum);
+  udp_set_src_port(udphdr, src_port);
+}
+
+static inline void udp_set_dst_port_cksum_update(
+  void *udphdr, uint16_t udplen, uint16_t dst_port)
+{
+  uint16_t old_dst_port = udp_dst_port(udphdr);
+  uint16_t old_cksum = udp_cksum(udphdr);
+  old_cksum = ip_update_cksum16(old_cksum, old_dst_port, dst_port);
+  udp_set_cksum(udphdr, old_cksum);
+  udp_set_dst_port(udphdr, dst_port);
 }
 
 static inline void ip_set_dst_cksum_update(

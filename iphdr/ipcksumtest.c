@@ -38,8 +38,12 @@ int main(int argc, char **argv)
   {
     uint32_t new_src = rand();
     uint32_t new_dst = rand();
+    uint16_t new_src_port = rand();
+    uint16_t new_dst_port = rand();
     ip_set_src_cksum_update(iptcphdr, 20, 6, iptcphdr+20, sizeof(iptcphdr)-20-1, new_src);
     ip_set_dst_cksum_update(iptcphdr, 20, 6, iptcphdr+20, sizeof(iptcphdr)-20-1, new_dst);
+    tcp_set_src_port_cksum_update(iptcphdr+20, sizeof(iptcphdr)-20-1, new_src_port);
+    tcp_set_dst_port_cksum_update(iptcphdr+20, sizeof(iptcphdr)-20-1, new_dst_port);
     if (ip_hdr_cksum_calc(iptcphdr, 20) != 0)
     {
       abort();
