@@ -33,7 +33,7 @@ $(DIRQUEUE)/libqueue.a: $(QUEUE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 $(DIRQUEUE)/queueperf: $(DIRQUEUE)/queueperf.o $(DIRQUEUE)/libqueue.a $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_QUEUE) -lpthread
 
-$(QUEUE_OBJ): %.o: %.c $(QUEUE_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
+$(QUEUE_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_QUEUE)
 
 $(QUEUE_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)

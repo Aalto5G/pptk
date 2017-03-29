@@ -41,7 +41,7 @@ $(DIRMISC)/murmurtest: $(DIRMISC)/murmurtest.o $(DIRMISC)/libmisc.a $(MAKEFILES_
 $(DIRMISC)/branchpredicttest: $(DIRMISC)/branchpredicttest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
-$(MISC_OBJ): %.o: %.c $(MISC_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+$(MISC_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_MISC)
 
 $(MISC_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_MISC)

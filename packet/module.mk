@@ -33,7 +33,7 @@ $(DIRPACKET)/libpacket.a: $(PACKET_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_PACK
 $(DIRPACKET)/packettest: $(DIRPACKET)/packettest.o $(DIRPACKET)/libpacket.a $(MAKEFILES_COMMON) $(MAKEFILES_PACKET)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_PACKET)
 
-$(PACKET_OBJ): %.o: %.c $(PACKET_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_PACKET)
+$(PACKET_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_PACKET)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_PACKET)
 
 $(PACKET_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_PACKET)

@@ -35,7 +35,7 @@ $(DIRRANDOM)/librandom.a: $(RANDOM_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_RAND
 $(DIRRANDOM)/random_mt_test: $(DIRRANDOM)/random_mt_test.o $(DIRRANDOM)/librandom.a $(LIBS_RANDOM) $(MAKEFILES_COMMON) $(MAKEFILES_RANDOM)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_RANDOM) -lpthread
 
-$(RANDOM_OBJ): %.o: %.c $(RANDOM_DEP) $(MAKEFILES_COMMON) $(MAKEFILES_RANDOM)
+$(RANDOM_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_RANDOM)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_RANDOM)
 
 $(RANDOM_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_RANDOM)
