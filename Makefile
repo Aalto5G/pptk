@@ -63,6 +63,10 @@ DIRTUNTAP := tuntap
 LCTUNTAP := tuntap
 MODULES += TUNTAP
 
+DIRPORTLIST := portlist
+LCPORTLIST := portlist
+MODULES += PORTLIST
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
