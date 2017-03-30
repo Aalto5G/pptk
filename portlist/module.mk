@@ -33,7 +33,7 @@ $(DIRPORTLIST)/libportlist.a: $(PORTLIST_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILE
 $(DIRPORTLIST)/portlisttest: $(DIRPORTLIST)/portlisttest.o $(DIRPORTLIST)/libportlist.a $(MAKEFILES_COMMON) $(MAKEFILES_PORTLIST)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_PORTLIST) -lpthread
 
-$(PORTLIST_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_PORTLIST)
+$(PORTLIST_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_PORTLIST)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_PORTLIST)
 
 $(PORTLIST_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_PORTLIST)

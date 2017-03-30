@@ -33,7 +33,7 @@ $(DIRDATABUF)/libdatabuf.a: $(DATABUF_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_D
 $(DIRDATABUF)/databuftest: $(DIRDATABUF)/databuftest.o $(DIRDATABUF)/libdatabuf.a $(MAKEFILES_COMMON) $(MAKEFILES_DATABUF)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_DATABUF)
 
-$(DATABUF_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_DATABUF)
+$(DATABUF_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_DATABUF)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_DATABUF)
 
 $(DATABUF_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_DATABUF)

@@ -33,7 +33,7 @@ $(DIRLOG)/liblog.a: $(LOG_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_LOG)
 $(DIRLOG)/logtest: $(DIRLOG)/logtest.o $(DIRLOG)/liblog.a $(MAKEFILES_COMMON) $(MAKEFILES_LOG)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LOG)
 
-$(LOG_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_LOG)
+$(LOG_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LOG)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_LOG)
 
 $(LOG_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_LOG)

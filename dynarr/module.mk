@@ -33,7 +33,7 @@ $(DIRDYNARR)/libdynarr.a: $(DYNARR_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_DYNA
 $(DIRDYNARR)/dynarrtest: $(DIRDYNARR)/dynarrtest.o $(DIRDYNARR)/libdynarr.a $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_DYNARR)
 
-$(DYNARR_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
+$(DYNARR_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_DYNARR)
 
 $(DYNARR_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)

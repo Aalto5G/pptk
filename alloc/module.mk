@@ -35,7 +35,7 @@ $(DIRALLOC)/liballoc.a: $(ALLOC_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 $(DIRALLOC)/llperfst: $(DIRALLOC)/llperfst.o $(DIRALLOC)/liballoc.a $(LIBS_ALLOC) $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_ALLOC) -lpthread
 
-$(ALLOC_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
+$(ALLOC_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_ALLOC)
 
 $(ALLOC_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)

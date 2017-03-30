@@ -33,7 +33,7 @@ $(DIRTUNTAP)/libtuntap.a: $(TUNTAP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_TUNT
 $(DIRTUNTAP)/tapsilent: $(DIRTUNTAP)/tapsilent.o $(DIRTUNTAP)/libtuntap.a $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TUNTAP)
 
-$(TUNTAP_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
+$(TUNTAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_TUNTAP)
 
 $(TUNTAP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)

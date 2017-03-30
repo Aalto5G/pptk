@@ -30,7 +30,7 @@ $(DIRPORTS)/libports.a: $(PORTS_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_PORTS)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
-$(PORTS_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_PORTS)
+$(PORTS_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_PORTS)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_PORTS)
 
 $(PORTS_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_PORTS)

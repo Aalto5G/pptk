@@ -41,7 +41,7 @@ $(DIRIPHDR)/ipcksumtest: $(DIRIPHDR)/ipcksumtest.o $(DIRIPHDR)/libiphdr.a $(MAKE
 $(DIRIPHDR)/ipcksumperf: $(DIRIPHDR)/ipcksumperf.o $(DIRIPHDR)/libiphdr.a $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHDR)
 
-$(IPHDR_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
+$(IPHDR_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_IPHDR)
 
 $(IPHDR_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)

@@ -30,7 +30,7 @@ $(DIRARP)/libarp.a: $(ARP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
-$(ARP_OBJ): %.o: %.c $($*.d) $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
+$(ARP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_ARP)
 
 $(ARP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
