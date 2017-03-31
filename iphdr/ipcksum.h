@@ -160,6 +160,36 @@ static inline void tcp_set_dst_port_cksum_update(
   tcp_set_dst_port(tcphdr, dst_port);
 }
 
+static inline void tcp_set_seq_number_cksum_update(
+  void *tcphdr, uint16_t tcplen, uint32_t seq_number)
+{
+  uint32_t old_seq_number = tcp_seq_number(tcphdr);
+  uint16_t old_cksum = tcp_cksum(tcphdr);
+  old_cksum = ip_update_cksum32(old_cksum, old_seq_number, seq_number);
+  tcp_set_cksum(tcphdr, old_cksum);
+  tcp_set_seq_number(tcphdr, seq_number);
+}
+
+static inline void tcp_set_ack_number_cksum_update(
+  void *tcphdr, uint16_t tcplen, uint32_t ack_number)
+{
+  uint32_t old_ack_number = tcp_ack_number(tcphdr);
+  uint16_t old_cksum = tcp_cksum(tcphdr);
+  old_cksum = ip_update_cksum32(old_cksum, old_ack_number, ack_number);
+  tcp_set_cksum(tcphdr, old_cksum);
+  tcp_set_ack_number(tcphdr, ack_number);
+}
+
+static inline void tcp_set_window_cksum_update(
+  void *tcphdr, uint16_t tcplen, uint16_t window)
+{
+  uint16_t old_window = tcp_window(tcphdr);
+  uint16_t old_cksum = tcp_cksum(tcphdr);
+  old_cksum = ip_update_cksum16(old_cksum, old_window, window);
+  tcp_set_cksum(tcphdr, old_cksum);
+  tcp_set_window(tcphdr, window);
+}
+
 static inline void udp_set_src_port_cksum_update(
   void *udphdr, uint16_t udplen, uint16_t src_port)
 {

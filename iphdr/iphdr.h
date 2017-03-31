@@ -389,4 +389,40 @@ static inline void udp_set_cksum(void *pkt, uint16_t cksum)
   hdr_set16n(&cpkt[6], cksum);
 }
 
+static inline uint32_t tcp_seq_number(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get32n(&cpkt[4]);
+}
+
+static inline uint32_t tcp_ack_number(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get32n(&cpkt[8]);
+}
+
+static inline void tcp_set_seq_number(void *pkt, uint32_t seq_number)
+{
+  char *cpkt = pkt;
+  hdr_set32n(&cpkt[4], seq_number);
+}
+
+static inline void tcp_set_ack_number(void *pkt, uint32_t ack_number)
+{
+  char *cpkt = pkt;
+  hdr_set32n(&cpkt[8], ack_number);
+}
+
+static inline uint16_t tcp_window(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[14]);
+}
+
+static inline void tcp_set_window(void *pkt, uint16_t window)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[14], window);
+}
+
 #endif
