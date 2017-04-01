@@ -71,11 +71,13 @@ int main(int argc, char **argv)
   for (;;)
   {
     int i;
-    struct pollfd pfds[1];
+    struct pollfd pfds[2];
     uint64_t time64;
     pfds[0].fd = dlnmd->fd;
     pfds[0].events = POLLIN;
-    poll(pfds, 1, 5);
+    pfds[1].fd = ulnmd->fd;
+    pfds[1].events = POLLIN;
+    poll(pfds, 2, 5);
     time64 = gettime64();
     if (time64 - last_time64 > 1000*1000)
     {
