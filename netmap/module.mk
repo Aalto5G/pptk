@@ -1,5 +1,5 @@
 NETMAP_SRC_LIB :=
-NETMAP_SRC := $(NETMAP_SRC_LIB) netmapfwd.c
+NETMAP_SRC := $(NETMAP_SRC_LIB) netmapfwd.c netmaprecv.c
 
 NETMAP_SRC_LIB := $(patsubst %,$(DIRNETMAP)/%,$(NETMAP_SRC_LIB))
 NETMAP_SRC := $(patsubst %,$(DIRNETMAP)/%,$(NETMAP_SRC))
@@ -26,7 +26,7 @@ unit_$(LCNETMAP): unit_NETMAP
 NETMAP: $(DIRNETMAP)/libnetmap.a
 
 ifeq ($(WITH_NETMAP),yes)
-NETMAP: $(DIRNETMAP)/netmapfwd
+NETMAP: $(DIRNETMAP)/netmapfwd $(DIRNETMAP)/netmaprecv
 CFLAGS_NETMAP += -I$(NETMAP_INCDIR)
 endif
 
@@ -38,6 +38,9 @@ $(DIRNETMAP)/libnetmap.a: $(NETMAP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_NETM
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRNETMAP)/netmapfwd: $(DIRNETMAP)/netmapfwd.o $(DIRNETMAP)/libnetmap.a $(LIBS_NETMAP) $(MAKEFILES_COMMON) $(MAKEFILES_NETMAP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_NETMAP) -lpthread
+
+$(DIRNETMAP)/netmaprecv: $(DIRNETMAP)/netmaprecv.o $(DIRNETMAP)/libnetmap.a $(LIBS_NETMAP) $(MAKEFILES_COMMON) $(MAKEFILES_NETMAP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_NETMAP) -lpthread
 
 $(NETMAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_NETMAP)
