@@ -67,6 +67,10 @@ DIRPORTLIST := portlist
 LCPORTLIST := portlist
 MODULES += PORTLIST
 
+DIRNETMAP := netmap
+LCNETMAP := netmap
+MODULES += NETMAP
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
