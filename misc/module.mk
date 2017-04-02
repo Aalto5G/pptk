@@ -1,5 +1,5 @@
 MISC_SRC_LIB := 
-MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c
+MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c memperftest.c
 
 MISC_SRC_LIB := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC_LIB))
 MISC_SRC := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC))
@@ -21,13 +21,14 @@ clean_$(LCMISC): clean_MISC
 distclean_$(LCMISC): distclean_MISC
 unit_$(LCMISC): unit_MISC
 
-MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest
+MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest
 
-unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest
+unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest
 	$(DIRMISC)/containeroftest
 	$(DIRMISC)/murmurtest
 	$(DIRMISC)/branchpredicttest
 	$(DIRMISC)/siphashtest
+	$(DIRMISC)/memperftest
 
 $(DIRMISC)/libmisc.a: $(MISC_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	rm -f $@
@@ -45,6 +46,9 @@ $(DIRMISC)/branchpredicttest: $(DIRMISC)/branchpredicttest.o $(DIRMISC)/libmisc.
 $(DIRMISC)/siphashtest: $(DIRMISC)/siphashtest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
+$(DIRMISC)/memperftest: $(DIRMISC)/memperftest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
+
 $(MISC_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_MISC)
 
@@ -55,6 +59,6 @@ clean_MISC:
 	rm -f $(MISC_OBJ) $(MISC_DEP)
 
 distclean_MISC: clean_MISC
-	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest
+	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest
 
 -include $(DIRMISC)/*.d
