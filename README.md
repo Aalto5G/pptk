@@ -10,13 +10,15 @@ not recommended.
 To compile with netmap support, edit the file `opts.mk` (generated as empty
 file automatically after successful `make`), and add the lines:
 
-```WITH\_NETMAP=yes
+```
+WITH\_NETMAP=yes
 NETMAP\_INCDIR=/home/YOURUSERNAME/netmap/sys
 ```
 
 But before this, you need to clone netmap:
 
-```cd /home/YOURUSERNAME
+```
+cd /home/YOURUSERNAME
 git clone https://github.com/luigirizzo/netmap
 cd netmap
 ./configure --no-drivers
@@ -31,7 +33,8 @@ installed.
 
 If you want higher performance, you can compile netmap with drivers:
 
-```cd /home/YOURUSERNAME
+```
+cd /home/YOURUSERNAME
 rm -rf netmap
 git clone https://github.com/luigirizzo/netmap
 cd netmap
