@@ -45,6 +45,7 @@ int main(int argc, char **argv)
   uint64_t last_time64 = gettime64();
   uint64_t ulpkts = 0, ulbytes = 0, dlpkts = 0, dlbytes = 0;
   uint64_t last_ulpkts = 0, last_ulbytes = 0, last_dlpkts = 0, last_dlbytes = 0;
+  struct nmreq nmr;
 
   setlinebuf(stdout);
 
@@ -54,13 +55,19 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  dlnmd = nm_open(argv[1], NULL, 0, NULL);
+  memset(&nmr, 0, sizeof(nmr));
+  nmr.nr_rx_slots = 256;
+  nmr.nr_tx_slots = 64;
+  dlnmd = nm_open(argv[1], &nmr, 0, NULL);
   if (dlnmd == NULL)
   {
     printf("cannot open %s\n", argv[1]);
     exit(1);
   }
-  ulnmd = nm_open(argv[2], NULL, 0, NULL);
+  memset(&nmr, 0, sizeof(nmr));
+  nmr.nr_rx_slots = 256;
+  nmr.nr_tx_slots = 64;
+  ulnmd = nm_open(argv[2], &nmr, 0, NULL);
   if (ulnmd == NULL)
   {
     printf("cannot open %s\n", argv[1]);
