@@ -33,6 +33,8 @@ void datainbuf_init(struct datainbuf *inbuf, const void *buf, size_t sz);
 
 void databuf_init(struct databuf *buf);
 
+void databuf_free(struct databuf *buf);
+
 int databuf_extend(struct databuf *buf, size_t extend);
 
 static inline int databuf_ensure_extend(struct databuf *buf, size_t extend)

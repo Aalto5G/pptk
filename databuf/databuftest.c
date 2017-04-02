@@ -83,5 +83,6 @@ int main(int argc, char **argv)
   {
     abort();
   }
+  databuf_free(&buf);
   return 0;
 }

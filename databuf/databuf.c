@@ -22,6 +22,15 @@ void databuf_init(struct databuf *buf)
   buf->errors = 0;
 }
 
+void databuf_free(struct databuf *buf)
+{
+  free(buf->buf);
+  buf->buf = NULL;
+  buf->capacity = 0;
+  buf->size = 0;
+  buf->errors = 0;
+}
+
 int databuf_extend(struct databuf *buf, size_t extend)
 {
   size_t new_capacity = buf->size + extend;
