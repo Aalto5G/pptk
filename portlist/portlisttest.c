@@ -18,5 +18,6 @@ int main(int argc, char **argv)
     port = port_list_get(&list);
     port_list_add(&list, port);
   }
+  port_list_free(&list);
   return 0;
 }

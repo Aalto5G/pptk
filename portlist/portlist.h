@@ -18,6 +18,17 @@ static inline void port_list_init(struct port_list *list)
   linked_list_head_init(&list->list);
 }
 
+static inline void port_list_free(struct port_list *list)
+{
+  while (!linked_list_is_empty(&list->list))
+  {
+    struct port_list_entry *e;
+    e = CONTAINER_OF(list->list.node.next, struct port_list_entry, node);
+    linked_list_delete(&e->node);
+    free(e);
+  }
+}
+
 static inline void port_list_add(struct port_list *list, uint16_t x)
 {
   struct port_list_entry *e = malloc(sizeof(*e));
