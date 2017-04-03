@@ -64,7 +64,8 @@ int ip_permitted(uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash2 *
   e = &hash->entries[hashval];
   if (e->tokens == INITIAL_TOKENS)
   {
-    e->timer.time64 = gettime64() + TIMER_PERIOD;
+    e->timer.time64 = gettime64() + TIMER_PERIOD + rand()%(1000*1000);
+    //e->timer.time64 = gettime64() + TIMER_PERIOD;
     timer_linkheap_add(heap, &e->timer);
   }
   if (e->tokens == 0)
@@ -81,16 +82,23 @@ int main(int argc, char **argv)
   struct ip_hash2 hash;
   uint32_t addr;
   size_t iter, inner;
-  timer_linkheap_init(&heap);
+  size_t timer_burst;
+  timer_linkheap_init_capacity(&heap);
   ip_hash_init(&hash);
   iter = 0;
   while (iter < 128*1024*1024)
   {
+    timer_burst = 0;
     while (gettime64() >= timer_linkheap_next_expiry_time(&heap))
     {
       struct timer_link *timer = timer_linkheap_next_expiry_timer(&heap);
       timer_linkheap_remove(&heap, timer);
       timer->fn(timer, &heap, timer->userdata);
+      timer_burst++;
+    }
+    if (timer_burst >= 5000)
+    {
+      printf("timer burst of over 5000: %zu\n", timer_burst);
     }
     for (inner = 0; inner < 64; inner++)
     {
