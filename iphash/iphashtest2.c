@@ -83,7 +83,8 @@ int main(int argc, char **argv)
   uint32_t addr;
   size_t iter, inner;
   size_t timer_burst;
-  timer_linkheap_init_capacity(&heap);
+  struct timeval tv1, tv2;
+  timer_linkheap_init(&heap);
   ip_hash_init(&hash);
   iter = 0;
   while (iter < 128*1024*1024)
@@ -119,6 +120,17 @@ int main(int argc, char **argv)
     struct timer_link *timer = timer_linkheap_next_expiry_timer(&heap);
     timer_linkheap_remove(&heap, timer);
   }
+  gettimeofday(&tv1, NULL);
+  for (iter = 0; iter < HASH_SIZE; iter++)
+  {
+    hash.entries[iter].tokens += TIMER_ADD;
+    if (hash.entries[iter].tokens > INITIAL_TOKENS)
+    {
+      hash.entries[iter].tokens = INITIAL_TOKENS;
+    }
+  }
+  gettimeofday(&tv2, NULL);
+  printf("%lu us\n", (long)((tv2.tv_sec - tv1.tv_sec)*1000*1000 + tv2.tv_usec - tv1.tv_usec));
   free(hash.entries);
   timer_linkheap_free(&heap);
   return 0;
