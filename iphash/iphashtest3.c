@@ -6,8 +6,8 @@
 
 #define INITIAL_TOKENS 2000
 #define HASH_SIZE 0x20000
-#define TIMER_PERIOD (100*1000)
-#define TIMER_ADD 40
+#define TIMER_PERIOD (1000*1000)
+#define TIMER_ADD 400
 
 
 struct ip_hash_entry3 { // 4 bytes total
@@ -135,6 +135,17 @@ int main(int argc, char **argv)
   }
   gettimeofday(&tv1, NULL);
   for (iter = 0; iter < HASH_SIZE; iter++)
+  {
+    hash.entries[iter].tokens += TIMER_ADD;
+    if (hash.entries[iter].tokens > INITIAL_TOKENS)
+    {
+      hash.entries[iter].tokens = INITIAL_TOKENS;
+    }
+  }
+  gettimeofday(&tv2, NULL);
+  printf("%lu us\n", (long)((tv2.tv_sec - tv1.tv_sec)*1000*1000 + tv2.tv_usec - tv1.tv_usec));
+  gettimeofday(&tv1, NULL);
+  for (iter = 0; iter < 16384; iter++)
   {
     hash.entries[iter].tokens += TIMER_ADD;
     if (hash.entries[iter].tokens > INITIAL_TOKENS)
