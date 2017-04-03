@@ -71,6 +71,10 @@ DIRNETMAP := netmap
 LCNETMAP := netmap
 MODULES += NETMAP
 
+DIRIPHASH := iphash
+LCIPHASH := iphash
+MODULES += IPHASH
+
 CFLAGS := -g -O2 -Wall -Werror
 
 .PHONY: all clean distclean unit
