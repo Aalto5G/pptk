@@ -37,10 +37,10 @@ static inline void *ll_alloc_st(struct ll_alloc_st *st, size_t size)
   size = st->native_size;
   if (st->size > 0)
   {
-    struct linked_list_node *buf = st->cache.node.next;
-    linked_list_delete(buf);
+    struct linked_list_node *buf2 = st->cache.node.next;
+    linked_list_delete(buf2);
     st->size--;
-    return buf;
+    return buf2;
   }
   buf = malloc(size + sizeof(size_t));
   if (buf == NULL)

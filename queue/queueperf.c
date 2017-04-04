@@ -10,7 +10,7 @@
 struct queue queue;
 const int cachesize = 128;
 
-void *producer(void *ud)
+static void *producer(void *ud)
 {
   struct queue_cache cache;
   if (queue_cache_init(&cache, &queue, cachesize) != 0)
@@ -22,7 +22,7 @@ void *producer(void *ud)
     queue_cache_enq_one(&cache, NULL);
   }
 }
-void *consumer(void *ud)
+static void *consumer(void *ud)
 {
   uint64_t count = 0;
   struct timeval tv1, tv2;

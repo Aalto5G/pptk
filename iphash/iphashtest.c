@@ -20,13 +20,13 @@ struct ip_hash_entry { // 56 bytes total + ~8 bytes allocator overhead = 64
   struct timer_link timer; // 32 bytes
 };
 
-uint32_t ip_hash_entry_hash_fn(struct hash_list_node *n, void *userdata)
+static uint32_t ip_hash_entry_hash_fn(struct hash_list_node *n, void *userdata)
 {
   struct ip_hash_entry *e = CONTAINER_OF(n, struct ip_hash_entry, node);
   return e->hashval;
 }
 
-void ip_hash_init(struct ip_hash *hash)
+static void ip_hash_init(struct ip_hash *hash)
 {
   hash_table_init(&hash->table, HASH_SIZE, ip_hash_entry_hash_fn, NULL);
 }
@@ -38,7 +38,8 @@ static inline uint64_t gettime64(void)
   return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
 }
 
-void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud)
+static void ip_hash_timer_fn(
+  struct timer_link *timer, struct timer_linkheap *heap, void *ud)
 {
   //struct hash_table *table = ud;
   struct ip_hash_entry *e = CONTAINER_OF(timer, struct ip_hash_entry, timer);
@@ -58,7 +59,8 @@ void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, voi
   }
 }
 
-int ip_permitted(uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash *hash)
+static int ip_permitted(
+  uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash *hash)
 {
   uint32_t class_c = src_ip&0xFFFFFF00U;
   struct ip_hash_entry *e = NULL;

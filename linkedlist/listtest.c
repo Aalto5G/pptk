@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 {
   struct linked_list_head head;
   struct linked_list_node *node, *tmp;
-  int i;
+  size_t i;
   struct entry entries[10];
   linked_list_head_init(&head);
   for (i = 0; i < 10; i++)

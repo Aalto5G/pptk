@@ -16,8 +16,8 @@ enum log_level {
   LOG_LEVEL_DEBUG = 7,
 };
 
-extern atomic_int global_log_file_level;
-extern atomic_int global_log_console_level;
+extern atomic_uint global_log_file_level;
+extern atomic_uint global_log_console_level;
 
 void log_open(const char *progname, enum log_level file_level, enum log_level console_level);
 

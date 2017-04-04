@@ -5,8 +5,8 @@
 #include <time.h>
 #include <ctype.h>
 
-atomic_int global_log_file_level = ATOMIC_VAR_INIT(LOG_LEVEL_INFO);
-atomic_int global_log_console_level = ATOMIC_VAR_INIT(LOG_LEVEL_NOTICE);
+atomic_uint global_log_file_level = ATOMIC_VAR_INIT(LOG_LEVEL_INFO);
+atomic_uint global_log_console_level = ATOMIC_VAR_INIT(LOG_LEVEL_NOTICE);
 
 struct globals {
   FILE *f;
@@ -15,7 +15,7 @@ struct globals {
 
 struct globals globals;
 
-const char *log_level_string(enum log_level level)
+static inline const char *log_level_string(enum log_level level)
 {
   switch (level)
   {

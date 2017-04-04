@@ -41,7 +41,7 @@ int tap_alloc(const char *devreq, char actual_dev[IFNAMSIZ])
   return fd;
 }
 
-int safe_exec(char **buf)
+static int safe_exec(char **buf)
 {
   pid_t x;
   x = fork();

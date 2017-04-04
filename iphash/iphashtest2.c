@@ -21,7 +21,7 @@ struct ip_hash2 {
 
 void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud);
 
-void ip_hash_init(struct ip_hash2 *hash)
+static void ip_hash_init(struct ip_hash2 *hash)
 {
   size_t i;
   hash->entries = malloc(HASH_SIZE*sizeof(*hash->entries));
@@ -56,7 +56,8 @@ void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, voi
   }
 }
 
-int ip_permitted(uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash2 *hash)
+static int ip_permitted(
+  uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash2 *hash)
 {
   uint32_t class_c = src_ip&0xFFFFFF00U;
   struct ip_hash_entry2 *e = NULL;

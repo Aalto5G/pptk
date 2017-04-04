@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 {
   DYNARR(int) ar = DYNARR_INITER;
-  int i;
+  size_t i;
   for (i = 0; i < 32; i++)
   {
     if (!DYNARR_PUSH_BACK(&ar, i))
@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   }
   for (i = 0; i < DYNARR_SIZE(&ar); i++)
   {
-    if (DYNARR_GET(&ar, i) != i)
+    if (DYNARR_GET(&ar, i) != (int)i)
     {
       abort();
     }

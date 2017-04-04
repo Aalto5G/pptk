@@ -75,7 +75,7 @@ DIRIPHASH := iphash
 LCIPHASH := iphash
 MODULES += IPHASH
 
-CFLAGS := -g -O2 -Wall -Werror
+CFLAGS := -g -O2 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith -Werror -std=gnu11
 
 .PHONY: all clean distclean unit
 
