@@ -57,7 +57,7 @@ Then, after netmap is installed, compile with `make -j4` as usual.
 # Netmap with full kernel sources
 
 Some netmap drivers require full kernel sources. On Ubuntu 16.04 LTS, they
-can be installed in the following way: first, uncomment deb-src ines in
+can be installed in the following way: first, uncomment deb-src lines in
 `/etc/apt/sources.list`. Then, type these commands:
 
 ```
