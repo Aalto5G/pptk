@@ -53,3 +53,29 @@ Adjust paths as needed to have the correct version of the driver.
 # Netmap testing
 
 Then, after netmap is installed, compile with `make -j4` as usual.
+
+# Netmap with full kernel sources
+
+Some netmap drivers require full kernel sources. On Ubuntu 16.04 LTS, they
+can be installed in the following way: first, uncomment deb-src ines in
+`/etc/apt/sources.list`. Then, type these commands:
+
+```
+cd /home/YOURUSERNAME
+apt-get update
+apt-get source linux-image-$(uname -r)
+rm -rf netmap
+git clone https://github.com/luigirizzo/netmap
+cd netmap
+./configure --kernel-sources=/home/WHATEVER/linux-hwe-4.8.0
+rmmod netmap
+insmod ./netmap.ko
+```
+
+Then, you may load for example netmap specific veth driver:
+
+```
+cd /home/YOURUSERNAME/netmap
+rmmod veth
+insmod ./veth.ko
+```
