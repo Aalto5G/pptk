@@ -5,7 +5,7 @@
 #include "byteswap.h"
 #include "chacha.h"
 
-struct chacha20ctx {
+struct chacha20_internal_ctx {
   uint32_t state[16];
 };
 
@@ -15,7 +15,7 @@ struct chacha20ctx {
   } \
   while(0)
 
-static inline void quarterround(struct chacha20ctx *ctx, int ai, int bi, int ci, int di)
+static inline void quarterround(struct chacha20_internal_ctx *ctx, int ai, int bi, int ci, int di)
 {
   uint32_t a = ctx->state[ai];
   uint32_t b = ctx->state[bi];
@@ -31,7 +31,7 @@ static inline void quarterround(struct chacha20ctx *ctx, int ai, int bi, int ci,
   ctx->state[di] = d;
 }
 
-static inline void innerblock(struct chacha20ctx *ctx)
+static inline void innerblock(struct chacha20_internal_ctx *ctx)
 {
   quarterround(ctx, 0, 4, 8,12);
   quarterround(ctx, 1, 5, 9,13);
@@ -46,7 +46,7 @@ static inline void innerblock(struct chacha20ctx *ctx)
 void chacha20_block(
   char key[32], uint32_t counter, char nonce[12], char out[64])
 {
-  struct chacha20ctx ctx, working_ctx;
+  struct chacha20_internal_ctx ctx, working_ctx;
   int i;
   ctx.state[0] = 0x61707865;
   ctx.state[1] = 0x3320646e;
