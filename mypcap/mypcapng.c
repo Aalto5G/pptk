@@ -209,6 +209,10 @@ found:
   hdr_set32h(&hdr[0], 0x00000006);
   hdr_set32h(&hdr[4], tlen);
   hdr_set32h(&hdr[8], intf->index);
+  if (time64 == 0)
+  {
+    time64 = gettime64();
+  }
   hdr_set32h(&hdr[12], (uint32_t)(time64>>32));
   hdr_set32h(&hdr[16], (uint32_t)(time64&0xFFFFFFFFU));
   hdr_set32h(&hdr[20], len);
