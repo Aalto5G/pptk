@@ -2,6 +2,8 @@
 #define _CHACHA_H_
 
 #include <stdint.h>
+#include <stdio.h>
+#include <errno.h>
 
 struct chacha20_ctx {
   char key[32];
@@ -25,6 +27,32 @@ static inline void chacha20_init_deterministic(
   memcpy(ctx->key, key, 32);
   memcpy(ctx->nonce, nonce, 12);
   ctx->counter = 0;
+}
+
+static inline int chacha20_init_devrandom(
+  struct chacha20_ctx *ctx)
+{
+  char key[32] = {};
+  char nonce[12] = {};
+  FILE *f;
+  f = fopen("/dev/random", "r");
+  if (f == NULL)
+  {
+    return -EIO;
+  }
+  if (fread(key, 32, 1, f) != 1)
+  {
+    return -EIO;
+  }
+  if (fread(nonce, 12, 1, f) != 1)
+  {
+    return -EIO;
+  }
+  fclose(f);
+  memcpy(ctx->key, key, 32);
+  memcpy(ctx->nonce, nonce, 12);
+  ctx->counter = 0;
+  return 0;
 }
 
 void chacha20_block(
