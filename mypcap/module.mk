@@ -10,8 +10,8 @@ MYPCAP_OBJ := $(patsubst %.c,%.o,$(MYPCAP_SRC))
 MYPCAP_DEP_LIB := $(patsubst %.c,%.d,$(MYPCAP_SRC_LIB))
 MYPCAP_DEP := $(patsubst %.c,%.d,$(MYPCAP_SRC))
 
-CFLAGS_MYPCAP := -I$(DIRMISC) -I$(DIRDYNARR)
-LIBS_MYPCAP := $(DIRDYNARR)/libdynarr.a
+CFLAGS_MYPCAP := -I$(DIRMISC) -I$(DIRDYNARR) -I$(DIRHASHTABLE) -I$(DIRHASHLIST)
+LIBS_MYPCAP := $(DIRDYNARR)/libdynarr.a $(DIRHASHTABLE)/libhashtable.a
 
 MAKEFILES_MYPCAP := $(DIRMYPCAP)/module.mk
 

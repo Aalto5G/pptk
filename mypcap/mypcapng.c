@@ -7,6 +7,8 @@
 #include "byteswap.h"
 #include "hdr.h"
 #include "mypcapng.h"
+#include "containerof.h"
+#include "murmur.h"
 
 static inline uint64_t gettime64(void)
 {
@@ -37,6 +39,29 @@ static ssize_t fskip(size_t sz, FILE *f)
   return skipped;
 }
 
+static inline uint32_t string_hash(const char *str)
+{
+  struct murmurctx ctx = MURMURCTX_INITER(0x12345678U);
+  if (str == NULL)
+  {
+    return 0;
+  }
+  // slow but sure way...
+  while (*str)
+  {
+    murmurctx_feed32(&ctx, (uint8_t)*str);
+    str++;
+  }
+  return murmurctx_get(&ctx);
+}
+
+static uint32_t entry_hash_fn(struct hash_list_node *e, void *userdata)
+{
+  struct pcapng_out_interface *out;
+  out = CONTAINER_OF(e, struct pcapng_out_interface, node);
+  return string_hash(out->name);
+}
+
 static void free_interfaces(struct pcapng_in_ctx *ctx)
 {
   size_t sz = DYNARR_SIZE(&ctx->interfaces);
@@ -56,6 +81,163 @@ void pcapng_in_ctx_free(struct pcapng_in_ctx *ctx)
   DYNARR_FREE(&ctx->interfaces);
   fclose(ctx->f);
   ctx->f = NULL;
+}
+
+void pcapng_out_ctx_free(struct pcapng_out_ctx *ctx)
+{
+  size_t bucket;
+  struct hash_list_node *n, *x;
+  HASH_TABLE_FOR_EACH_SAFE(&ctx->hash, bucket, n, x)
+  {
+    struct pcapng_out_interface *out;
+    out = CONTAINER_OF(n, struct pcapng_out_interface, node);
+    hash_table_delete(&ctx->hash, &out->node);
+    free(out->name);
+    out->name = NULL;
+    free(out);
+  }
+  hash_table_free(&ctx->hash);
+  fclose(ctx->f);
+  ctx->f = NULL;
+}
+
+int pcapng_out_ctx_init(
+  struct pcapng_out_ctx *ctx, const char *fname)
+{
+  FILE *f = fopen(fname, "wb");
+  char hdr[28];
+  if (f == NULL)
+  {
+    return -EPERM;
+  }
+  ctx->f = f;
+  ctx->next_index = 0;
+  hash_table_init(&ctx->hash, 1024, entry_hash_fn, NULL);
+  hdr_set32h(&hdr[0], 0x0A0D0D0A);
+  hdr_set32h(&hdr[4], 28);
+  hdr_set32h(&hdr[8], 0x1A2B3C4D);
+  hdr_set16h(&hdr[12], 1);
+  hdr_set16h(&hdr[14], 0);
+  hdr_set64h(&hdr[16], 0xFFFFFFFFFFFFFFFFULL);
+  hdr_set32h(&hdr[24], 28);
+  if (fwrite(hdr, 28, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  return 0;
+}
+
+static int pcapng_write_ifname(
+  struct pcapng_out_ctx *ctx, struct pcapng_out_interface *intf)
+{
+  char hdr[20];
+  char pad[3] = {0};
+  size_t namelen = strlen(intf->name);
+  uint32_t namelenpadded = (namelen+3)/4*4;
+  hdr_set32h(&hdr[0], 0x00000001);
+  hdr_set32h(&hdr[4], 20 + 8 + namelenpadded);
+  hdr_set16h(&hdr[8], 1); // link type
+  hdr_set16h(&hdr[10], 0); // reserved
+  hdr_set32h(&hdr[12], 0xFFFFFFFFU); // snap len
+  hdr_set16h(&hdr[16], 2); // if_name
+  hdr_set16h(&hdr[18], namelen);
+  if (fwrite(hdr, 20, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  if (fwrite(intf->name, namelen, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  if (namelenpadded - namelen > 0)
+  {
+    if (fwrite(pad, namelenpadded - namelen, 1, ctx->f) != 1)
+    {
+      return -EIO;
+    }
+  }
+  hdr_set16h(&hdr[0], 0);
+  hdr_set16h(&hdr[2], 0);
+  hdr_set32h(&hdr[4], 20 + 8 + namelenpadded);
+  if (fwrite(hdr, 8, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  return 0;
+}
+
+int pcapng_out_ctx_write(
+  struct pcapng_out_ctx *ctx, void *buf, size_t len, uint64_t time64,
+  const char *ifname)
+{
+  char pad[3] = {0};
+  char hdr[28];
+  uint32_t len_padded = (len+3)/4*4;
+  uint32_t tlen = len_padded + 32;
+  uint32_t hashval = string_hash(ifname);
+  struct hash_list_node *n;
+  struct pcapng_out_interface *intf;
+  int ret;
+  HASH_TABLE_FOR_EACH_POSSIBLE(&ctx->hash, n, hashval)
+  {
+    intf = CONTAINER_OF(n, struct pcapng_out_interface, node);
+    if (strcmp(intf->name, ifname) == 0)
+    {
+      goto found;
+    }
+  }
+  intf = malloc(sizeof(*intf));
+  if (intf == NULL)
+  {
+    return -ENOMEM;
+  }
+  intf->name = strdup(ifname);
+  if (intf->name == NULL)
+  {
+    free(intf);
+    return -ENOMEM;
+  }
+  intf->index = ctx->next_index++;
+  hash_table_add_nogrow(&ctx->hash, &intf->node, hashval);
+  ret = pcapng_write_ifname(ctx, intf);
+  if (ret != 0)
+  {
+    printf("write ifname failed\n");
+    return ret;
+  }
+found:
+  hdr_set32h(&hdr[0], 0x00000006);
+  hdr_set32h(&hdr[4], tlen);
+  hdr_set32h(&hdr[8], intf->index);
+  hdr_set32h(&hdr[12], (uint32_t)(time64>>32));
+  hdr_set32h(&hdr[16], (uint32_t)(time64&0xFFFFFFFFU));
+  hdr_set32h(&hdr[20], len);
+  hdr_set32h(&hdr[24], len);
+  if (fwrite(hdr, 28, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  if (fwrite(buf, len, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  if (len_padded - len > 0)
+  {
+    if (fwrite(pad, len_padded - len, 1, ctx->f) != 1)
+    {
+      return -EIO;
+    }
+  }
+  hdr_set32h(&hdr[0], tlen);
+  if (fwrite(hdr, 4, 1, ctx->f) != 1)
+  {
+    return -EIO;
+  }
+  if (fflush(ctx->f) != 0)
+  {
+    return -EIO;
+  }
+  return 0;
 }
 
 static int pcapng_in_ctx_read_shb(struct pcapng_in_ctx *ctx)
