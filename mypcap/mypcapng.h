@@ -35,6 +35,7 @@ struct pcapng_out_ctx {
 struct pcapng_in_ctx {
   FILE *f;
   int swap;
+  uint64_t lasttime;
   DYNARR(struct pcapng_in_interface) interfaces;
 };
 

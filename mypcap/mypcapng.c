@@ -491,7 +491,7 @@ int pcapng_in_ctx_read(
       }
       continue;
     }
-    else if (btype != 0x00000006)
+    else if (btype != 0x00000006 && btype != 0x00000003)
     {
       if (fread(hdr, 4, 1, ctx->f) != 1)
       {
@@ -529,6 +529,89 @@ int pcapng_in_ctx_read(
     {
       break;
     }
+  }
+  if (btype == 0x00000003)
+  {
+    uint32_t snaplen;
+    if (fread(hdr, 8, 1, ctx->f) != 1)
+    {
+      return -EINVAL;
+    }
+    tlen = hdr_get32h(&hdr[0]);
+    if (ctx->swap)
+    {
+      tlen = byteswap32(tlen);
+    }
+    if (tlen < 16)
+    {
+      return -EINVAL;
+    }
+    ifid = 0;
+    if (ifid >= DYNARR_SIZE(&ctx->interfaces))
+    {
+      return -EINVAL;
+    }
+    orig_len = hdr_get32h(&hdr[4]);
+    snaplen = DYNARR_GET(&ctx->interfaces, ifid).snaplen;
+    if (orig_len > snaplen)
+    {
+      captured_len = snaplen;
+    }
+    else
+    {
+      captured_len = orig_len;
+    }
+    packet_data_len = (captured_len+3)/4 * 4;
+    if (packet_data_len != tlen - 16)
+    {
+      return -EINVAL;
+    }
+    padding = packet_data_len - captured_len;
+    if (captured_len > *bufcapacity || *buf == NULL)
+    {
+      size_t newcapacity = 2*(*bufcapacity);
+      void *newbuf;
+      if (newcapacity < captured_len)
+      {
+        newcapacity = captured_len;
+      }
+      if (newcapacity < 1514)
+      {
+        newcapacity = 1514;
+      }
+      newbuf = realloc(*buf, newcapacity);
+      if (newbuf == NULL)
+      {
+        return -ENOMEM;
+      }
+      *buf = newbuf;
+      *bufcapacity = newcapacity;
+    }
+    if (fread(*buf, captured_len, 1, ctx->f) != 1)
+    {
+      return -EINVAL;
+    }
+    if (fskip(padding, ctx->f) != padding)
+    {
+      return -EINVAL;
+    }
+    if (len)
+    {
+      *len = orig_len;
+    }
+    if (snap)
+    {
+      *snap = captured_len;
+    }
+    if (ifname)
+    {
+      *ifname = DYNARR_GET(&ctx->interfaces, ifid).name;
+    }
+    if (time64)
+    {
+      *time64 = ctx->lasttime;
+    }
+    return 0;
   }
   if (fread(hdr, 24, 1, ctx->f) != 1)
   {
@@ -616,8 +699,9 @@ int pcapng_in_ctx_read(
   {
     return -EINVAL;
   }
-  if (time64)
+  if (1)
   {
+    uint64_t time64val;
     struct pcapng_in_interface *intf = &DYNARR_GET(&ctx->interfaces, ifid);
     if (intf->tsresol & 0x80)
     {
@@ -631,7 +715,7 @@ int pcapng_in_ctx_read(
       }
       x *= (1000*1000);
       x += 0.5;
-      *time64 = ((uint64_t)x) + intf->tsoffset;
+      time64val = ((uint64_t)x) + intf->tsoffset;
     }
     else
     {
@@ -653,7 +737,12 @@ int pcapng_in_ctx_read(
           ts *= 10;
         }
       }
-      *time64 = ts + intf->tsoffset;
+      time64val = ts + intf->tsoffset;
+    }
+    ctx->lasttime = time64val;
+    if (time64)
+    {
+      *time64 = time64val;
     }
   }
   if (len)
@@ -680,6 +769,7 @@ int pcapng_in_ctx_init(
     return -ENOENT;
   }
   ctx->f = f;
+  ctx->lasttime = gettime64();
   DYNARR_INIT(&ctx->interfaces);
   
   return 0;
