@@ -120,6 +120,15 @@ static inline uint64_t siphash_get(struct siphash_ctx *ctx)
   return b;
 }
 
+static inline uint64_t siphash64(
+  const char key[16], uint64_t val64)
+{
+  struct siphash_ctx ctx;
+  siphash_init(&ctx, key);
+  siphash_feed_u64(&ctx, val64);
+  return siphash_get(&ctx);
+}
+
 static inline void siphash_feed_remaining(
   struct siphash_ctx *ctx, const void *buf, size_t remaining)
 {
