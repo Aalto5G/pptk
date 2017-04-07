@@ -1,5 +1,5 @@
 MISC_SRC_LIB := chacha.c
-MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c memperftest.c chachatest.c
+MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c memperftest.c chachatest.c shatest.c
 
 MISC_SRC_LIB := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC_LIB))
 MISC_SRC := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC))
@@ -21,7 +21,7 @@ clean_$(LCMISC): clean_MISC
 distclean_$(LCMISC): distclean_MISC
 unit_$(LCMISC): unit_MISC
 
-MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest
+MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest $(DIRMISC)/shatest
 
 unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest
 	$(DIRMISC)/containeroftest
@@ -51,6 +51,9 @@ $(DIRMISC)/memperftest: $(DIRMISC)/memperftest.o $(DIRMISC)/libmisc.a $(MAKEFILE
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
 $(DIRMISC)/chachatest: $(DIRMISC)/chachatest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
+
+$(DIRMISC)/shatest: $(DIRMISC)/shatest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
 $(MISC_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
