@@ -1,4 +1,4 @@
-#include "murmur.h"
+#include "siphash.h"
 #include "hashlist.h"
 #include "hashtable.h"
 #include "containerof.h"
@@ -14,10 +14,11 @@ uint32_t global_hash_seed = 12345;
 
 static inline uint32_t entry_hash(struct entry *e)
 {
-  struct murmurctx ctx = MURMURCTX_INITER(global_hash_seed);
-  murmurctx_feed32(&ctx, e->x);
-  murmurctx_feed32(&ctx, e->y);
-  return murmurctx_get(&ctx);
+  char key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+  struct siphash_ctx ctx;
+  siphash_init(&ctx, key);
+  siphash_feed_u64(&ctx, (((uint64_t)e->x)<<32) | e->y);
+  return siphash_get(&ctx);
 }
 
 static inline uint32_t entry_hash_fn(

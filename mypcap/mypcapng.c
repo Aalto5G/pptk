@@ -8,7 +8,7 @@
 #include "hdr.h"
 #include "mypcapng.h"
 #include "containerof.h"
-#include "murmur.h"
+#include "siphash.h"
 
 static inline uint64_t gettime64(void)
 {
@@ -41,7 +41,9 @@ static ssize_t fskip(size_t sz, FILE *f)
 
 static inline uint32_t string_hash(const char *str)
 {
-  struct murmurctx ctx = MURMURCTX_INITER(0x12345678U);
+  struct siphash_ctx ctx;
+  const char key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+  siphash_init(&ctx, key);
   if (str == NULL)
   {
     return 0;
@@ -49,10 +51,10 @@ static inline uint32_t string_hash(const char *str)
   // slow but sure way...
   while (*str)
   {
-    murmurctx_feed32(&ctx, (uint8_t)*str);
+    siphash_feed_u64(&ctx, (uint8_t)*str);
     str++;
   }
-  return murmurctx_get(&ctx);
+  return siphash_get(&ctx);
 }
 
 static uint32_t entry_hash_fn(struct hash_list_node *e, void *userdata)
