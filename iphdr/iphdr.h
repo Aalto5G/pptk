@@ -425,4 +425,10 @@ static inline void tcp_set_window(void *pkt, uint16_t window)
   hdr_set16n(&cpkt[14], window);
 }
 
+static inline uint8_t tcp_data_offset(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return (hdr_get8h(&cpkt[12])>>4)*4;
+}
+
 #endif
