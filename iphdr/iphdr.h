@@ -437,4 +437,57 @@ static inline uint8_t tcp_data_offset(const void *pkt)
   return (hdr_get8h(&cpkt[12])>>4)*4;
 }
 
+static inline void *tcp_find_sack_header(
+  void *pkt, size_t *sacklen, int *sixteen_bit_align)
+{
+  char *cpkt = pkt;
+  size_t dataoff = tcp_data_offset(pkt);
+  size_t curoff = 20;
+  size_t curoptlen;
+  while (curoff < dataoff)
+  {
+    if (cpkt[curoff] == 0)
+    {
+      return NULL;
+    }
+    if (cpkt[curoff] == 1)
+    {
+      curoff++;
+      continue;
+    }
+    if (cpkt[curoff] == 5)
+    {
+      size_t sacklenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff]) < sacklenval)
+      {
+        sacklenval = (unsigned char)cpkt[curoff];
+      }
+      if (sacklen)
+      {
+        *sacklen = sacklenval;
+      }
+      if (sixteen_bit_align)
+      {
+        *sixteen_bit_align = !(curoff%2);
+      }
+      return &cpkt[curoff];
+    }
+    if (curoff + 1 >= dataoff)
+    {
+      return NULL;
+    }
+    curoptlen = dataoff - curoff;
+    if ((unsigned char)cpkt[curoff] < curoptlen)
+    {
+      curoptlen = (unsigned char)cpkt[curoff];
+    }
+    if (curoptlen < 2)
+    {
+      return NULL;
+    }
+    curoff += curoptlen;
+  }
+  return NULL;
+}
+
 #endif
