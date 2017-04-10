@@ -277,7 +277,26 @@ static inline void tcp_adjust_sack_cksum_update(
   }
   else
   {
-    abort(); // FIXME implement
+    while (curoff + 8 <= sacklen)
+    {
+      uint16_t old_val1 = hdr_get16n(&chdr[curoff - 1]);
+      uint32_t old_val2 = hdr_get32n(&chdr[curoff + 1]);
+      uint32_t old_val3 = hdr_get32n(&chdr[curoff + 5]);
+      uint16_t new_val1;
+      uint32_t new_val2, new_val3;
+      uint32_t old_start = hdr_get32n(&chdr[curoff+0]);
+      uint32_t old_end = hdr_get32n(&chdr[curoff+4]);
+      uint32_t new_start = old_start + adjustment;
+      uint32_t new_end = old_end + adjustment;
+      hdr_set32n(&chdr[curoff+0], new_start);
+      hdr_set32n(&chdr[curoff+4], new_end);
+      new_val1 = hdr_get16n(&chdr[curoff - 1]);
+      new_val2 = hdr_get32n(&chdr[curoff + 1]);
+      new_val3 = hdr_get32n(&chdr[curoff + 5]);
+      cksum = ip_update_cksum16(cksum, old_val1, new_val1);
+      cksum = ip_update_cksum32(cksum, old_val2, new_val2);
+      cksum = ip_update_cksum32(cksum, old_val3, new_val3);
+    }
   }
   tcp_set_cksum(pkt, cksum);
 }
