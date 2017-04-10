@@ -253,4 +253,33 @@ static inline int ip_decr_ttl_cksum_update(void *pkt)
   return ttl > 0;
 }
 
+static inline void tcp_adjust_sack_cksum_update(
+  void *pkt, void *sackhdr, size_t sacklen, int sixteen_bit_align,
+  uint32_t adjustment)
+{
+  char *chdr = sackhdr;
+  size_t curoff = 2;
+  uint16_t cksum = tcp_cksum(pkt);
+  if (sixteen_bit_align)
+  {
+    while (curoff + 8 <= sacklen)
+    {
+      uint32_t old_start = hdr_get32n(&chdr[curoff+0]);
+      uint32_t old_end = hdr_get32n(&chdr[curoff+4]);
+      uint32_t new_start = old_start + adjustment;
+      uint32_t new_end = old_end + adjustment;
+      cksum = ip_update_cksum32(cksum, old_start, new_start);
+      cksum = ip_update_cksum32(cksum, old_end, new_end);
+      hdr_set32n(&chdr[curoff+0], new_start);
+      hdr_set32n(&chdr[curoff+4], new_end);
+      curoff += 8;
+    }
+  }
+  else
+  {
+    abort(); // FIXME implement
+  }
+  tcp_set_cksum(pkt, cksum);
+}
+
 #endif
