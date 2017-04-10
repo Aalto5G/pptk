@@ -253,6 +253,64 @@ static inline int ip_decr_ttl_cksum_update(void *pkt)
   return ttl > 0;
 }
 
+static inline void tcp_disable_sack_cksum_update(
+  void *pkt, void *sackhdr, size_t sacklen, int sixteen_bit_align)
+{
+  char *chdr = sackhdr;
+  size_t curoff = 0;
+  uint16_t cksum = tcp_cksum(pkt);
+  if (sixteen_bit_align)
+  {
+    while (curoff + 2 <= sacklen)
+    {
+      uint16_t old_val = hdr_get16n(&chdr[curoff]);
+      uint16_t new_val = 0x0101;
+      cksum = ip_update_cksum16(cksum, old_val, new_val);
+      hdr_set16n(&chdr[curoff], new_val);
+      curoff += 2;
+    }
+    if (curoff + 1 == sacklen)
+    {
+      uint16_t old_val = hdr_get16n(&chdr[curoff]);
+      uint16_t new_val = (old_val & 0xFF) | 0x0100;
+      cksum = ip_update_cksum16(cksum, old_val, new_val);
+      hdr_set16n(&chdr[curoff], new_val);
+      curoff += 1;
+    }
+  }
+  else
+  {
+    while (curoff + 2 <= sacklen)
+    {
+      uint16_t old_val1 = hdr_get16n(&chdr[curoff - 1]);
+      uint16_t old_val2 = hdr_get16n(&chdr[curoff + 1]);
+      uint16_t new_val = 0x0101;
+      uint16_t new_val1, new_val2;
+      hdr_set16n(&chdr[curoff], new_val);
+      new_val1 = hdr_get16n(&chdr[curoff - 1]);
+      new_val2 = hdr_get16n(&chdr[curoff + 1]);
+      cksum = ip_update_cksum16(cksum, old_val1, new_val1);
+      cksum = ip_update_cksum16(cksum, old_val2, new_val2);
+      curoff += 2;
+    }
+    if (curoff + 1 == sacklen)
+    {
+      uint16_t old_val1 = hdr_get16n(&chdr[curoff - 1]);
+      uint16_t old_val2 = hdr_get16n(&chdr[curoff + 1]);
+      uint16_t old_val = hdr_get16n(&chdr[curoff]);
+      uint16_t new_val = (old_val & 0xFF) | 0x0100;
+      uint16_t new_val1, new_val2;
+      hdr_set16n(&chdr[curoff], new_val);
+      new_val1 = hdr_get16n(&chdr[curoff - 1]);
+      new_val2 = hdr_get16n(&chdr[curoff + 1]);
+      cksum = ip_update_cksum16(cksum, old_val1, new_val1);
+      cksum = ip_update_cksum16(cksum, old_val2, new_val2);
+      curoff += 1;
+    }
+  }
+  tcp_set_cksum(pkt, cksum);
+}
+
 static inline void tcp_adjust_sack_cksum_update(
   void *pkt, void *sackhdr, size_t sacklen, int sixteen_bit_align,
   uint32_t adjustment)
