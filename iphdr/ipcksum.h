@@ -247,7 +247,7 @@ static inline int ip_decr_ttl_cksum_update(void *pkt)
   whole_field_old = (ttl<<8)|proto;
   ttl--;
   whole_field_new = (ttl<<8)|proto;
-  old_cksum = ip_update_cksum32(old_cksum, whole_field_old, whole_field_new);
+  old_cksum = ip_update_cksum16(old_cksum, whole_field_old, whole_field_new);
   ip_set_hdr_cksum(pkt, old_cksum);
   ip_set_ttl(pkt, ttl);
   return ttl > 0;
