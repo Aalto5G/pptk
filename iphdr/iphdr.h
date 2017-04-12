@@ -494,6 +494,7 @@ struct tcp_information {
   uint8_t options_valid;
   uint8_t wscale;
   uint16_t mss;
+  uint8_t sack_permitted;
 };
 
 static inline void tcp_parse_options(
@@ -507,6 +508,7 @@ static inline void tcp_parse_options(
   info->mss = 536;
   info->wscale = 0;
   info->options_valid = 0;
+  info->sack_permitted = 0;
   while (curoff < dataoff)
   {
     if (cpkt[curoff] == 0)
@@ -557,6 +559,26 @@ static inline void tcp_parse_options(
       }
       info->mss = hdr_get16n(&cpkt[curoff + 2]);
       curoff += msslenval;
+      continue;
+    }
+    if (cpkt[curoff] == 4)
+    {
+      size_t sacklenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < sacklenval)
+      {
+        sacklenval = (unsigned char)cpkt[curoff + 1];
+      }
+      if (sacklenval < 2)
+      {
+        return;
+      }
+      if (sacklenval != 2)
+      {
+        curoff += sacklenval;
+        continue;
+      }
+      info->sack_permitted = 1;
+      curoff += sacklenval;
       continue;
     }
     if (curoff + 1 >= dataoff)
