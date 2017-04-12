@@ -490,4 +490,92 @@ static inline void *tcp_find_sack_header(
   return NULL;
 }
 
+struct tcp_information {
+  uint8_t options_valid;
+  uint8_t wscale;
+  uint16_t mss;
+};
+
+static inline void tcp_parse_options(
+  void *pkt,
+  struct tcp_information *info)
+{
+  char *cpkt = pkt;
+  size_t dataoff = tcp_data_offset(pkt);
+  size_t curoff = 20;
+  size_t curoptlen;
+  info->mss = 536;
+  info->wscale = 0;
+  info->options_valid = 0;
+  while (curoff < dataoff)
+  {
+    if (cpkt[curoff] == 0)
+    {
+      info->options_valid = 1;
+      return;
+    }
+    if (cpkt[curoff] == 1)
+    {
+      curoff++;
+      continue;
+    }
+    if (cpkt[curoff] == 3)
+    {
+      size_t wscalelenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < wscalelenval)
+      {
+        wscalelenval = (unsigned char)cpkt[curoff + 1];
+      }
+      if (wscalelenval < 2)
+      {
+        return;
+      }
+      if (wscalelenval != 3)
+      {
+        curoff += wscalelenval;
+        continue;
+      }
+      info->wscale = cpkt[curoff + 2];
+      curoff += wscalelenval;
+      continue;
+    }
+    if (cpkt[curoff] == 2)
+    {
+      size_t msslenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < msslenval)
+      {
+        msslenval = (unsigned char)cpkt[curoff + 1];
+      }
+      if (msslenval < 2)
+      {
+        return;
+      }
+      if (msslenval != 4)
+      {
+        curoff += msslenval;
+        continue;
+      }
+      info->mss = hdr_get16n(&cpkt[curoff + 2]);
+      curoff += msslenval;
+      continue;
+    }
+    if (curoff + 1 >= dataoff)
+    {
+      return;
+    }
+    curoptlen = dataoff - curoff;
+    if ((unsigned char)cpkt[curoff + 1] < curoptlen)
+    {
+      curoptlen = (unsigned char)cpkt[curoff + 1];
+    }
+    if (curoptlen < 2)
+    {
+      return;
+    }
+    curoff += curoptlen;
+  }
+  info->options_valid = 1;
+  return;
+}
+
 #endif
