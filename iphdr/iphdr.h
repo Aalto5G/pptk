@@ -458,9 +458,9 @@ static inline void *tcp_find_sack_header(
     if (cpkt[curoff] == 5)
     {
       size_t sacklenval = dataoff - curoff;
-      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff]) < sacklenval)
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < sacklenval)
       {
-        sacklenval = (unsigned char)cpkt[curoff];
+        sacklenval = (unsigned char)cpkt[curoff + 1];
       }
       if (sacklen)
       {
@@ -477,9 +477,9 @@ static inline void *tcp_find_sack_header(
       return NULL;
     }
     curoptlen = dataoff - curoff;
-    if ((unsigned char)cpkt[curoff] < curoptlen)
+    if ((unsigned char)cpkt[curoff + 1] < curoptlen)
     {
-      curoptlen = (unsigned char)cpkt[curoff];
+      curoptlen = (unsigned char)cpkt[curoff + 1];
     }
     if (curoptlen < 2)
     {
