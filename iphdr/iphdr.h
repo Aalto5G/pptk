@@ -335,10 +335,22 @@ static inline int tcp_syn(const void *pkt)
   return !!(hdr_get8h(&cpkt[13]) & (1<<1));
 }
 
+static inline void tcp_set_syn_on(void *pkt)
+{
+  char *cpkt = pkt;
+  hdr_set8h(&cpkt[13], hdr_get8h(&cpkt[13]) | (1<<1));
+}
+
 static inline int tcp_fin(const void *pkt)
 {
   const char *cpkt = pkt;
   return !!(hdr_get8h(&cpkt[13]) & (1<<0));
+}
+
+static inline void tcp_set_fin_on(void *pkt)
+{
+  char *cpkt = pkt;
+  hdr_set8h(&cpkt[13], hdr_get8h(&cpkt[13]) | (1<<0));
 }
 
 static inline uint16_t tcp_cksum(const void *pkt)
@@ -429,6 +441,20 @@ static inline void tcp_set_window(void *pkt, uint16_t window)
 {
   char *cpkt = pkt;
   hdr_set16n(&cpkt[14], window);
+}
+
+static inline void tcp_set_data_offset(void *pkt, uint8_t data_off)
+{
+  uint8_t val;
+  char *cpkt = pkt;
+  if (data_off % 4 != 0)
+  {
+    abort();
+  }
+  val = hdr_get8h(&cpkt[12]);
+  val &= ~0xF0;
+  val |= ((data_off/4)<<4);
+  hdr_set8h(&cpkt[12], val);
 }
 
 static inline uint8_t tcp_data_offset(const void *pkt)
