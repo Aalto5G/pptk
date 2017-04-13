@@ -329,6 +329,12 @@ static inline int tcp_rst(const void *pkt)
   return !!(hdr_get8h(&cpkt[13]) & (1<<2));
 }
 
+static inline void tcp_set_rst_on(void *pkt)
+{
+  char *cpkt = pkt;
+  hdr_set8h(&cpkt[13], hdr_get8h(&cpkt[13]) | (1<<2));
+}
+
 static inline int tcp_syn(const void *pkt)
 {
   const char *cpkt = pkt;
