@@ -43,6 +43,6 @@ clean_QUEUE:
 	rm -f $(QUEUE_OBJ) $(QUEUE_DEP)
 
 distclean_QUEUE: clean_QUEUE
-	rm -f $(DIRQUEUE)/libqueue.a $(DIRQUEUE)/queueperf
+	rm -f $(DIRQUEUE)/libqueue.a $(DIRQUEUE)/queueperf $(DIRQUEUE)/prioqueueperf
 
 -include $(DIRQUEUE)/*.d

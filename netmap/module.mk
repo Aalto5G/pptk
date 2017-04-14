@@ -53,6 +53,6 @@ clean_NETMAP:
 	rm -f $(NETMAP_OBJ) $(NETMAP_DEP)
 
 distclean_NETMAP: clean_NETMAP
-	rm -f $(DIRNETMAP)/libnetmap.a $(DIRNETMAP)/workerperf $(DIRNETMAP)/workeronlyperf
+	rm -f $(DIRNETMAP)/libnetmap.a $(DIRNETMAP)/netmapperf $(DIRNETMAP)/netmapfwd $(DIRNETMAP)/netmaprecv
 
 -include $(DIRNETMAP)/*.d
