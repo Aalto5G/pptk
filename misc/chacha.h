@@ -36,7 +36,7 @@ static inline int chacha20_init_devrandom(
   char key[32] = {};
   char nonce[12] = {};
   FILE *f;
-  f = fopen("/dev/random", "r");
+  f = fopen("/dev/urandom", "r");
   if (f == NULL)
   {
     return -EIO;
