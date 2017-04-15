@@ -40,9 +40,9 @@ int main(int argc, char **argv)
       timer->fn(timer, &heap, timer->userdata);
       timer_burst++;
     }
-    if (timer_burst >= 5000)
+    if (timer_burst >= 2)
     {
-      printf("timer burst of over 5000: %zu\n", timer_burst);
+      printf("timer burst of over 2: %zu\n", timer_burst);
     }
     for (inner = 0; inner < 64; inner++)
     {
