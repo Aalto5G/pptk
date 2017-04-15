@@ -1,4 +1,5 @@
 #include "iphash.h"
+#include "hashseed.h"
 
 const uint32_t default_initial_tokens = 2000;
 const uint32_t default_timer_period = (1000*1000);
@@ -23,6 +24,7 @@ int main(int argc, char **argv)
   struct timeval tv1, tv2;
   uint32_t tokens;
   timer_linkheap_init(&heap);
+  hash_seed_init();
   hash.hash_size = default_hash_size;
   hash.initial_tokens = default_initial_tokens;
   hash.timer_add = default_timer_add;

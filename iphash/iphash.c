@@ -3,6 +3,7 @@
 #include "timerlink.h"
 #include "containerof.h"
 #include "iphash.h"
+#include "hashseed.h"
 #include <sys/time.h>
 
 static inline uint64_t gettime64(void)
@@ -68,13 +69,11 @@ void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap)
   }
 }
 
-const char key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
-
 int ip_permitted(
   uint32_t src_ip, struct ip_hash *hash)
 {
   uint32_t class_c = src_ip&0xFFFFFF00U;
-  uint32_t hashval = siphash64(key, class_c)&(hash->hash_size - 1);
+  uint32_t hashval = siphash64(hash_seed_get(), class_c)&(hash->hash_size - 1);
   if (use_small(hash))
   {
     struct ip_hash_entry_small *e = NULL;

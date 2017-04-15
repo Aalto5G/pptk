@@ -11,7 +11,7 @@ IPHASH_DEP_LIB := $(patsubst %.c,%.d,$(IPHASH_SRC_LIB))
 IPHASH_DEP := $(patsubst %.c,%.d,$(IPHASH_SRC))
 
 CFLAGS_IPHASH := -I$(DIRHASHLIST) -I$(DIRMISC) -I$(DIRHASHTABLE) -I$(DIRTIMERLINKHEAP)
-LIBS_IPHASH := $(DIRTIMERLINKHEAP)/libtimerlinkheap.a
+LIBS_IPHASH := $(DIRTIMERLINKHEAP)/libtimerlinkheap.a $(DIRMISC)/libmisc.a
 
 MAKEFILES_IPHASH := $(DIRIPHASH)/module.mk
 
