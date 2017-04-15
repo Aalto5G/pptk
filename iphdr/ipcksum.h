@@ -253,6 +253,19 @@ static inline int ip_decr_ttl_cksum_update(void *pkt)
   return ttl > 0;
 }
 
+static inline void tcp_set_ack_off_cksum_update(void *pkt)
+{
+  char *cpkt = pkt;
+  uint16_t whole_field_old, whole_field_new;
+  uint16_t cksum = tcp_cksum(pkt);
+  whole_field_old = hdr_get16n(&cpkt[12]);
+  hdr_set8h(&cpkt[13], hdr_get8h(&cpkt[13]) & ~(1<<4));
+  whole_field_new = hdr_get16n(&cpkt[12]);
+  cksum = ip_update_cksum16(cksum, whole_field_old, whole_field_new);
+  tcp_set_cksum(pkt, cksum);
+}
+
+
 static inline void tcp_disable_sack_cksum_update(
   void *pkt, void *sackhdr, size_t sacklen, int sixteen_bit_align)
 {

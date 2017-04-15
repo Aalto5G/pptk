@@ -323,6 +323,12 @@ static inline void tcp_set_ack_on(void *pkt)
   hdr_set8h(&cpkt[13], hdr_get8h(&cpkt[13]) | (1<<4));
 }
 
+static inline void tcp_set_ack_off(void *pkt)
+{
+  char *cpkt = pkt;
+  hdr_set8h(&cpkt[13], hdr_get8h(&cpkt[13]) & ~(1<<4));
+}
+
 static inline int tcp_rst(const void *pkt)
 {
   const char *cpkt = pkt;
