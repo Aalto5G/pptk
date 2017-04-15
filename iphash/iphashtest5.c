@@ -10,18 +10,18 @@ const uint32_t timer_add = 400;
 const uint32_t hash_size = 0x20000;
 const uint32_t batch_size = 16384;
 
-struct ip_hash_entry4 {
+struct ip_hash_entry5 {
   uint32_t tokens;
 };
 
-struct ip_hash_entry4small {
+struct ip_hash_entry5small {
   uint16_t tokens;
 };
 
-struct ip_hash4 {
+struct ip_hash5 {
   union {
-    struct ip_hash_entry4 *entries;
-    struct ip_hash_entry4small *entries_small;
+    struct ip_hash_entry5 *entries;
+    struct ip_hash_entry5small *entries_small;
   } u;
 };
 
@@ -32,7 +32,7 @@ static inline int use_small(void)
 
 void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud);
 
-static void ip_hash_init(struct ip_hash4 *hash)
+static void ip_hash_init(struct ip_hash5 *hash)
 {
   size_t i;
   if (use_small())
@@ -40,7 +40,7 @@ static void ip_hash_init(struct ip_hash4 *hash)
     hash->u.entries_small = malloc(hash_size*sizeof(*hash->u.entries_small));
     for (i = 0; i < hash_size; i++)
     {
-      struct ip_hash_entry4small *e = &hash->u.entries_small[i];
+      struct ip_hash_entry5small *e = &hash->u.entries_small[i];
       e->tokens = initial_tokens;
     }
   }
@@ -49,7 +49,7 @@ static void ip_hash_init(struct ip_hash4 *hash)
     hash->u.entries = malloc(hash_size*sizeof(*hash->u.entries));
     for (i = 0; i < hash_size; i++)
     {
-      struct ip_hash_entry4 *e = &hash->u.entries[i];
+      struct ip_hash_entry5 *e = &hash->u.entries[i];
       e->tokens = initial_tokens;
     }
   }
@@ -65,13 +65,13 @@ static inline uint64_t gettime64(void)
 const char key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 
 static int ip_permitted(
-  uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash4 *hash)
+  uint32_t src_ip, struct timer_linkheap *heap, struct ip_hash5 *hash)
 {
   uint32_t class_c = src_ip&0xFFFFFF00U;
   uint32_t hashval = siphash64(key, class_c)&(hash_size - 1);
   if (use_small())
   {
-    struct ip_hash_entry4small *e = NULL;
+    struct ip_hash_entry5small *e = NULL;
     e = &hash->u.entries_small[hashval];
     if (e->tokens == 0)
     {
@@ -82,7 +82,7 @@ static int ip_permitted(
   }
   else
   {
-    struct ip_hash_entry4 *e = NULL;
+    struct ip_hash_entry5 *e = NULL;
     e = &hash->u.entries[hashval];
     if (e->tokens == 0)
     {
@@ -94,7 +94,7 @@ static int ip_permitted(
 }
 
 struct batch_timer_userdata {
-  struct ip_hash4 *hash;
+  struct ip_hash5 *hash;
   size_t start;
   size_t end;
 };
@@ -107,7 +107,7 @@ static void batch_timer_fn(
   uint32_t tokens;
   if (use_small())
   {
-    struct ip_hash_entry4small *e;
+    struct ip_hash_entry5small *e;
     for (i = args->start; i < args->end; i++)
     {
       e = &args->hash->u.entries_small[i];
@@ -121,7 +121,7 @@ static void batch_timer_fn(
   }
   else
   {
-    struct ip_hash_entry4 *e;
+    struct ip_hash_entry5 *e;
     for (i = args->start; i < args->end; i++)
     {
       e = &args->hash->u.entries[i];
@@ -140,7 +140,7 @@ static void batch_timer_fn(
 int main(int argc, char **argv)
 {
   struct timer_linkheap heap;
-  struct ip_hash4 hash;
+  struct ip_hash5 hash;
   uint32_t addr;
   size_t iter, inner;
   size_t timer_burst;
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < hash_size; iter++)
     {
-      struct ip_hash_entry4small *e;
+      struct ip_hash_entry5small *e;
       e = &hash.u.entries_small[iter];
       tokens = e->tokens + timer_add;
       if (tokens >= initial_tokens)
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < hash_size; iter++)
     {
-      struct ip_hash_entry4 *e;
+      struct ip_hash_entry5 *e;
       e = &hash.u.entries[iter];
       tokens = e->tokens + timer_add;
       if (tokens >= initial_tokens)
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < batch_size; iter++)
     {
-      struct ip_hash_entry4small *e;
+      struct ip_hash_entry5small *e;
       e = &hash.u.entries_small[iter];
       tokens = e->tokens + timer_add;
       if (tokens >= initial_tokens)
@@ -245,7 +245,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < batch_size; iter++)
     {
-      struct ip_hash_entry4 *e;
+      struct ip_hash_entry5 *e;
       e = &hash.u.entries[iter];
       tokens = e->tokens + timer_add;
       if (tokens >= initial_tokens)
