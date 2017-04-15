@@ -1,5 +1,5 @@
-IPHASH_SRC_LIB := 
-IPHASH_SRC := $(IPHASH_SRC_LIB) iphashtest.c iphashtest2.c iphashtest3.c iphashtest4.c iphashtest5.c
+IPHASH_SRC_LIB := iphash.c
+IPHASH_SRC := $(IPHASH_SRC_LIB) iphashtest.c iphashtest2.c iphashtest3.c iphashtest4.c iphashtest5.c iphashtest6.c
 
 IPHASH_SRC_LIB := $(patsubst %,$(DIRIPHASH)/%,$(IPHASH_SRC_LIB))
 IPHASH_SRC := $(patsubst %,$(DIRIPHASH)/%,$(IPHASH_SRC))
@@ -22,7 +22,7 @@ clean_$(LCIPHASH): clean_IPHASH
 distclean_$(LCIPHASH): distclean_IPHASH
 unit_$(LCIPHASH): unit_IPHASH
 
-IPHASH: $(DIRIPHASH)/libiphash.a $(DIRIPHASH)/iphashtest $(DIRIPHASH)/iphashtest2 $(DIRIPHASH)/iphashtest3 $(DIRIPHASH)/iphashtest4 $(DIRIPHASH)/iphashtest5
+IPHASH: $(DIRIPHASH)/libiphash.a $(DIRIPHASH)/iphashtest $(DIRIPHASH)/iphashtest2 $(DIRIPHASH)/iphashtest3 $(DIRIPHASH)/iphashtest4 $(DIRIPHASH)/iphashtest5 $(DIRIPHASH)/iphashtest6
 
 unit_IPHASH:
 	@true
@@ -46,6 +46,9 @@ $(DIRIPHASH)/iphashtest4: $(DIRIPHASH)/iphashtest4.o $(DIRIPHASH)/libiphash.a $(
 $(DIRIPHASH)/iphashtest5: $(DIRIPHASH)/iphashtest5.o $(DIRIPHASH)/libiphash.a $(LIBS_IPHASH) $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHASH)
 
+$(DIRIPHASH)/iphashtest6: $(DIRIPHASH)/iphashtest6.o $(DIRIPHASH)/libiphash.a $(LIBS_IPHASH) $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHASH)
+
 $(IPHASH_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_IPHASH)
 
@@ -56,6 +59,6 @@ clean_IPHASH:
 	rm -f $(IPHASH_OBJ) $(IPHASH_DEP)
 
 distclean_IPHASH: clean_IPHASH
-	rm -f $(DIRIPHASH)/libiphash.a $(DIRIPHASH)/iphashtest $(DIRIPHASH)/iphashtest2 $(DIRIPHASH)/iphashtest3 $(DIRIPHASH)/iphashtest4 $(DIRIPHASH)/iphashtest5
+	rm -f $(DIRIPHASH)/libiphash.a $(DIRIPHASH)/iphashtest $(DIRIPHASH)/iphashtest2 $(DIRIPHASH)/iphashtest3 $(DIRIPHASH)/iphashtest4 $(DIRIPHASH)/iphashtest5 $(DIRIPHASH)/iphashtest6
 
 -include $(DIRIPHASH)/*.d
