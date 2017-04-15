@@ -30,6 +30,8 @@ struct ip_hash {
 
 void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap);
 
+void ip_hash_free(struct ip_hash *hash, struct timer_linkheap *heap);
+
 int ip_permitted(
   uint32_t src_ip, struct ip_hash *hash);
 

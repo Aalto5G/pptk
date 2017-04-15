@@ -69,6 +69,32 @@ void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap)
   }
 }
 
+void ip_hash_free(struct ip_hash *hash, struct timer_linkheap *heap)
+{
+  size_t i;
+  size_t timercnt = hash->hash_size/hash->batch_size;
+  if (!power_of_2(hash->hash_size) || !power_of_2(hash->batch_size) ||
+      hash->hash_size < hash->batch_size)
+  {
+    abort();
+  }
+  for (i = 0; i < timercnt; i++)
+  {
+    timer_linkheap_remove(heap, &hash->timers[i]);
+  }
+  free(hash->timerud);
+  free(hash->timers);
+  
+  if (use_small(hash))
+  {
+    free(hash->u.entries_small);
+  }
+  else
+  {
+    free(hash->u.entries);
+  }
+}
+
 int ip_permitted(
   uint32_t src_ip, struct ip_hash *hash)
 {
