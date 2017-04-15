@@ -16,7 +16,7 @@ static inline uint64_t gettime64(void)
 int main(int argc, char **argv)
 {
   struct timer_linkheap heap;
-  struct ip_hash5 hash;
+  struct ip_hash hash;
   uint32_t addr;
   size_t iter, inner;
   size_t timer_burst;
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < hash.hash_size; iter++)
     {
-      struct ip_hash_entry5small *e;
+      struct ip_hash_entry_small *e;
       e = &hash.u.entries_small[iter];
       tokens = e->tokens + hash.timer_add;
       if (tokens >= hash.initial_tokens)
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < hash.hash_size; iter++)
     {
-      struct ip_hash_entry5 *e;
+      struct ip_hash_entry *e;
       e = &hash.u.entries[iter];
       tokens = e->tokens + hash.timer_add;
       if (tokens >= hash.initial_tokens)
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < hash.batch_size; iter++)
     {
-      struct ip_hash_entry5small *e;
+      struct ip_hash_entry_small *e;
       e = &hash.u.entries_small[iter];
       tokens = e->tokens + hash.timer_add;
       if (tokens >= hash.initial_tokens)
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
   {
     for (iter = 0; iter < hash.batch_size; iter++)
     {
-      struct ip_hash_entry5 *e;
+      struct ip_hash_entry *e;
       e = &hash.u.entries[iter];
       tokens = e->tokens + hash.timer_add;
       if (tokens >= hash.initial_tokens)

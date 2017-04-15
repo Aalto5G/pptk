@@ -13,7 +13,7 @@ static inline uint64_t gettime64(void)
 }
 
 struct batch_timer_userdata {
-  struct ip_hash5 *hash;
+  struct ip_hash *hash;
   size_t start;
   size_t end;
 };
@@ -26,7 +26,7 @@ static inline int power_of_2(size_t x)
   return (x > 0) && ((x & (x-1)) == 0);
 }
 
-void ip_hash_init(struct ip_hash5 *hash, struct timer_linkheap *heap)
+void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap)
 {
   size_t i;
   size_t timercnt = hash->hash_size/hash->batch_size;
@@ -53,7 +53,7 @@ void ip_hash_init(struct ip_hash5 *hash, struct timer_linkheap *heap)
     hash->u.entries_small = malloc(hash->hash_size*sizeof(*hash->u.entries_small));
     for (i = 0; i < hash->hash_size; i++)
     {
-      struct ip_hash_entry5small *e = &hash->u.entries_small[i];
+      struct ip_hash_entry_small *e = &hash->u.entries_small[i];
       e->tokens = hash->initial_tokens;
     }
   }
@@ -62,7 +62,7 @@ void ip_hash_init(struct ip_hash5 *hash, struct timer_linkheap *heap)
     hash->u.entries = malloc(hash->hash_size*sizeof(*hash->u.entries));
     for (i = 0; i < hash->hash_size; i++)
     {
-      struct ip_hash_entry5 *e = &hash->u.entries[i];
+      struct ip_hash_entry *e = &hash->u.entries[i];
       e->tokens = hash->initial_tokens;
     }
   }
@@ -71,13 +71,13 @@ void ip_hash_init(struct ip_hash5 *hash, struct timer_linkheap *heap)
 const char key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 
 int ip_permitted(
-  uint32_t src_ip, struct ip_hash5 *hash)
+  uint32_t src_ip, struct ip_hash *hash)
 {
   uint32_t class_c = src_ip&0xFFFFFF00U;
   uint32_t hashval = siphash64(key, class_c)&(hash->hash_size - 1);
   if (use_small(hash))
   {
-    struct ip_hash_entry5small *e = NULL;
+    struct ip_hash_entry_small *e = NULL;
     e = &hash->u.entries_small[hashval];
     if (e->tokens == 0)
     {
@@ -88,7 +88,7 @@ int ip_permitted(
   }
   else
   {
-    struct ip_hash_entry5 *e = NULL;
+    struct ip_hash_entry *e = NULL;
     e = &hash->u.entries[hashval];
     if (e->tokens == 0)
     {
@@ -109,7 +109,7 @@ static void batch_timer_fn(
   uint32_t initial_tokens = args->hash->initial_tokens;
   if (use_small(args->hash))
   {
-    struct ip_hash_entry5small *e;
+    struct ip_hash_entry_small *e;
     for (i = args->start; i < args->end; i++)
     {
       e = &args->hash->u.entries_small[i];
@@ -123,7 +123,7 @@ static void batch_timer_fn(
   }
   else
   {
-    struct ip_hash_entry5 *e;
+    struct ip_hash_entry *e;
     for (i = args->start; i < args->end; i++)
     {
       e = &args->hash->u.entries[i];
