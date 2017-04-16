@@ -324,6 +324,31 @@ static inline void tcp_disable_sack_cksum_update(
   tcp_set_cksum(pkt, cksum);
 }
 
+static inline void tcp_set_mss_cksum_update(
+  void *pkt, struct tcp_information *opts, uint16_t mss)
+{
+  char *cpkt = pkt;
+  uint16_t cksum = tcp_cksum(pkt);
+  if ((opts->mssoff % 2) == 0)
+  {
+    uint16_t old_mss = hdr_get16n(&cpkt[opts->mssoff + 2]);
+    cksum = ip_update_cksum16(cksum, old_mss, mss);
+    hdr_set16n(&cpkt[opts->mssoff + 2], mss);
+  }
+  else
+  {
+    uint16_t old_val1 = hdr_get16n(&cpkt[opts->mssoff + 1]);
+    uint16_t old_val2 = hdr_get16n(&cpkt[opts->mssoff + 3]);
+    uint16_t new_val1, new_val2;
+    hdr_set16n(&cpkt[opts->mssoff + 2], mss);
+    new_val1 = hdr_get16n(&cpkt[opts->mssoff + 1]);
+    new_val2 = hdr_get16n(&cpkt[opts->mssoff + 3]);
+    cksum = ip_update_cksum16(cksum, old_val1, new_val1);
+    cksum = ip_update_cksum16(cksum, old_val2, new_val2);
+  }
+  tcp_set_cksum(pkt, cksum);
+}
+
 static inline void tcp_adjust_sack_cksum_update(
   void *pkt, void *sackhdr, size_t sacklen, int sixteen_bit_align,
   uint32_t adjustment)

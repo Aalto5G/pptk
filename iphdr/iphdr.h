@@ -533,6 +533,7 @@ struct tcp_information {
   uint8_t wscale;
   uint16_t mss;
   uint8_t sack_permitted;
+  uint8_t mssoff; // from beginning of TCP header
 };
 
 static inline void tcp_parse_options(
@@ -596,6 +597,7 @@ static inline void tcp_parse_options(
         continue;
       }
       info->mss = hdr_get16n(&cpkt[curoff + 2]);
+      info->mssoff = curoff;
       curoff += msslenval;
       continue;
     }
