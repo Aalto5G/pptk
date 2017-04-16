@@ -772,6 +772,7 @@ int pcapng_in_ctx_init(
   }
   ctx->f = f;
   ctx->lasttime = gettime64();
+  ctx->swap = 0; // have to put some value to silence Valgrind
   DYNARR_INIT(&ctx->interfaces);
   
   return 0;
