@@ -548,6 +548,7 @@ static inline void tcp_parse_options(
   info->wscale = 0;
   info->options_valid = 0;
   info->sack_permitted = 0;
+  info->mssoff = 0;
   while (curoff < dataoff)
   {
     if (cpkt[curoff] == 0)
