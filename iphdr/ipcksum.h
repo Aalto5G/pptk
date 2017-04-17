@@ -397,6 +397,80 @@ static inline void tcp_adjust_sack_cksum_update(
   tcp_set_cksum(pkt, cksum);
 }
 
+static inline void tcp_adjust_tsval_cksum_update(
+  void *pkt, struct sack_ts_headers *hdrs, uint32_t adjustment)
+{
+  char *cpkt = pkt;
+  uint32_t oldval, newval;
+  uint16_t cksum = tcp_cksum(pkt);
+  if (hdrs->tsoff == 0)
+  {
+    return;
+  }
+  if ((hdrs->tsoff%2) == 0)
+  {
+    oldval = hdr_get32n(&cpkt[hdrs->tsoff+2]);
+    newval = oldval + adjustment;
+    hdr_set32n(&cpkt[hdrs->tsoff+2], newval);
+    cksum = ip_update_cksum32(cksum, oldval, newval);
+  }
+  else
+  {
+    uint16_t oldval1, oldval2, oldval3;
+    uint16_t newval1, newval2, newval3;
+    oldval1 = hdr_get16n(&cpkt[hdrs->tsoff+1]);
+    oldval2 = hdr_get16n(&cpkt[hdrs->tsoff+3]);
+    oldval3 = hdr_get16n(&cpkt[hdrs->tsoff+5]);
+    oldval = hdr_get32n(&cpkt[hdrs->tsoff+2]);
+    newval = oldval + adjustment;
+    hdr_set32n(&cpkt[hdrs->tsoff+2], newval);
+    newval1 = hdr_get16n(&cpkt[hdrs->tsoff+1]);
+    newval2 = hdr_get16n(&cpkt[hdrs->tsoff+3]);
+    newval3 = hdr_get16n(&cpkt[hdrs->tsoff+5]);
+    cksum = ip_update_cksum16(cksum, oldval1, newval1);
+    cksum = ip_update_cksum16(cksum, oldval2, newval2);
+    cksum = ip_update_cksum16(cksum, oldval3, newval3);
+  }
+  tcp_set_cksum(pkt, cksum);
+}
+
+static inline void tcp_adjust_tsecho_cksum_update(
+  void *pkt, struct sack_ts_headers *hdrs, uint32_t adjustment)
+{
+  char *cpkt = pkt;
+  uint32_t oldval, newval;
+  uint16_t cksum = tcp_cksum(pkt);
+  if (hdrs->tsoff == 0)
+  {
+    return;
+  }
+  if ((hdrs->tsoff%2) == 0)
+  {
+    oldval = hdr_get32n(&cpkt[hdrs->tsoff+6]);
+    newval = oldval + adjustment;
+    hdr_set32n(&cpkt[hdrs->tsoff+6], newval);
+    cksum = ip_update_cksum32(cksum, oldval, newval);
+  }
+  else
+  {
+    uint16_t oldval1, oldval2, oldval3;
+    uint16_t newval1, newval2, newval3;
+    oldval1 = hdr_get16n(&cpkt[hdrs->tsoff+5]);
+    oldval2 = hdr_get16n(&cpkt[hdrs->tsoff+7]);
+    oldval3 = hdr_get16n(&cpkt[hdrs->tsoff+9]);
+    oldval = hdr_get32n(&cpkt[hdrs->tsoff+6]);
+    newval = oldval + adjustment;
+    hdr_set32n(&cpkt[hdrs->tsoff+6], newval);
+    newval1 = hdr_get16n(&cpkt[hdrs->tsoff+5]);
+    newval2 = hdr_get16n(&cpkt[hdrs->tsoff+7]);
+    newval3 = hdr_get16n(&cpkt[hdrs->tsoff+9]);
+    cksum = ip_update_cksum16(cksum, oldval1, newval1);
+    cksum = ip_update_cksum16(cksum, oldval2, newval2);
+    cksum = ip_update_cksum16(cksum, oldval3, newval3);
+  }
+  tcp_set_cksum(pkt, cksum);
+}
+
 static inline void tcp_adust_sack_cksum_update_2(
   void *pkt, struct sack_ts_headers *hdrs, uint32_t adjustment)
 {
