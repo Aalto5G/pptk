@@ -1,4 +1,4 @@
-IPHDR_SRC_LIB := ipcksum.c
+IPHDR_SRC_LIB := ipcksum.c iphdr.c
 IPHDR_SRC := $(IPHDR_SRC_LIB) iphdrtest.c ipcksumtest.c ipcksumperf.c
 
 IPHDR_SRC_LIB := $(patsubst %,$(DIRIPHDR)/%,$(IPHDR_SRC_LIB))
