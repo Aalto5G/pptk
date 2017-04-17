@@ -471,7 +471,7 @@ static inline void tcp_adjust_tsecho_cksum_update(
   tcp_set_cksum(pkt, cksum);
 }
 
-static inline void tcp_adust_sack_cksum_update_2(
+static inline void tcp_adjust_sack_cksum_update_2(
   void *pkt, struct sack_ts_headers *hdrs, uint32_t adjustment)
 {
   char *cpkt = pkt;
