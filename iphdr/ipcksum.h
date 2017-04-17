@@ -397,4 +397,16 @@ static inline void tcp_adjust_sack_cksum_update(
   tcp_set_cksum(pkt, cksum);
 }
 
+static inline void tcp_adust_sack_cksum_update_2(
+  void *pkt, struct sack_ts_headers *hdrs, uint32_t adjustment)
+{
+  char *cpkt = pkt;
+  if (hdrs->sackoff == 0)
+  {
+    return;
+  }
+  tcp_adjust_sack_cksum_update(
+    pkt, &cpkt[hdrs->sackoff], hdrs->sacklen, !(hdrs->sackoff%2), adjustment);
+}
+
 #endif

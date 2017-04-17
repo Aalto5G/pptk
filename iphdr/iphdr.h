@@ -463,6 +463,79 @@ static inline uint8_t tcp_data_offset(const void *pkt)
   return (hdr_get8h(&cpkt[12])>>4)*4;
 }
 
+struct sack_ts_headers {
+  uint8_t sackoff;
+  uint8_t sacklen;
+  uint8_t tsoff;
+};
+
+static inline void tcp_find_sack_ts_headers(
+  void *pkt, struct sack_ts_headers *hdrs)
+{
+  char *cpkt = pkt;
+  size_t dataoff = tcp_data_offset(pkt);
+  size_t curoff = 20;
+  size_t curoptlen;
+  hdrs->sackoff = 0;
+  hdrs->sacklen = 0;
+  hdrs->tsoff = 0;
+  while (curoff < dataoff)
+  {
+    if (cpkt[curoff] == 0)
+    {
+      return;
+    }
+    if (cpkt[curoff] == 1)
+    {
+      curoff++;
+      continue;
+    }
+    if (cpkt[curoff] == 5)
+    {
+      size_t sacklenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < sacklenval)
+      {
+        sacklenval = (unsigned char)cpkt[curoff + 1];
+      }
+      hdrs->sacklen = sacklenval;
+      hdrs->sackoff = curoff;
+      curoff += sacklenval;
+      continue;
+    }
+    if (cpkt[curoff] == 8)
+    {
+      size_t tslenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < tslenval)
+      {
+        tslenval = (unsigned char)cpkt[curoff + 1];
+      }
+      if (tslenval != 10)
+      {
+        curoff += tslenval;
+        continue;
+      }
+      hdrs->tsoff = curoff;
+      curoff += tslenval;
+      continue;
+    }
+    if (curoff + 1 >= dataoff)
+    {
+      return;
+    }
+    curoptlen = dataoff - curoff;
+    if ((unsigned char)cpkt[curoff + 1] < curoptlen)
+    {
+      curoptlen = (unsigned char)cpkt[curoff + 1];
+    }
+    if (curoptlen < 2)
+    {
+      return;
+    }
+    curoff += curoptlen;
+  }
+  return;
+}
+
 static inline void *tcp_find_sack_header(
   void *pkt, size_t *sacklen, int *sixteen_bit_align)
 {
