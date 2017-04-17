@@ -96,10 +96,11 @@ void ip_hash_free(struct ip_hash *hash, struct timer_linkheap *heap)
 }
 
 int ip_permitted(
-  uint32_t src_ip, struct ip_hash *hash)
+  uint32_t src_ip, uint8_t bits, struct ip_hash *hash)
 {
-  uint32_t class_c = src_ip&0xFFFFFF00U;
-  uint32_t hashval = siphash64(hash_seed_get(), class_c)&(hash->hash_size - 1);
+  uint32_t bitmask = (~((1U<<(32-bits))-1U)) & 0xFFFFFFFFU;
+  uint32_t network = src_ip & bitmask;
+  uint32_t hashval = siphash64(hash_seed_get(), network)&(hash->hash_size - 1);
   if (use_small(hash))
   {
     struct ip_hash_entry_small *e = NULL;
