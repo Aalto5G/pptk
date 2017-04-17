@@ -522,6 +522,9 @@ struct tcp_information {
   uint16_t mss;
   uint8_t sack_permitted;
   uint8_t mssoff; // from beginning of TCP header
+  uint8_t ts_present;
+  uint32_t ts;
+  uint32_t tsecho;
 };
 
 static inline void tcp_parse_options(
@@ -537,6 +540,9 @@ static inline void tcp_parse_options(
   info->options_valid = 0;
   info->sack_permitted = 0;
   info->mssoff = 0;
+  info->ts_present = 0;
+  info->ts = 0;
+  info->tsecho = 0;
   while (curoff < dataoff)
   {
     if (cpkt[curoff] == 0)
@@ -547,6 +553,28 @@ static inline void tcp_parse_options(
     if (cpkt[curoff] == 1)
     {
       curoff++;
+      continue;
+    }
+    if (cpkt[curoff] == 8)
+    {
+      size_t tslenval = dataoff - curoff;
+      if (curoff + 1 < dataoff && ((unsigned char)cpkt[curoff + 1]) < tslenval)
+      {
+        tslenval = (unsigned char)cpkt[curoff + 1];
+      }
+      if (tslenval < 2)
+      {
+        return;
+      }
+      if (tslenval != 10)
+      {
+        curoff += tslenval;
+        continue;
+      }
+      info->ts = hdr_get32n(&cpkt[curoff + 2]);
+      info->tsecho = hdr_get32n(&cpkt[curoff + 6]);
+      info->ts_present = 1;
+      curoff += tslenval;
       continue;
     }
     if (cpkt[curoff] == 3)
