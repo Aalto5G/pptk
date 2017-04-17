@@ -125,6 +125,36 @@ int ip_permitted(
   }
 }
 
+void ip_increment_one(
+  uint32_t src_ip, uint8_t bits, struct ip_hash *hash)
+{
+  uint32_t bitmask = (~((1U<<(32-bits))-1U)) & 0xFFFFFFFFU;
+  uint32_t network = src_ip & bitmask;
+  uint32_t hashval = siphash64(hash_seed_get(), network)&(hash->hash_size - 1);
+  if (use_small(hash))
+  {
+    struct ip_hash_entry_small *e = NULL;
+    e = &hash->u.entries_small[hashval];
+    if (e->tokens >= hash->initial_tokens)
+    {
+      return;
+    }
+    e->tokens++;
+    return;
+  }
+  else
+  {
+    struct ip_hash_entry *e = NULL;
+    e = &hash->u.entries[hashval];
+    if (e->tokens >= hash->initial_tokens)
+    {
+      return;
+    }
+    e->tokens++;
+    return;
+  }
+}
+
 static void batch_timer_fn(
   struct timer_link *timer, struct timer_linkheap *heap, void *ud)
 {

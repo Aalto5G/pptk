@@ -35,6 +35,9 @@ void ip_hash_free(struct ip_hash *hash, struct timer_linkheap *heap);
 int ip_permitted(
   uint32_t src_ip, uint8_t bits, struct ip_hash *hash);
 
+void ip_increment_one(
+  uint32_t src_ip, uint8_t bits, struct ip_hash *hash);
+
 static inline int use_small(struct ip_hash *hash)
 {
   return hash->initial_tokens <= 65535;
