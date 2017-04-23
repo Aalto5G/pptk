@@ -475,6 +475,28 @@ void tcp_find_sack_ts_headers(
 void *tcp_find_sack_header(
   void *pkt, size_t *sacklen, int *sixteen_bit_align);
 
+static inline uint32_t tcp_tsval(
+  const void *pkt, struct sack_ts_headers *hdrs)
+{
+  const char *cpkt = pkt;
+  if (hdrs->tsoff < 20)
+  {
+    abort();
+  }
+  return hdr_get32n(&cpkt[hdrs->tsoff + 2]);
+}
+
+static inline uint32_t tcp_tsecho(
+  const void *pkt, struct sack_ts_headers *hdrs)
+{
+  const char *cpkt = pkt;
+  if (hdrs->tsoff < 20)
+  {
+    abort();
+  }
+  return hdr_get32n(&cpkt[hdrs->tsoff + 6]);
+}
+
 struct tcp_information {
   uint8_t options_valid;
   uint8_t wscale;
