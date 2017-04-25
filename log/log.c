@@ -4,16 +4,41 @@
 #include <sys/time.h>
 #include <time.h>
 #include <ctype.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <stdlib.h>
 
 atomic_uint global_log_file_level = ATOMIC_VAR_INIT(LOG_LEVEL_INFO);
 atomic_uint global_log_console_level = ATOMIC_VAR_INIT(LOG_LEVEL_NOTICE);
 
+static inline uint64_t gettime64(void)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
+}
+
 struct globals {
   FILE *f;
   const char *progname;
+  pthread_mutex_t mtx;
+  uint64_t last_time64;
+  uint32_t burst;
+  uint32_t increment;
+  uint32_t max;
+  uint32_t interval;
+  uint32_t missed_events;
 };
 
-struct globals globals;
+struct globals globals = {
+  .mtx = PTHREAD_MUTEX_INITIALIZER,
+  .last_time64 = 0,
+  .burst = 1000,
+  .increment = 1000,
+  .max = 1000,
+  .interval = 1000*1000,
+  .missed_events = 0,
+};
 
 static inline const char *log_level_string(enum log_level level)
 {
@@ -39,6 +64,31 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
   char linebuf[16384] = {0};
   char timebuf[256] = {0};
   const char *progname = globals.progname;
+  pthread_mutex_lock(&globals.mtx);
+  if (globals.burst == 0)
+  {
+    if (globals.missed_events == 0)
+    {
+      gettimeofday(&tv, NULL);
+      localtime_r(&tv.tv_sec, &tm);
+      strftime(timebuf, sizeof(timebuf), "%d.%m.%Y %H:%M:%S", &tm);
+      snprintf(
+        linebuf, sizeof(linebuf),
+        "%s.%.6d {%s} [%s] (%s) <%s:%s:%zu> starting to miss events",
+        timebuf, (int)tv.tv_usec, progname, "LOG", "MISSED",
+        __FILE__, __FUNCTION__, (size_t)__LINE__);
+      if (globals.f)
+      {
+        fprintf(globals.f, "%s\n", linebuf);
+        fflush(globals.f);
+      }
+      fprintf(stdout, "%s\n", linebuf);
+      fflush(stdout);
+    }
+    globals.missed_events++;
+    pthread_mutex_unlock(&globals.mtx);
+    return;
+  }
   if (progname == NULL)
   {
     progname = "A.OUT";
@@ -46,8 +96,35 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
   gettimeofday(&tv, NULL);
   localtime_r(&tv.tv_sec, &tm);
   strftime(timebuf, sizeof(timebuf), "%d.%m.%Y %H:%M:%S", &tm);
+  if (gettime64() - globals.last_time64 > globals.interval)
+  {
+    globals.last_time64 = gettime64();
+    globals.burst += globals.increment;
+    if (globals.burst > globals.max)
+    {
+      globals.burst = globals.max;
+    }
+    if (globals.missed_events > 0)
+    {
+      snprintf(
+        linebuf, sizeof(linebuf),
+        "%s.%.6d {%s} [%s] (%s) <%s:%s:%zu> missed %u events",
+        timebuf, (int)tv.tv_usec, progname, "LOG", "MISSED",
+        __FILE__, __FUNCTION__, (size_t)__LINE__,
+        globals.missed_events);
+      if (globals.f)
+      {
+        fprintf(globals.f, "%s\n", linebuf);
+        fflush(globals.f);
+      }
+      fprintf(stdout, "%s\n", linebuf);
+      fflush(stdout);
+    }
+    globals.missed_events = 0;
+  }
+  globals.burst--;
   vsnprintf(msgbuf, sizeof(msgbuf), buf, ap);
-  snprintf(linebuf, sizeof(linebuf), "%s.%.6d {%s} [%s] (%s) <%s:%s:%zu> %s", timebuf, (int)tv.tv_usec, globals.progname, compname, log_level_string(level), file, function, line, msgbuf);
+  snprintf(linebuf, sizeof(linebuf), "%s.%.6d {%s} [%s] (%s) <%s:%s:%zu> %s", timebuf, (int)tv.tv_usec, progname, compname, log_level_string(level), file, function, line, msgbuf);
   if (globals.f && level <= atomic_load(&global_log_file_level))
   {
     fprintf(globals.f, "%s\n", linebuf);
@@ -58,6 +135,7 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
     fprintf(stdout, "%s\n", linebuf);
     fflush(stdout);
   }
+  pthread_mutex_unlock(&globals.mtx);
 }
 
 
