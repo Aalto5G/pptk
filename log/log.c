@@ -64,8 +64,10 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
   char linebuf[16384] = {0};
   char timebuf[256] = {0};
   const char *progname = globals.progname;
+  int time_condition;
   pthread_mutex_lock(&globals.mtx);
-  if (globals.burst == 0)
+  time_condition = gettime64() - globals.last_time64 > globals.interval;
+  if (globals.burst == 0 && !time_condition)
   {
     if (globals.missed_events == 0)
     {
@@ -96,7 +98,7 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
   gettimeofday(&tv, NULL);
   localtime_r(&tv.tv_sec, &tm);
   strftime(timebuf, sizeof(timebuf), "%d.%m.%Y %H:%M:%S", &tm);
-  if (gettime64() - globals.last_time64 > globals.interval)
+  if (time_condition)
   {
     globals.last_time64 = gettime64();
     globals.burst += globals.increment;
