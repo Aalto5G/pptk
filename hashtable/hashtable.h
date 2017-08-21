@@ -24,7 +24,9 @@ static inline size_t next_highest_power_of_2(size_t x)
   x |= x >> 4;
   x |= x >> 8;
   x |= x >> 16;
+#if SIZE_MAX > (4U*1024U*1024U*1024U)
   x |= x >> 32;
+#endif
   x++;
   return x;
 }
