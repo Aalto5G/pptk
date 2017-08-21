@@ -289,7 +289,7 @@ static int pcapng_in_ctx_read_shb(struct pcapng_in_ctx *ctx)
   {
     return -ENOTSUP;
   }
-  if (fskip(tlen-28, ctx->f) != tlen-28)
+  if (fskip(tlen-28, ctx->f) != (ssize_t)tlen-28)
   {
     return -EINVAL;
   }
@@ -422,7 +422,7 @@ static int pcapng_in_ctx_read_idb(struct pcapng_in_ctx *ctx)
     }
     else
     {
-      if (fskip(thisoptlen, ctx->f) != thisoptlen)
+      if (fskip(thisoptlen, ctx->f) != (ssize_t)thisoptlen)
       {
         return -EINVAL;
       }
@@ -508,7 +508,7 @@ int pcapng_in_ctx_read(
       {
         return -EINVAL;
       }
-      if (fskip(tlen - 12, ctx->f) != tlen - 12)
+      if (fskip(tlen - 12, ctx->f) != (ssize_t)tlen - 12)
       {
         return -EINVAL;
       }
@@ -593,7 +593,7 @@ int pcapng_in_ctx_read(
     {
       return -EINVAL;
     }
-    if (fskip(padding, ctx->f) != padding)
+    if (fskip(padding, ctx->f) != (ssize_t)padding)
     {
       return -EINVAL;
     }
@@ -679,12 +679,12 @@ int pcapng_in_ctx_read(
   {
     return -EINVAL;
   }
-  if (fskip(padding, ctx->f) != padding)
+  if (fskip(padding, ctx->f) != (ssize_t)padding)
   {
     return -EINVAL;
   }
   toskip = packet_data_len - (tlen - 32);
-  if (fskip(toskip, ctx->f) != toskip)
+  if (fskip(toskip, ctx->f) != (ssize_t)toskip)
   {
     return -EINVAL;
   }
