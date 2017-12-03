@@ -33,3 +33,17 @@ void netmapfunc(struct packet *pkt, void *userdata)
   nm_my_inject(ud->nmd, packet_data(pkt), pkt->sz);
   as_free_mt(ud->loc, pkt);
 }
+
+void netmapfunc2(struct packet *pkt, void *userdata)
+{
+  struct netmapfunc2_userdata *ud = userdata;
+  if (pkt->direction == PACKET_DIRECTION_UPLINK)
+  {
+    nm_my_inject(ud->ulnmd, packet_data(pkt), pkt->sz);
+  }
+  else
+  {
+    nm_my_inject(ud->dlnmd, packet_data(pkt), pkt->sz);
+  }
+  as_free_mt(ud->loc, pkt);
+}
