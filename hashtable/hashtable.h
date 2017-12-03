@@ -182,6 +182,21 @@ static inline void hash_table_delete(
   }
 }
 
+static inline void hash_table_add_nogrow_already_bucket_locked(
+  struct hash_table *table, struct hash_list_node *node, uint32_t hashval)
+{
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_lock(&table->global_mutex);
+  }
+  hash_list_add_head(node, &table->buckets[hashval & (table->bucketcnt - 1)]);
+  table->itemcnt++;
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_unlock(&table->global_mutex);
+  }
+}
+
 static inline void hash_table_add_nogrow(
   struct hash_table *table, struct hash_list_node *node, uint32_t hashval)
 {
