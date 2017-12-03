@@ -5,11 +5,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <pthread.h>
 
 typedef uint32_t (*hash_fn)(struct hash_list_node *node, void *userdata);
 
 struct hash_table {
   struct hash_list_head *buckets;
+  pthread_mutex_t *bucket_mutexes; // Lock order: first
+  pthread_mutex_t global_mutex; // Lock order: then
   size_t bucketcnt;
   hash_fn fn; 
   void *fn_userdata;
@@ -31,10 +34,12 @@ static inline size_t next_highest_power_of_2(size_t x)
   return x;
 }
 
-static inline int hash_table_init(
-  struct hash_table *table, size_t bucketcnt, hash_fn fn, void *fn_userdata)
+static inline int hash_table_init_impl(
+  struct hash_table *table, size_t bucketcnt, hash_fn fn, void *fn_userdata,
+  int locked)
 {
   size_t i;
+  table->bucket_mutexes = NULL;
   table->fn = fn;
   table->fn_userdata = fn_userdata;
   table->itemcnt = 0;
@@ -47,6 +52,52 @@ static inline int hash_table_init(
     table->bucketcnt = 0;
     return -ENOMEM;
   }
+  if (locked)
+  {
+    if (pthread_mutex_init(&table->global_mutex, NULL) != 0)
+    {
+      table->fn = NULL;
+      table->fn_userdata = NULL;
+      table->bucketcnt = 0;
+      free(table->buckets);
+      table->buckets = NULL;
+      return -ENOMEM;
+    }
+    table->bucket_mutexes = malloc(sizeof(*table->bucket_mutexes)*table->bucketcnt);
+    if (table->bucket_mutexes == NULL)
+    {
+      table->fn = NULL;
+      table->fn_userdata = NULL;
+      table->bucketcnt = 0;
+      free(table->buckets);
+      table->buckets = NULL;
+      pthread_mutex_destroy(&table->global_mutex);
+      return -ENOMEM;
+    }
+    for (i = 0; i < table->bucketcnt; i++)
+    {
+      if (pthread_mutex_init(&table->bucket_mutexes[i], NULL) != 0)
+      {
+        for (;;)
+        {
+          if (i == 0)
+          {
+            table->fn = NULL;
+            table->fn_userdata = NULL;
+            table->bucketcnt = 0;
+            free(table->buckets);
+            table->buckets = NULL;
+            free(table->bucket_mutexes);
+            table->bucket_mutexes = NULL;
+            return -ENOMEM;
+          }
+          i--;
+          pthread_mutex_destroy(&table->bucket_mutexes[i]);
+        }
+
+      }
+    }
+  }
   for (i = 0; i < table->bucketcnt; i++)
   {
     hash_list_head_init(&table->buckets[i]);
@@ -54,11 +105,34 @@ static inline int hash_table_init(
   return 0;
 }
 
+static inline int hash_table_init(
+  struct hash_table *table, size_t bucketcnt, hash_fn fn, void *fn_userdata)
+{
+  return hash_table_init_impl(table, bucketcnt, fn, fn_userdata, 0);
+}
+
+static inline int hash_table_init_locked(
+  struct hash_table *table, size_t bucketcnt, hash_fn fn, void *fn_userdata)
+{
+  return hash_table_init_impl(table, bucketcnt, fn, fn_userdata, 1);
+}
+
 static inline void hash_table_free(struct hash_table *table)
 {
   if (table->itemcnt)
   {
     abort();
+  }
+  if (table->bucket_mutexes)
+  {
+    size_t i;
+    pthread_mutex_destroy(&table->global_mutex);
+    for (i = 0; i < table->bucketcnt; i++)
+    {
+      pthread_mutex_destroy(&table->bucket_mutexes[i]);
+    }
+    free(table->bucket_mutexes);
+    table->bucket_mutexes = NULL;
   }
   free(table->buckets);
   table->buckets = NULL;
@@ -68,22 +142,79 @@ static inline void hash_table_free(struct hash_table *table)
   table->itemcnt = 0;
 }
 
-static inline void hash_table_delete(
+static inline void hash_table_delete_already_bucket_locked(
   struct hash_table *table, struct hash_list_node *node)
 {
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_lock(&table->global_mutex);
+  }
   hash_list_delete(node);
   if (table->itemcnt == 0)
   {
     abort();
   }
   table->itemcnt--;
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_unlock(&table->global_mutex);
+  }
+}
+
+static inline void hash_table_delete(
+  struct hash_table *table, struct hash_list_node *node, uint32_t hashval)
+{
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_lock(&table->bucket_mutexes[hashval & (table->bucketcnt - 1)]);
+    pthread_mutex_lock(&table->global_mutex);
+  }
+  hash_list_delete(node);
+  if (table->itemcnt == 0)
+  {
+    abort();
+  }
+  table->itemcnt--;
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_unlock(&table->global_mutex);
+    pthread_mutex_unlock(&table->bucket_mutexes[hashval & (table->bucketcnt - 1)]);
+  }
 }
 
 static inline void hash_table_add_nogrow(
   struct hash_table *table, struct hash_list_node *node, uint32_t hashval)
 {
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_lock(&table->bucket_mutexes[hashval & (table->bucketcnt - 1)]);
+    pthread_mutex_lock(&table->global_mutex);
+  }
   hash_list_add_head(node, &table->buckets[hashval & (table->bucketcnt - 1)]);
   table->itemcnt++;
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_unlock(&table->global_mutex);
+    pthread_mutex_unlock(&table->bucket_mutexes[hashval & (table->bucketcnt - 1)]);
+  }
+}
+
+static inline void hash_table_lock_bucket(
+  struct hash_table *table, uint32_t hashval)
+{
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_lock(&table->bucket_mutexes[hashval & (table->bucketcnt - 1)]);
+  }
+}
+
+static inline void hash_table_unlock_bucket(
+  struct hash_table *table, uint32_t hashval)
+{
+  if (table->bucket_mutexes)
+  {
+    pthread_mutex_unlock(&table->bucket_mutexes[hashval & (table->bucketcnt - 1)]);
+  }
 }
 
 #define HASH_TABLE_FOR_EACH(table, bucket, x) \

@@ -93,7 +93,7 @@ void pcapng_out_ctx_free(struct pcapng_out_ctx *ctx)
   {
     struct pcapng_out_interface *out;
     out = CONTAINER_OF(n, struct pcapng_out_interface, node);
-    hash_table_delete(&ctx->hash, &out->node);
+    hash_table_delete(&ctx->hash, &out->node, string_hash(out->name));
     free(out->name);
     out->name = NULL;
     free(out);

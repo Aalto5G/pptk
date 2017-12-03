@@ -51,10 +51,10 @@ int main(int argc, char **argv)
       printf("ok\n");
     }
   }
-  hash_table_delete(&table, &e1.node);
-  hash_table_delete(&table, &e2.node);
-  hash_table_delete(&table, &e3.node);
-  hash_table_delete(&table, &e4.node);
+  hash_table_delete(&table, &e1.node, entry_hash(&e1));
+  hash_table_delete(&table, &e2.node, entry_hash(&e2));
+  hash_table_delete(&table, &e3.node, entry_hash(&e3));
+  hash_table_delete(&table, &e4.node, entry_hash(&e4));
   hash_table_free(&table);
   printf("====\n");
 
@@ -72,10 +72,10 @@ int main(int argc, char **argv)
       printf("ok\n");
     }
   }
-  hash_table_delete(&table, &e1.node);
-  hash_table_delete(&table, &e2.node);
-  hash_table_delete(&table, &e3.node);
-  hash_table_delete(&table, &e4.node);
+  hash_table_delete(&table, &e1.node, entry_hash(&e1));
+  hash_table_delete(&table, &e2.node, entry_hash(&e2));
+  hash_table_delete(&table, &e3.node, entry_hash(&e3));
+  hash_table_delete(&table, &e4.node, entry_hash(&e4));
   hash_table_free(&table);
   printf("====\n");
 
@@ -93,10 +93,10 @@ int main(int argc, char **argv)
       printf("ok\n");
     }
   }
-  hash_table_delete(&table, &e1.node);
-  hash_table_delete(&table, &e2.node);
-  hash_table_delete(&table, &e3.node);
-  hash_table_delete(&table, &e4.node);
+  hash_table_delete(&table, &e1.node, entry_hash(&e1));
+  hash_table_delete(&table, &e2.node, entry_hash(&e2));
+  hash_table_delete(&table, &e3.node, entry_hash(&e3));
+  hash_table_delete(&table, &e4.node, entry_hash(&e4));
   hash_table_free(&table);
 
   return 0;
