@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   hash.timer_add = default_timer_add;
   hash.timer_period = default_timer_period;
   hash.batch_size = default_batch_size;
-  ip_hash_init(&hash, &heap);
+  ip_hash_init(&hash, &heap, NULL);
   iter = 0;
   while (iter < 128*1024*1024)
   {

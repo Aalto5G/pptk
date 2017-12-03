@@ -28,7 +28,8 @@ struct ip_hash {
   uint32_t batch_size;
 };
 
-void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap);
+void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap,
+                  pthread_rwlock_t *lock);
 
 void ip_hash_free(struct ip_hash *hash, struct timer_linkheap *heap);
 

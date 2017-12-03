@@ -15,6 +15,7 @@ static inline uint64_t gettime64(void)
 
 struct batch_timer_userdata {
   struct ip_hash *hash;
+  pthread_rwlock_t *lock;
   size_t start;
   size_t end;
 };
@@ -27,7 +28,8 @@ static inline int power_of_2(size_t x)
   return (x > 0) && ((x & (x-1)) == 0);
 }
 
-void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap)
+void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap,
+                  pthread_rwlock_t *lock)
 {
   size_t i;
   size_t timercnt = hash->hash_size/hash->batch_size;
@@ -43,6 +45,7 @@ void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap)
     hash->timerud[i].hash = hash;
     hash->timerud[i].start = hash->batch_size*i;
     hash->timerud[i].end = hash->batch_size*(i+1);
+    hash->timerud[i].lock = lock;
     hash->timers[i].fn = batch_timer_fn;
     hash->timers[i].userdata = &hash->timerud[i];
     hash->timers[i].time64 = gettime64() + hash->timer_period*i/timercnt;
@@ -163,6 +166,10 @@ static void batch_timer_fn(
   uint32_t tokens;
   uint32_t timer_add = args->hash->timer_add;
   uint32_t initial_tokens = args->hash->initial_tokens;
+  if (args->lock)
+  {
+    pthread_rwlock_wrlock(args->lock);
+  }
   if (use_small(args->hash))
   {
     struct ip_hash_entry_small *e;
@@ -193,4 +200,8 @@ static void batch_timer_fn(
   }
   timer->time64 += args->hash->timer_period;
   timer_linkheap_add(heap, timer);
+  if (args->lock)
+  {
+    pthread_rwlock_unlock(args->lock);
+  }
 }

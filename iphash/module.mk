@@ -47,7 +47,7 @@ $(DIRIPHASH)/iphashtest5: $(DIRIPHASH)/iphashtest5.o $(DIRIPHASH)/libiphash.a $(
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHASH)
 
 $(DIRIPHASH)/iphashtest6: $(DIRIPHASH)/iphashtest6.o $(DIRIPHASH)/libiphash.a $(LIBS_IPHASH) $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
-	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHASH)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPHASH) -lpthread
 
 $(IPHASH_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_IPHASH)
