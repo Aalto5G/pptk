@@ -14,6 +14,21 @@ void timer_wheel_add(struct timer_wheel *wheel, struct timer_wheel_task *timer)
     diff = 0;
   }
   idx = (wheel->curidx + diff) % wheel->size;
+  timer->idx = idx;
   timer->rotation_count = diff / wheel->size;
+  if (wheel->locks)
+  {
+    if (pthread_mutex_lock(&wheel->locks[idx]) != 0)
+    {
+      abort();
+    }
+  }
   hash_list_add_head(&timer->node, &wheel->timers[idx]);
+  if (wheel->locks)
+  {
+    if (pthread_mutex_unlock(&wheel->locks[idx]) != 0)
+    {
+      abort();
+    }
+  }
 }

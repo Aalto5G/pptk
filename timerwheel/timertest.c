@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   struct periodud periodics_ud[50];
   struct timer_wheel_task periodics[50];
   size_t i;
-  timer_wheel_init(&wheel, 100*1000, 512, gettime64());
+  timer_wheel_init(&wheel, 100*1000, 512, gettime64(), 0);
   periodics_ud[0].period = MIN_PERIOD;
   periodics[0].time64 = gettime64() + MIN_PERIOD;
   periodics[0].fn = periodic_fn;
