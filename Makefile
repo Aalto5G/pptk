@@ -23,6 +23,10 @@ DIRLINKEDLIST := linkedlist
 LCLINKEDLIST := linkedlist
 MODULES += LINKEDLIST
 
+DIRTIMERWHEEL := timerwheel
+LCTIMERWHEEL := timerwheel
+MODULES += TIMERWHEEL
+
 DIRLOG := log
 LCLOG := log
 MODULES += LOG
