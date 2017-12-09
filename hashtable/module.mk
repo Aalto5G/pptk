@@ -11,6 +11,7 @@ HASHTABLE_DEP_LIB := $(patsubst %.c,%.d,$(HASHTABLE_SRC_LIB))
 HASHTABLE_DEP := $(patsubst %.c,%.d,$(HASHTABLE_SRC))
 
 CFLAGS_HASHTABLE := -I$(DIRHASHLIST) -I$(DIRMISC)
+LIBS_HASHTABLE := $(DIRMISC)/libmisc.a
 
 MAKEFILES_HASHTABLE := $(DIRHASHTABLE)/module.mk
 
@@ -31,7 +32,7 @@ $(DIRHASHTABLE)/libhashtable.a: $(HASHTABLE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEF
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRHASHTABLE)/hashtest: $(DIRHASHTABLE)/hashtest.o $(DIRHASHTABLE)/libhashtable.a $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
-	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE) $(LIBS_HASHTABLE)
 
 $(HASHTABLE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_HASHTABLE)
