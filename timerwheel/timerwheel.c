@@ -15,5 +15,5 @@ void timer_wheel_add(struct timer_wheel *wheel, struct timer_wheel_task *timer)
   }
   idx = (wheel->curidx + diff) % wheel->size;
   timer->rotation_count = diff / wheel->size;
-  linked_list_add_tail(&timer->node, &wheel->timers[idx]);
+  hash_list_add_head(&timer->node, &wheel->timers[idx]);
 }

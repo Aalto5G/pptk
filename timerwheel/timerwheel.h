@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <errno.h>
-#include "linkedlist.h"
+#include "hashlist.h"
 #include "containerof.h"
 
 struct timer_wheel;
@@ -15,7 +15,7 @@ struct timer_wheel_task;
 typedef void (*timer_wheel_fn)(struct timer_wheel_task *timer, struct timer_wheel *wheel, void *userdata);
 
 struct timer_wheel_task {
-  struct linked_list_node node;
+  struct hash_list_node node;
   uint64_t time64;
   uint32_t rotation_count;
   timer_wheel_fn fn;
@@ -23,7 +23,7 @@ struct timer_wheel_task {
 };
 
 struct timer_wheel {
-  struct linked_list_head *timers;
+  struct hash_list_head *timers;
   uint32_t curidx;
   uint32_t size;
   uint32_t granularity;
@@ -40,7 +40,7 @@ static inline int timer_wheel_init(struct timer_wheel *wheel, uint32_t granulari
   }
   for (i = 0; i < size; i++)
   {
-    linked_list_head_init(&wheel->timers[i]);
+    hash_list_head_init(&wheel->timers[i]);
   }
   wheel->curidx = 0;
   wheel->size = size;
@@ -60,8 +60,8 @@ static inline void timer_wheel_process(struct timer_wheel *wheel, uint64_t curti
 {
   while (curtime64 >= wheel->next_time64)
   {
-    struct linked_list_node *node, *tmp;
-    LINKED_LIST_FOR_EACH_SAFE(node, tmp, &wheel->timers[wheel->curidx])
+    struct hash_list_node *node, *tmp;
+    HASH_LIST_FOR_EACH_SAFE(node, tmp, &wheel->timers[wheel->curidx])
     {
       struct timer_wheel_task *task =
         CONTAINER_OF(node, struct timer_wheel_task, node);
@@ -71,7 +71,7 @@ static inline void timer_wheel_process(struct timer_wheel *wheel, uint64_t curti
       }
       else
       {
-        linked_list_delete(&task->node);
+        hash_list_delete(&task->node);
         task->fn(task, wheel, task->userdata);
       }
     }
@@ -86,7 +86,7 @@ static inline void timer_wheel_process(struct timer_wheel *wheel, uint64_t curti
 
 static inline void timer_wheel_remove(struct timer_wheel *wheel, struct timer_wheel_task *timer)
 {
-  linked_list_delete(&timer->node);
+  hash_list_delete(&timer->node);
 }
 
 static inline void timer_wheel_modify(struct timer_wheel *wheel, struct timer_wheel_task *timer)
