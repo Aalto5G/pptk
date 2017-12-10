@@ -9,6 +9,7 @@
 
 struct timerrb {
   struct rb_tree tree;
+  struct rbtimer *next;
 };
 
 struct rbtimer;
@@ -29,13 +30,11 @@ static inline int timerrb_verify(struct timerrb *rb)
 
 static inline uint64_t timerrb_next_expiry_time(struct timerrb *rb)
 {
-  struct rb_tree_node *node;
-  if (rb->tree.root == NULL)
+  if (rb->next == NULL)
   {
     return UINT64_MAX;
   }
-  node = rb_tree_leftmost(&rb->tree);
-  return CONTAINER_OF(node, struct rbtimer, node)->time64;
+  return rb->next->time64;
 }
 
 int timerrb_cmp(struct rb_tree_node *n1, struct rb_tree_node *n2, void *ud);
@@ -45,31 +44,42 @@ static inline void timerrb_init(struct timerrb *rb)
   rb_tree_init(&rb->tree, timerrb_cmp, NULL);
 }
 
+static inline void timerrb_update_next(struct timerrb *rb)
+{
+  struct rb_tree_node *node;
+  node = rb_tree_leftmost(&rb->tree);
+  if (node == NULL)
+  {
+    rb->next = NULL;
+  }
+  else
+  {
+    rb->next = CONTAINER_OF(node, struct rbtimer, node);
+  }
+}
+
 static inline void timerrb_add(struct timerrb *rb, struct rbtimer *timer)
 {
   rb_tree_insert(&rb->tree, &timer->node);
+  timerrb_update_next(rb);
 }
 
 static inline void timerrb_remove(struct timerrb *rb, struct rbtimer *timer)
 {
   rb_tree_delete(&rb->tree, &timer->node);
+  timerrb_update_next(rb);
 }
 
 static inline void timerrb_modify(struct timerrb *rb, struct rbtimer *timer)
 {
-  timerrb_remove(rb, timer);
-  timerrb_add(rb, timer);
+  rb_tree_delete(&rb->tree, &timer->node);
+  rb_tree_insert(&rb->tree, &timer->node);
+  timerrb_update_next(rb);
 }
 
 static inline struct rbtimer *timerrb_next_expiry_timer(struct timerrb *rb)
 {
-  struct rb_tree_node *node;
-  if (rb->tree.root == NULL)
-  {
-    return NULL;
-  }
-  node = rb_tree_leftmost(&rb->tree);
-  return CONTAINER_OF(node, struct rbtimer, node);
+  return rb->next;
 }
 
 #endif
