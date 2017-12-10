@@ -587,30 +587,6 @@ static void __attribute__((unused)) rb_tree_exchange(struct rb_tree *tree, struc
   n1->parent = n2_parent;
   n1->left = n2_left;
   n1->right = n2_right;
-#if 1
-  if (n1->parent)
-  {
-    if (n1->parent->left == n2)
-    {
-      n1->parent->left = n1;
-    }
-    else if (n1->parent->right == n2)
-    {
-      n1->parent->right = n1;
-    }
-  }
-  if (n2->parent)
-  {
-    if (n2->parent->left == n1)
-    {
-      n2->parent->left = n2;
-    }
-    else if (n2->parent->right == n1)
-    {
-      n2->parent->right = n2;
-    }
-  }
-#endif
   if (n1->left)
   {
     n1->left->parent = n1;
