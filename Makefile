@@ -23,6 +23,10 @@ DIRRBTREE := rbtree
 LCRBTREE := rbtree
 MODULES += RBTREE
 
+DIRTIMERRB := timerrb
+LCTIMERRB := timerrb
+MODULES += TIMERRB
+
 DIRLINKEDLIST := linkedlist
 LCLINKEDLIST := linkedlist
 MODULES += LINKEDLIST
