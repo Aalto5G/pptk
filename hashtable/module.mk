@@ -1,5 +1,5 @@
 HASHTABLE_SRC_LIB := hashtable.c
-HASHTABLE_SRC := $(HASHTABLE_SRC_LIB) hashtest.c
+HASHTABLE_SRC := $(HASHTABLE_SRC_LIB) hashtest.c hashperf.c
 
 HASHTABLE_SRC_LIB := $(patsubst %,$(DIRHASHTABLE)/%,$(HASHTABLE_SRC_LIB))
 HASHTABLE_SRC := $(patsubst %,$(DIRHASHTABLE)/%,$(HASHTABLE_SRC))
@@ -22,7 +22,7 @@ clean_$(LCHASHTABLE): clean_HASHTABLE
 distclean_$(LCHASHTABLE): distclean_HASHTABLE
 unit_$(LCHASHTABLE): unit_HASHTABLE
 
-HASHTABLE: $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/hashtest
+HASHTABLE: $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/hashtest $(DIRHASHTABLE)/hashperf
 
 unit_HASHTABLE: $(DIRHASHTABLE)/hashtest
 	$(DIRHASHTABLE)/hashtest
@@ -32,6 +32,9 @@ $(DIRHASHTABLE)/libhashtable.a: $(HASHTABLE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEF
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRHASHTABLE)/hashtest: $(DIRHASHTABLE)/hashtest.o $(DIRHASHTABLE)/libhashtable.a $(LIBS_HASHTABLE) $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE)
+
+$(DIRHASHTABLE)/hashperf: $(DIRHASHTABLE)/hashperf.o $(DIRHASHTABLE)/libhashtable.a $(LIBS_HASHTABLE) $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE)
 
 $(HASHTABLE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
@@ -44,6 +47,6 @@ clean_HASHTABLE:
 	rm -f $(HASHTABLE_OBJ) $(HASHTABLE_DEP)
 
 distclean_HASHTABLE: clean_HASHTABLE
-	rm -f $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/hashtest
+	rm -f $(DIRHASHTABLE)/libhashtable.a $(DIRHASHTABLE)/hashtest $(DIRHASHTABLE)/growtest $(DIRHASHTABLE)/hashperf
 
 -include $(DIRHASHTABLE)/*.d
