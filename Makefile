@@ -31,6 +31,10 @@ DIRTIMERRB := timerrb
 LCTIMERRB := timerrb
 MODULES += TIMERRB
 
+DIRTIMERAVL := timeravl
+LCTIMERAVL := timeravl
+MODULES += TIMERAVL
+
 DIRLINKEDLIST := linkedlist
 LCLINKEDLIST := linkedlist
 MODULES += LINKEDLIST
