@@ -537,9 +537,44 @@ static void __attribute__((unused)) rb_tree_exchange(struct rb_tree *tree, struc
   }
   if (n2_parent == n1 && n1->right == n2)
   {
-    printf("unimplemented\n");
-    // FIXME this should be implemented but isn't really needed
-    abort();
+    n1->left = n2_left;
+    n1->right = n2_right;
+    n1->parent = n2;
+    if (n1->left)
+    {
+      n1->left->parent = n1;
+    }
+    if (n1->right)
+    {
+      n1->right->parent = n1;
+    }
+    n2->left = n1_left;
+    n2->right = n1;
+    n2->parent = n1_parent;
+    if (n1_left)
+    {
+      n1_left->parent = n2;
+    }
+    if (n2->parent == NULL)
+    {
+      tree->root = n2;
+    }
+    else if (n2->parent->left == n1)
+    {
+      n2->parent->left = n2;
+    }
+    else if (n2->parent->right == n1)
+    {
+      n2->parent->right = n2;
+    }
+    else
+    {
+      printf("shouldn't reach\n");
+      abort();
+    }
+    n1->is_black = n2_is_black;
+    n2->is_black = n1_is_black;
+    return;
   }
   if (n1_parent == n2)
   {
