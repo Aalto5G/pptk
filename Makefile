@@ -19,6 +19,10 @@ DIRHASHTABLE := hashtable
 LCHASHTABLE := hashtable
 MODULES += HASHTABLE
 
+DIRRBTREE := rbtree
+LCRBTREE := rbtree
+MODULES += RBTREE
+
 DIRLINKEDLIST := linkedlist
 LCLINKEDLIST := linkedlist
 MODULES += LINKEDLIST
