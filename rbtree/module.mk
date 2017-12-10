@@ -31,8 +31,8 @@ $(DIRRBTREE)/librbtree.a: $(RBTREE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_RBTR
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
-$(DIRRBTREE)/rbtreetest: $(DIRRBTREE)/rbtreetest.o $(DIRRBTREE)/librbtree.a $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
-	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_RBTREE) $(LIBS_RBTREE)
+$(DIRRBTREE)/rbtreetest: $(DIRRBTREE)/rbtreetest.o $(DIRRBTREE)/librbtree.a $(LIBS_RBTREE) $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_RBTREE)
 
 $(RBTREE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_RBTREE)

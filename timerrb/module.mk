@@ -31,8 +31,8 @@ $(DIRTIMERRB)/libtimerrb.a: $(TIMERRB_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_T
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
-$(DIRTIMERRB)/timerrbtest: $(DIRTIMERRB)/timerrbtest.o $(DIRTIMERRB)/libtimerrb.a $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
-	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERRB) $(LIBS_TIMERRB)
+$(DIRTIMERRB)/timerrbtest: $(DIRTIMERRB)/timerrbtest.o $(DIRTIMERRB)/libtimerrb.a $(LIBS_TIMERRB) $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERRB)
 
 $(TIMERRB_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_TIMERRB)

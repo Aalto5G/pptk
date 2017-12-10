@@ -31,8 +31,8 @@ $(DIRHASHTABLE)/libhashtable.a: $(HASHTABLE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEF
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
-$(DIRHASHTABLE)/hashtest: $(DIRHASHTABLE)/hashtest.o $(DIRHASHTABLE)/libhashtable.a $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
-	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE) $(LIBS_HASHTABLE)
+$(DIRHASHTABLE)/hashtest: $(DIRHASHTABLE)/hashtest.o $(DIRHASHTABLE)/libhashtable.a $(LIBS_HASHTABLE) $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_HASHTABLE)
 
 $(HASHTABLE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_HASHTABLE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_HASHTABLE)
