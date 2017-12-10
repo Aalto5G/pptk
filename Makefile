@@ -23,6 +23,10 @@ DIRRBTREE := rbtree
 LCRBTREE := rbtree
 MODULES += RBTREE
 
+DIRAVLTREE := avltree
+LCAVLTREE := avltree
+MODULES += AVLTREE
+
 DIRTIMERRB := timerrb
 LCTIMERRB := timerrb
 MODULES += TIMERRB
