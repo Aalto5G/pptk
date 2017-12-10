@@ -16,6 +16,13 @@ struct rb_tree {
   void *cmp_userdata;
 };
 
+static inline void rb_tree_init(struct rb_tree *tree, rb_tree_cmp cmp, void *cmp_userdata)
+{
+  tree->root = NULL;
+  tree->cmp = cmp;
+  tree->cmp_userdata = cmp_userdata;
+}
+
 int rb_tree_valid(struct rb_tree *tree);
 
 struct rb_tree_node *rb_tree_leftmost(struct rb_tree *tree);

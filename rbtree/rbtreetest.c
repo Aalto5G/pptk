@@ -28,7 +28,7 @@ static void insert_random(struct rb_tree *tree)
 {
   struct test_entry *e = malloc(sizeof(*e));
   e->i = rand();
-  printf("inserting %d\n", e->i);
+  //printf("inserting %d\n", e->i);
   rb_tree_insert(tree, &e->node);
 }
 
@@ -46,7 +46,7 @@ static void delete_random(struct rb_tree *tree)
     int tri = rand()%3;
     if (tri == 0)
     {
-      printf("deleting %d\n", CONTAINER_OF(node, struct test_entry, node)->i);
+      //printf("deleting %d\n", CONTAINER_OF(node, struct test_entry, node)->i);
       rb_tree_delete(tree, node);
       free(CONTAINER_OF(node, struct test_entry, node));
       return;
@@ -55,7 +55,7 @@ static void delete_random(struct rb_tree *tree)
     {
       if (node->left == NULL)
       {
-        printf("deleting %d\n", CONTAINER_OF(node, struct test_entry, node)->i);
+        //printf("deleting %d\n", CONTAINER_OF(node, struct test_entry, node)->i);
         rb_tree_delete(tree, node);
         free(CONTAINER_OF(node, struct test_entry, node));
         return;
@@ -66,7 +66,7 @@ static void delete_random(struct rb_tree *tree)
     {
       if (node->right == NULL)
       {
-        printf("deleting %d\n", CONTAINER_OF(node, struct test_entry, node)->i);
+        //printf("deleting %d\n", CONTAINER_OF(node, struct test_entry, node)->i);
         rb_tree_delete(tree, node);
         free(CONTAINER_OF(node, struct test_entry, node));
         return;
@@ -118,10 +118,13 @@ int main(int argc, char **argv)
 {
   struct rb_tree tree = {};
   int i;
-  tree.cmp = cmp;
+  rb_tree_init(&tree, cmp, NULL);
   for (i = 0; i < 1000*1000; i++)
   {
-    printf("i = %d\n", i);
+    if (i % 1000 == 0)
+    {
+      printf("i = %d\n", i);
+    }
     //print_tree(&tree);
     if (rand() % 2)
     {
@@ -131,7 +134,7 @@ int main(int argc, char **argv)
     {
       insert_random(&tree);
     }
-    if (!rb_tree_valid(&tree))
+    if (i % 1000 == 0 && !rb_tree_valid(&tree))
     {
       printf("invalid\n");
       print_tree(&tree);
