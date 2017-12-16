@@ -88,15 +88,8 @@ int main(int argc, char **argv)
   for (;;)
   {
     int ret;
-    struct pollfd pfds[2];
     struct pkt *pkt;
     uint64_t time64;
-    pfds[0].fd = dlnmd->fd;
-    pfds[0].events = POLLIN;
-    pfds[1].fd = ulnmd->fd;
-    pfds[1].events = POLLIN;
-    poll(pfds, 2, 5);
-    time64 = gettime64();
     ret = pcap_in_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64);
     if (ret == 0)
     {
