@@ -7,16 +7,10 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include "time64.h"
 
 atomic_uint global_log_file_level = ATOMIC_VAR_INIT(LOG_LEVEL_INFO);
 atomic_uint global_log_console_level = ATOMIC_VAR_INIT(LOG_LEVEL_NOTICE);
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
 
 struct globals {
   FILE *f;

@@ -3,6 +3,7 @@
 #include "timerlink.h"
 #include "containerof.h"
 #include <sys/time.h>
+#include "time64.h"
 
 const uint32_t initial_tokens = 2000;
 const uint32_t timer_period = (1000*1000);
@@ -53,13 +54,6 @@ static void ip_hash_init(struct ip_hash5 *hash)
       e->tokens = initial_tokens;
     }
   }
-}
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
 }
 
 const char key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};

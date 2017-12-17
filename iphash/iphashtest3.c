@@ -3,6 +3,7 @@
 #include "timerlink.h"
 #include "containerof.h"
 #include <sys/time.h>
+#include "time64.h"
 
 #define INITIAL_TOKENS 2000
 #define HASH_SIZE 0x20000
@@ -29,13 +30,6 @@ static void ip_hash_init(struct ip_hash3 *hash)
     struct ip_hash_entry3 *e = &hash->entries[i];
     e->tokens = INITIAL_TOKENS;
   }
-}
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
 }
 
 static int ip_permitted(

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include "time64.h"
 
 #define MIN_PERIOD (1000*1000)
 #define PERIOD_MUL 5
@@ -10,13 +11,6 @@
 struct periodud {
   uint64_t period;
 };
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
 
 static void periodic_fn(
   struct rbtimer *timer, struct timerrb *rb, void *userdata)

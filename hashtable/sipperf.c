@@ -4,13 +4,7 @@
 #include "containerof.h"
 #include <stdio.h>
 #include <sys/time.h>
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
+#include "time64.h"
 
 struct entry {
   struct hash_list_node node;

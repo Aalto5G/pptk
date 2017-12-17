@@ -42,6 +42,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include "random_mt.h"
+#include "time64.h"
 
 #include "timerskiplist.h"
 
@@ -331,13 +332,6 @@ __timer_skiplist_reset(struct priv_timer *priv, struct timer_skiplist *tim, uint
 	tim->status.u32 = status.u32;
 
 	return 0;
-}
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
 }
 
 /* Reset and start the timer associated with the timer handle tim */

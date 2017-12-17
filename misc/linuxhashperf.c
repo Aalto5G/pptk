@@ -2,13 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
+#include "time64.h"
 
 static inline uint32_t linux_hash(uint32_t x)
 {

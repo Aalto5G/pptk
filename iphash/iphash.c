@@ -5,13 +5,7 @@
 #include "iphash.h"
 #include "hashseed.h"
 #include <sys/time.h>
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
+#include "time64.h"
 
 struct batch_timer_userdata {
   struct ip_hash *hash;

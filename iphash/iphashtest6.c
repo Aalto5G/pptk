@@ -1,18 +1,12 @@
 #include "iphash.h"
 #include "hashseed.h"
+#include "time64.h"
 
 const uint32_t default_initial_tokens = 2000;
 const uint32_t default_timer_period = (1000*1000);
 const uint32_t default_timer_add = 400;
 const uint32_t default_hash_size = 0x20000;
 const uint32_t default_batch_size = 16384;
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
 
 int main(int argc, char **argv)
 {

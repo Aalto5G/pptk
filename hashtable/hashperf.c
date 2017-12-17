@@ -3,15 +3,9 @@
 #include "hashlist.h"
 #include "hashtable.h"
 #include "containerof.h"
+#include "time64.h"
 #include <stdio.h>
 #include <sys/time.h>
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
 
 struct entry {
   struct hash_list_node node;

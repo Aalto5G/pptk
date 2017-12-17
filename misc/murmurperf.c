@@ -3,13 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "murmur.h"
-
-static inline uint64_t gettime64(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000UL*1000UL + tv.tv_usec;
-}
+#include "time64.h"
 
 static inline uint32_t murmur_hash(uint32_t x)
 {
