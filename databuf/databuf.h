@@ -103,6 +103,32 @@ static inline int datainbuf_get_u32(struct datainbuf *buf, uint32_t *u32ptr)
   return 0;
 }
 
+static inline int datainbuf_get_u16(struct datainbuf *buf, uint16_t *u16ptr)
+{
+  uint32_t u16 = 0;
+  if (buf->location + 2 > buf->size)
+  {
+    return -EFAULT;
+  }
+  u16 |= (uint8_t)buf->buf[buf->location++];
+  u16 <<= 8;
+  u16 |= (uint8_t)buf->buf[buf->location++];
+  *u16ptr = u16;
+  return 0;
+}
+
+static inline int datainbuf_get_u8(struct datainbuf *buf, uint8_t *u8ptr)
+{
+  uint8_t u8 = 0;
+  if (buf->location + 1 > buf->size)
+  {
+    return -EFAULT;
+  }
+  u8 |= (uint8_t)buf->buf[buf->location++];
+  *u8ptr = u8;
+  return 0;
+}
+
 static inline int datainbuf_get_bytes(struct datainbuf *buf, void *b, size_t sz)
 {
   if (buf->location + sz > buf->size)
