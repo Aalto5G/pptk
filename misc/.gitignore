@@ -5,3 +5,6 @@
 /memperftest
 /chachatest
 /shatest
+/linuxhashperf
+/murmurperf
+/siphashperf

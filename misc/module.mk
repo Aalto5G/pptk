@@ -1,5 +1,5 @@
 MISC_SRC_LIB := chacha.c hashseed.c
-MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c memperftest.c chachatest.c shatest.c
+MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c memperftest.c chachatest.c shatest.c linuxhashperf.c murmurperf.c siphashperf.c
 
 MISC_SRC_LIB := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC_LIB))
 MISC_SRC := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC))
@@ -21,7 +21,7 @@ clean_$(LCMISC): clean_MISC
 distclean_$(LCMISC): distclean_MISC
 unit_$(LCMISC): unit_MISC
 
-MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest $(DIRMISC)/shatest
+MISC: $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest $(DIRMISC)/shatest $(DIRMISC)/linuxhashperf $(DIRMISC)/murmurperf $(DIRMISC)/siphashperf
 
 unit_MISC: $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest
 	$(DIRMISC)/containeroftest
@@ -54,6 +54,15 @@ $(DIRMISC)/chachatest: $(DIRMISC)/chachatest.o $(DIRMISC)/libmisc.a $(MAKEFILES_
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
 $(DIRMISC)/shatest: $(DIRMISC)/shatest.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
+
+$(DIRMISC)/linuxhashperf: $(DIRMISC)/linuxhashperf.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
+
+$(DIRMISC)/murmurperf: $(DIRMISC)/murmurperf.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
+
+$(DIRMISC)/siphashperf: $(DIRMISC)/siphashperf.o $(DIRMISC)/libmisc.a $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MISC)
 
 $(MISC_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
