@@ -1,5 +1,5 @@
-#ifndef _TIMERRB_H_
-#define _TIMERRB_H_
+#ifndef _TIMERAVL_H_
+#define _TIMERAVL_H_
 
 #include <stddef.h>
 #include <limits.h>
