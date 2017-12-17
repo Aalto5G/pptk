@@ -1,5 +1,5 @@
 QUEUE_SRC_LIB := queue.c
-QUEUE_SRC := $(QUEUE_SRC_LIB) queueperf.c
+QUEUE_SRC := $(QUEUE_SRC_LIB) queueperf.c queueenergy.c
 
 QUEUE_SRC_LIB := $(patsubst %,$(DIRQUEUE)/%,$(QUEUE_SRC_LIB))
 QUEUE_SRC := $(patsubst %,$(DIRQUEUE)/%,$(QUEUE_SRC))
@@ -21,7 +21,7 @@ clean_$(LCQUEUE): clean_QUEUE
 distclean_$(LCQUEUE): distclean_QUEUE
 unit_$(LCQUEUE): unit_QUEUE
 
-QUEUE: $(DIRQUEUE)/libqueue.a $(DIRQUEUE)/queueperf
+QUEUE: $(DIRQUEUE)/libqueue.a $(DIRQUEUE)/queueperf $(DIRQUEUE)/queueenergy
 
 unit_QUEUE: $(DIRQUEUE)/queueperf
 	$(DIRQUEUE)/queueperf
@@ -31,6 +31,9 @@ $(DIRQUEUE)/libqueue.a: $(QUEUE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRQUEUE)/queueperf: $(DIRQUEUE)/queueperf.o $(DIRQUEUE)/libqueue.a $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_QUEUE) -lpthread
+
+$(DIRQUEUE)/queueenergy: $(DIRQUEUE)/queueenergy.o $(DIRQUEUE)/libqueue.a $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_QUEUE) -lpthread
 
 $(QUEUE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
