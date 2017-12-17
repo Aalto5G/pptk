@@ -1,5 +1,5 @@
-#ifndef _TIMER_H_
-#define _TIMER_H_
+#ifndef _TIMERLINK_H_
+#define _TIMERLINK_H_
 
 #include <stdint.h>
 #include <stdio.h>
