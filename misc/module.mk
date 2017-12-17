@@ -1,4 +1,4 @@
-MISC_SRC_LIB := chacha.c hashseed.c
+MISC_SRC_LIB := chacha.c hashseed.c read.c
 MISC_SRC := $(MISC_SRC_LIB) containeroftest.c murmurtest.c branchpredicttest.c siphashtest.c memperftest.c chachatest.c shatest.c linuxhashperf.c murmurperf.c siphashperf.c
 
 MISC_SRC_LIB := $(patsubst %,$(DIRMISC)/%,$(MISC_SRC_LIB))
