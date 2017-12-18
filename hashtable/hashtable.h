@@ -130,7 +130,7 @@ static inline void hash_table_free(struct hash_table *table)
   {
     size_t i;
     pthread_mutex_destroy(&table->global_mutex);
-    for (i = 0; i < table->bucketcnt; i++)
+    for (i = 0; i < table->bucketcnt >> table->mutex_shift; i++)
     {
       pthread_mutex_destroy(&table->bucket_mutexes[i]);
     }
