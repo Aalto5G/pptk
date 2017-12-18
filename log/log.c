@@ -143,6 +143,12 @@ void log_impl_log(enum log_level level, const char *compname, const char *file, 
   va_end(ap);
 }
 
+void log_close(void)
+{
+  fclose(globals.f);
+  globals.f = NULL;
+}
+
 void log_open(const char *progname, enum log_level file_level, enum log_level console_level)
 {
   char logfile[256] = {0};

@@ -21,6 +21,8 @@ extern atomic_uint global_log_console_level;
 
 void log_open(const char *progname, enum log_level file_level, enum log_level console_level);
 
+void log_close(void);
+
 void log_impl_log(enum log_level level, const char *compname, const char *file, size_t line, const char *function, const char *buf, ...);
 
 void log_impl_vlog(enum log_level level, const char *compname, const char *file, size_t line, const char *function, const char *buf, va_list ap);
