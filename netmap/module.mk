@@ -1,4 +1,7 @@
 NETMAP_SRC_LIB :=
+ifeq ($(WITH_NETMAP),yes)
+NETMAP_SRC_LIB := netmapcommon.c
+endif
 NETMAP_SRC := $(NETMAP_SRC_LIB) netmapfwd.c netmaprecv.c netmapreplay.c
 
 NETMAP_SRC_LIB := $(patsubst %,$(DIRNETMAP)/%,$(NETMAP_SRC_LIB))

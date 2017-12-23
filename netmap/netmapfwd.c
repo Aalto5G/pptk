@@ -8,31 +8,9 @@
 #include "net/netmap_user.h"
 #include <sys/poll.h>
 #include "time64.h"
+#include "netmapcommon.h"
 
 struct nm_desc *dlnmd, *ulnmd;
-
-static inline void nm_my_inject(struct nm_desc *nmd, void *data, size_t sz)
-{
-  int i, j;
-  for (i = 0; i < 3; i++)
-  {
-    for (j = 0; j < 3; j++)
-    {
-      if (nm_inject(nmd, data, sz) == 0)
-      {
-        struct pollfd pollfd;
-        pollfd.fd = nmd->fd;
-        pollfd.events = POLLOUT;
-        poll(&pollfd, 1, 0);
-      }
-      else
-      {
-        return;
-      }
-    }
-    ioctl(nmd->fd, NIOCTXSYNC, NULL);
-  }
-}
 
 int main(int argc, char **argv)
 {
