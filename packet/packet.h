@@ -3,14 +3,22 @@
 
 #include "linkedlist.h"
 #include <stddef.h>
+#include <stdint.h>
 
 enum packet_direction {
   PACKET_DIRECTION_UPLINK = 0,
   PACKET_DIRECTION_DOWNLINK = 1,
 };
 
+struct hole {
+  struct linked_list_node node;
+  uint16_t first;
+  uint16_t last;
+};
+
 struct packet {
   struct linked_list_node node;
+  struct hole hole;
   enum packet_direction direction;
   size_t sz;
   // after this: packet data

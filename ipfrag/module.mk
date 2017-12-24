@@ -1,5 +1,5 @@
-IPFRAG_SRC_LIB := ipfrag.c
-IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c
+IPFRAG_SRC_LIB := ipfrag.c ipreass.c
+IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c
 
 IPFRAG_SRC_LIB := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC_LIB))
 IPFRAG_SRC := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC))
@@ -22,7 +22,7 @@ clean_$(LCIPFRAG): clean_IPFRAG
 distclean_$(LCIPFRAG): distclean_IPFRAG
 unit_$(LCIPFRAG): unit_IPFRAG
 
-IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest
+IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest
 
 unit_IPFRAG:
 	@true
@@ -32,6 +32,9 @@ $(DIRIPFRAG)/libipfrag.a: $(IPFRAG_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_IPFR
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRIPFRAG)/ipfragtest: $(DIRIPFRAG)/ipfragtest.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/ipreasstest: $(DIRIPFRAG)/ipreasstest.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(IPFRAG_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
@@ -44,6 +47,6 @@ clean_IPFRAG:
 	rm -f $(IPFRAG_OBJ) $(IPFRAG_DEP)
 
 distclean_IPFRAG: clean_IPFRAG
-	rm -f $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipcksumtest $(DIRIPFRAG)/ipcksumperf
+	rm -f $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest
 
 -include $(DIRIPFRAG)/*.d
