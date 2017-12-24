@@ -43,6 +43,24 @@ static inline void linked_list_add_head(
   head->node.next = node;
 }
 
+static inline void linked_list_add_before(
+  struct linked_list_node *newnode, struct linked_list_node *oldnode)
+{
+  newnode->prev = oldnode->prev;
+  newnode->next = oldnode;
+  oldnode->prev->next = newnode;
+  oldnode->prev = newnode;
+}
+
+static inline void linked_list_add_after(
+  struct linked_list_node *newnode, struct linked_list_node *oldnode)
+{
+  newnode->prev = oldnode;
+  newnode->next = oldnode->next;
+  oldnode->next->prev = newnode;
+  oldnode->next = newnode;
+}
+
 static inline int linked_list_is_empty(struct linked_list_head *head)
 {
   return head->node.next == &head->node;
