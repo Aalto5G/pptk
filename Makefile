@@ -59,6 +59,10 @@ DIRIPHDR := iphdr
 LCIPHDR := iphdr
 MODULES += IPHDR
 
+DIRIPFRAG := ipfrag
+LCIPFRAG := ipfrag
+MODULES += IPFRAG
+
 DIRPACKET := packet
 LCPACKET := packet
 MODULES += PACKET
