@@ -162,7 +162,10 @@ void reassctx_add(struct reassctx *ctx, struct packet *pkt)
       }
       else
       {
-        hole->last = data_first - 1;
+        if (hole->last > data_first - 1)
+        {
+          hole->last = data_first - 1;
+        }
         continue;
       }
     }
