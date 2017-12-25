@@ -1,4 +1,4 @@
-IPFRAG_SRC_LIB := ipfrag.c ipreass.c
+IPFRAG_SRC_LIB := ipfrag.c ipreass.c rfc815.c
 IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c
 
 IPFRAG_SRC_LIB := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC_LIB))
