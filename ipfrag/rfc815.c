@@ -80,7 +80,7 @@ static void linktest(struct rfc815ctx *ctx)
   uint16_t iter;
   uint16_t prev = 65535;
   iter = ctx->first_hole;
-  //printf("start iter %d\n", iter);
+  //printf("start iter\n");
   while (iter != 65535)
   {
     struct rfc815hole hole;
@@ -98,6 +98,11 @@ static void linktest(struct rfc815ctx *ctx)
     //printf("hole %d-%d\n", hole.first, hole.last);
     prev = iter;
     iter = hole.next_hole;
+    if (iter < prev)
+    {
+      printf("list not well-sorted\n");
+      abort();
+    }
     //printf("iterating %d\n", iter);
   }
   if (ctx->last_hole != prev)
@@ -193,11 +198,14 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
     {
       if (data_first <= hole.first)
       {
-        hole.first = data_last + 1;
-        holenonptr_set_next(ctx, hole.prev_hole, data_last + 1);
-        holenonptr_set_prev(ctx, hole.next_hole, data_last + 1);
-        //printf("suspicious code path\n");
-        memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
+        if (data_last + 1 > hole.first)
+        {
+          hole.first = data_last + 1;
+          holenonptr_set_next(ctx, hole.prev_hole, data_last + 1);
+          holenonptr_set_prev(ctx, hole.next_hole, data_last + 1);
+          //printf("suspicious code path\n");
+          memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
+        }
         break;
       }
       else

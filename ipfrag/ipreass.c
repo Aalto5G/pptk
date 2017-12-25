@@ -86,6 +86,19 @@ reassctx_reassemble(struct as_alloc_local *loc, struct reassctx *ctx)
   return pkt;
 }
 
+#if 0
+static void linktest(struct reassctx *ctx)
+{
+  struct linked_list_node *iter;
+  printf("start iter\n");
+  LINKED_LIST_FOR_EACH(iter, &ctx->hole_list)
+  {
+    struct hole *hole = CONTAINER_OF(iter, struct hole, node);
+    printf("hole %d-%d\n", hole->first, hole->last);
+  }
+}
+#endif
+
 void reassctx_add(struct reassctx *ctx, struct packet *pkt)
 {
   const char *ether = packet_data(pkt);
@@ -94,6 +107,7 @@ void reassctx_add(struct reassctx *ctx, struct packet *pkt)
   uint16_t data_last;
   struct linked_list_node *iter, *tmp;
   linked_list_add_tail(&pkt->node, &ctx->packet_list);
+  //linktest(ctx);
   if (ip_total_len(ip) <= ip_hdr_len(ip))
   {
     return;
@@ -120,6 +134,17 @@ void reassctx_add(struct reassctx *ctx, struct packet *pkt)
       }
     }
   }
+#if 0
+  else
+  {
+    if (data_last < 7)
+    {
+      return;
+    }
+    data_last = (data_last + 1) / 8 * 8 - 1;
+  }
+#endif
+  //printf("first %d last %d\n", data_first, data_last);
   LINKED_LIST_FOR_EACH_SAFE(iter, tmp, &ctx->hole_list)
   {
     struct hole *hole = CONTAINER_OF(iter, struct hole, node);
@@ -140,7 +165,10 @@ void reassctx_add(struct reassctx *ctx, struct packet *pkt)
     {
       if (data_first <= hole->first)
       {
-        hole->first = data_last + 1;
+        if (data_last + 1 > hole->first)
+        {
+          hole->first = data_last + 1;
+        }
         return;
       }
       else
