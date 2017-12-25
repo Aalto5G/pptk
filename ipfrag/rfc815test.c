@@ -34,7 +34,7 @@ static struct packet *rfc815ctx_reassemble(struct as_alloc_local *loc, struct rf
 {
   struct packet *pkt;
   size_t sz;
-  char *ether2, *pay2;
+  char *ether2, *ip2, *pay2;
   sz = ctx->hdr_len + ctx->most_restricting_last + 1;
   pkt = as_alloc_mt(loc, packet_size(sz));
   if (pkt == NULL)
@@ -44,7 +44,13 @@ static struct packet *rfc815ctx_reassemble(struct as_alloc_local *loc, struct rf
   pkt->sz = sz;
   pkt->direction = ctx->direction;
   ether2 = packet_data(pkt);
+  printf("hdr_len %zu\n", (size_t)ctx->hdr_len);
   memcpy(ether2, ctx->pkt_header, ctx->hdr_len);
+  ip2 = ether_payload(ether2);
+  ip_set_frag_off(ip2, 0);
+  ip_set_more_frags(ip2, 0);
+  ip_set_total_len(ip2, ctx->hdr_len - 14 + ctx->most_restricting_last + 1);
+  ip_set_hdr_cksum_calc(ip2, ctx->hdr_len - 14);
   pay2 = ether2 + ctx->hdr_len;
   memcpy(pay2, ctx->pkt, ctx->most_restricting_last + 1);
   return pkt;
@@ -60,6 +66,7 @@ static void rfc815ctx_init(struct rfc815ctx *ctx)
   ctx->first_hole = 0;
   ctx->last_hole = 0;
   ctx->most_restricting_last = 65535;
+  ctx->hdr_len = 0;
   memset(ctx->pkt, 0, sizeof(ctx->pkt));
   memcpy(&ctx->pkt[0], &hole, sizeof(hole));
 }
@@ -137,6 +144,11 @@ static void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
   {
     return;
   }
+  if (ctx->hdr_len == 0)
+  {
+    ctx->hdr_len = 14 + ip_hdr_len(ip);
+    memcpy(ctx->pkt_header, ether, ctx->hdr_len);
+  }
   // FIXME verify there is total_len of data
   data_first = ip_frag_off(ip);
   // FIXME overflows:
@@ -165,6 +177,10 @@ static void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
       }
     }
   }
+  else
+  {
+    data_last = (data_last + 1) / 8 * 8 - 1;
+  }
   iter = ctx->first_hole;
   while (iter != 65535)
   {
@@ -176,13 +192,13 @@ static void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
       {
         holenonptr_set_next(ctx, hole.prev_hole, hole.next_hole);
         holenonptr_set_prev(ctx, hole.next_hole, hole.prev_hole);
-        return;
+        break;
       }
       else
       {
         hole.last = data_first - 1;
         memcpy(&ctx->pkt[iter], &hole, sizeof(hole));
-        return;
+        break;
       }
     }
     else if (data_last < hole.last)
@@ -190,11 +206,15 @@ static void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
       if (data_first <= hole.first)
       {
         hole.first = data_last + 1;
-        memcpy(&ctx->pkt[iter], &hole, sizeof(hole));
-        return;
+        holenonptr_set_next(ctx, hole.prev_hole, data_last + 1);
+        holenonptr_set_prev(ctx, hole.next_hole, data_last + 1);
+        printf("suspicious code path\n");
+        memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
+        break;
       }
       else
       {
+        printf("unimplemented code path\n");
         // FIXME add new hole
       }
     }
@@ -216,7 +236,7 @@ static void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
       }
     }
   }
-
+  memcpy(&ctx->pkt[data_first], ip_const_payload(ip), data_last - data_first + 1);
 }
 
 
@@ -276,50 +296,75 @@ int main(int argc, char **argv)
 
   rfc815ctx_init(&ctx);
   rfc815ctx_add(&ctx, fragment[0].pkt);
+  printf("beginning test 1\n");
   if (rfc815ctx_complete(&ctx))
   {
+    printf("1\n");
     abort();
   }
+  printf("beginning test 1\n");
   rfc815ctx_add(&ctx, fragment[1].pkt);
+  printf("beginning test 1\n");
   if (!rfc815ctx_complete(&ctx))
   {
+    printf("2\n");
     abort();
   }
+  printf("beginning test 1\n");
   reassembled = rfc815ctx_reassemble(&loc, &ctx);
   if (reassembled->sz != sz)
   {
+    printf("3\n");
     abort();
   }
   if (memcmp(packet_data(reassembled), pkt, sz) != 0)
   {
+    size_t si;
+    for (si = 0; si < sz; si++)
+    {
+      if (((char*)packet_data(reassembled))[si] != (char)pkt[si])
+      {
+        printf("mismatch %zu\n", si);
+        break;
+      }
+    }
+    printf("4\n");
     abort();
   }
   as_free_mt(&loc, reassembled);
+
+  printf("beginning test 2\n");
 
   rfc815ctx_init(&ctx);
   rfc815ctx_add(&ctx, fragment[1].pkt);
   if (rfc815ctx_complete(&ctx))
   {
+    printf("5\n");
     abort();
   }
   rfc815ctx_add(&ctx, fragment[0].pkt);
   if (!rfc815ctx_complete(&ctx))
   {
+    printf("6\n");
     abort();
   }
   reassembled = rfc815ctx_reassemble(&loc, &ctx);
   if (reassembled->sz != sz)
   {
+    printf("7\n");
     abort();
   }
   if (memcmp(packet_data(reassembled), pkt, sz) != 0)
   {
+    printf("8\n");
     abort();
   }
   as_free_mt(&loc, reassembled);
   
   as_free_mt(&loc, fragment[0].pkt);
   as_free_mt(&loc, fragment[1].pkt);
+
+  printf("beginning randomized tests\n");
 
   for (j = 0; j < 10*1000; j++)
   {
