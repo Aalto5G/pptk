@@ -16,9 +16,18 @@ struct hole {
   uint16_t last;
 };
 
+struct positive {
+  uint32_t flags;
+  uint16_t offset;
+  uint16_t pulled;
+};
+
 struct packet {
   struct linked_list_node node;
-  struct hole hole;
+  union {
+    struct hole hole;
+    struct positive positive;
+  };
   enum packet_direction direction;
   size_t sz;
   // after this: packet data
