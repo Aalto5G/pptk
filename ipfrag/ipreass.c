@@ -108,7 +108,8 @@ void reassctx_add(struct reassctx *ctx, struct packet *pkt)
   struct linked_list_node *iter, *tmp;
   linked_list_add_tail(&pkt->node, &ctx->packet_list);
   //linktest(ctx);
-  if (ip_total_len(ip) <= ip_hdr_len(ip) ||
+  if (pkt->sz < 34 ||
+      ip_total_len(ip) <= ip_hdr_len(ip) ||
       (size_t)(ip_total_len(ip) + 14) > pkt->sz)
   {
     return;

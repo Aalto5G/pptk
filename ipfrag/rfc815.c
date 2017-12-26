@@ -120,7 +120,8 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
   uint16_t data_last;
   uint16_t iter;
   linktest(ctx);
-  if (ip_total_len(ip) <= ip_hdr_len(ip) ||
+  if (pkt->sz < 34 ||
+      ip_total_len(ip) <= ip_hdr_len(ip) ||
       (size_t)(ip_total_len(ip) + 14) > pkt->sz)
   {
     return;
