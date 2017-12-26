@@ -38,6 +38,12 @@ struct packet *rfc815ctx_reassemble(struct as_alloc_local *loc, struct rfc815ctx
 
 void rfc815ctx_init(struct rfc815ctx *ctx)
 {
+  memset(ctx->pkt, 0, sizeof(ctx->pkt));
+  rfc815ctx_init_fast(ctx);
+}
+
+void rfc815ctx_init_fast(struct rfc815ctx *ctx)
+{
   struct rfc815hole hole;
   hole.first = 0;
   hole.last = 65535;
@@ -47,7 +53,6 @@ void rfc815ctx_init(struct rfc815ctx *ctx)
   ctx->last_hole = 0;
   ctx->most_restricting_last = 65535;
   ctx->hdr_len = 0;
-  memset(ctx->pkt, 0, sizeof(ctx->pkt));
   memcpy(&ctx->pkt[0], &hole, sizeof(hole));
 }
 
@@ -77,6 +82,7 @@ static void holenonptr_set_next(struct rfc815ctx *ctx, uint16_t idx, uint16_t ne
   memcpy(&ctx->pkt[idx], &hole, sizeof(hole));
 }
 
+#if 0
 static void linktest(struct rfc815ctx *ctx)
 {
   uint16_t iter;
@@ -113,6 +119,7 @@ static void linktest(struct rfc815ctx *ctx)
     abort();
   }
 }
+#endif
 
 void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
 {
@@ -121,7 +128,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
   uint16_t data_first;
   uint16_t data_last;
   uint16_t iter;
-  linktest(ctx);
+  //linktest(ctx);
   if (pkt->sz < 34 ||
       ip_total_len(ip) <= ip_hdr_len(ip) ||
       (size_t)(ip_total_len(ip) + 14) > pkt->sz)

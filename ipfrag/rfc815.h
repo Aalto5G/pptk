@@ -37,6 +37,8 @@ struct packet *rfc815ctx_reassemble(struct as_alloc_local *loc, struct rfc815ctx
 
 void rfc815ctx_init(struct rfc815ctx *ctx);
 
+void rfc815ctx_init_fast(struct rfc815ctx *ctx);
+
 static inline int rfc815ctx_complete(struct rfc815ctx *ctx)
 {
   if (ctx->first_hole == 65535 && ctx->last_hole != 65535)
