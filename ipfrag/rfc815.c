@@ -120,7 +120,8 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
   uint16_t data_last;
   uint16_t iter;
   linktest(ctx);
-  if (ip_total_len(ip) <= ip_hdr_len(ip))
+  if (ip_total_len(ip) <= ip_hdr_len(ip) ||
+      (size_t)(ip_total_len(ip) + 14) > pkt->sz)
   {
     return;
   }
@@ -129,9 +130,11 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
     ctx->hdr_len = 14 + ip_hdr_len(ip);
     memcpy(ctx->pkt_header, ether, ctx->hdr_len);
   }
-  // FIXME verify there is total_len of data
   data_first = ip_frag_off(ip);
-  // FIXME overflows:
+  if (ip_total_len(ip) - (ip_hdr_len(ip) + 1) + ip_frag_off(ip) > 65535)
+  {
+    return;
+  }
   data_last = ip_total_len(ip) - (ip_hdr_len(ip) + 1) + ip_frag_off(ip);
   if (!ip_more_frags(ip) && ctx->most_restricting_last > data_last)
   {

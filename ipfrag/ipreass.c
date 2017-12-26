@@ -108,13 +108,16 @@ void reassctx_add(struct reassctx *ctx, struct packet *pkt)
   struct linked_list_node *iter, *tmp;
   linked_list_add_tail(&pkt->node, &ctx->packet_list);
   //linktest(ctx);
-  if (ip_total_len(ip) <= ip_hdr_len(ip))
+  if (ip_total_len(ip) <= ip_hdr_len(ip) ||
+      (size_t)(ip_total_len(ip) + 14) > pkt->sz)
   {
     return;
   }
-  // FIXME verify there is total_len of data
   data_first = ip_frag_off(ip);
-  // FIXME overflows:
+  if (ip_total_len(ip) - (ip_hdr_len(ip) + 1) + ip_frag_off(ip) > 65535)
+  {
+    return;
+  }
   data_last = ip_total_len(ip) - (ip_hdr_len(ip) + 1) + ip_frag_off(ip);
   if (!ip_more_frags(ip) && ctx->most_restricting_last > data_last)
   {
