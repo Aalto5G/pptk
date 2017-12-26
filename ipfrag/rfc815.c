@@ -206,7 +206,6 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
           hole.first = data_last + 1;
           holenonptr_set_next(ctx, hole.prev_hole, data_last + 1);
           holenonptr_set_prev(ctx, hole.next_hole, data_last + 1);
-          //printf("suspicious code path\n");
           memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
         }
         break;
@@ -226,9 +225,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
         hole.first = data_last + 1;
         hole.last = old_last;
         memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
-        //printf("unimplemented code path %d %d\n", data_first, data_last);
         break;
-        // FIXME add new hole
       }
     }
     else
