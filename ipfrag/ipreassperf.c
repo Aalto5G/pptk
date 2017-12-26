@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   tcp_set_data_offset(tcp, 20);
   memset(((char*)tcp) + 20, 'X', sizeof(pkt)-14-20-20);
   tcp_set_cksum_calc(ip, 20, tcp, sizeof(pkt)-14-20);
-  as_alloc_global_init(&glob, 1000, 1536);
+  as_alloc_global_init(&glob, 1000, 4096);
   as_alloc_local_init(&loc, &glob, 1000);
   fragment[0].datastart = 0;
   fragment[0].datalen = 1514 - 14 - 20;
