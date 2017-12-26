@@ -57,6 +57,7 @@ static void holenonptr_set_prev(struct rfc815ctx *ctx, uint16_t idx, uint16_t pr
   if (idx == 65535)
   {
     ctx->last_hole = prev;
+    return;
   }
   memcpy(&hole, &ctx->pkt[idx], sizeof(hole));
   hole.prev_hole = prev;
@@ -69,6 +70,7 @@ static void holenonptr_set_next(struct rfc815ctx *ctx, uint16_t idx, uint16_t ne
   if (idx == 65535)
   {
     ctx->first_hole = next;
+    return;
   }
   memcpy(&hole, &ctx->pkt[idx], sizeof(hole));
   hole.next_hole = next;
