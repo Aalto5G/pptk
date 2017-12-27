@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include "iphdr.h"
-#include "asalloc.h"
+#include "llalloc.h"
 #include "packet.h"
 #include "containerof.h"
 #include "ipfrag.h"
@@ -21,21 +21,21 @@ void ipq_init(struct ipq *ipq)
   ipq->q.fragments_tail = NULL;
 }
 
-void ipq_free(struct as_alloc_local *loc, struct ipq *ipq)
+void ipq_free(struct allocif *loc, struct ipq *ipq)
 {
   struct packet *pkt, *next;
   pkt = ipq->q.fragments;
   while (pkt != NULL)
   {
     next = CONTAINER_OF(pkt->node.next, struct packet, node);
-    as_free_mt(loc, pkt);
+    allocif_free(loc, pkt);
     pkt = next;
   }
   ipq->q.fragments = NULL;
   ipq->q.fragments_tail = NULL;
 }
 
-struct packet *ip_frag_reassemble(struct as_alloc_local *loc, struct ipq *qp)
+struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp)
 {
   struct packet *pkt;
   struct packet *pkt2;
@@ -49,7 +49,7 @@ struct packet *ip_frag_reassemble(struct as_alloc_local *loc, struct ipq *qp)
   pkt = qp->q.fragments;
   //printf("%d\n", qp->q.len);
   //printf("%d\n", qp->q.meat);
-  pkt2 = as_alloc_mt(loc, packet_size(qp->q.len));
+  pkt2 = allocif_alloc(loc, packet_size(qp->q.len));
   ether2 = packet_data(pkt2);
   ip2 = ether_payload(ether2);
   ether = packet_data(pkt);
@@ -75,7 +75,7 @@ struct packet *ip_frag_reassemble(struct as_alloc_local *loc, struct ipq *qp)
   return pkt2;
 }
 
-int ip_frag_queue(struct as_alloc_local *loc, struct ipq *qp, struct packet *pkt)
+int ip_frag_queue(struct allocif *loc, struct ipq *qp, struct packet *pkt)
 {
         void *ip = ether_payload(packet_data(pkt));
         struct packet *prev, *next;
@@ -193,7 +193,7 @@ found:
                                 qp->q.fragments = next;
 
                         qp->q.meat -= (free_it->sz - 14 - 20 - free_it->positive.pulled); // FIXME 20
-                        as_free_mt(loc, free_it);
+                        allocif_free(loc, free_it);
                 }
         }
 
@@ -229,6 +229,6 @@ found:
         return -EINPROGRESS;
 
 err:
-        as_free_mt(loc, pkt);
+        allocif_free(loc, pkt);
         return err;
 }

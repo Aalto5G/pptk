@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include "asalloc.h"
+#include "llalloc.h"
 #include "linkedlist.h"
 #include "iphdr.h"
 #include "packet.h"
@@ -15,7 +15,7 @@
 #include "rfc791.h"
 
 struct packet *
-rfc791ctx_reassemble(struct as_alloc_local *loc, struct rfc791ctx *ctx)
+rfc791ctx_reassemble(struct allocif *loc, struct rfc791ctx *ctx)
 {
   struct packet *first_packet;
   const char *ether, *ip;
@@ -33,7 +33,7 @@ rfc791ctx_reassemble(struct as_alloc_local *loc, struct rfc791ctx *ctx)
   ip = ether_const_payload(ether);
   hdr_len = ip_hdr_len(ip);
   sz = ETHER_HDR_LEN + hdr_len + ctx->most_restricting_last + 1;
-  pkt = as_alloc_mt(loc, packet_size(sz));
+  pkt = allocif_alloc(loc, packet_size(sz));
   if (pkt == NULL)
   {
     return NULL;
@@ -77,14 +77,14 @@ void rfc791ctx_init(struct rfc791ctx *ctx)
   linked_list_head_init(&ctx->packet_list);
 }
 
-void rfc791ctx_free(struct as_alloc_local *loc, struct rfc791ctx *ctx)
+void rfc791ctx_free(struct allocif *loc, struct rfc791ctx *ctx)
 {
   struct linked_list_node *iter, *tmp;
   LINKED_LIST_FOR_EACH_SAFE(iter, tmp, &ctx->packet_list)
   {
     struct packet *pkt = CONTAINER_OF(iter, struct packet, node);
     linked_list_delete(&pkt->node);
-    as_free_mt(loc, pkt);
+    allocif_free(loc, pkt);
   }
 }
 

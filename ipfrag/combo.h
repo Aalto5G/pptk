@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "llalloc.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -34,14 +34,14 @@ static inline int comboctx_complete(struct comboctx *ctx)
   return reassctx_complete(&ctx->u.reass);
 }
 
-void comboctx_free(struct as_alloc_local *loc, struct comboctx *ctx);
+void comboctx_free(struct allocif *loc, struct comboctx *ctx);
 
-void comboctx_promote(struct as_alloc_local *loc, struct comboctx *ctx);
+void comboctx_promote(struct allocif *loc, struct comboctx *ctx);
 
 void comboctx_add(
-  struct as_alloc_local *loc, struct comboctx *ctx, struct packet *pkt);
+  struct allocif *loc, struct comboctx *ctx, struct packet *pkt);
 
 struct packet *
-comboctx_reassemble(struct as_alloc_local *loc, struct comboctx *ctx);
+comboctx_reassemble(struct allocif *loc, struct comboctx *ctx);
 
 #endif

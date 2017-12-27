@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "llalloc.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -17,7 +17,7 @@ void comboctx_init(struct comboctx *ctx)
   reassctx_init(&ctx->u.reass);
 }
 
-void comboctx_free(struct as_alloc_local *loc, struct comboctx *ctx)
+void comboctx_free(struct allocif *loc, struct comboctx *ctx)
 {
   if (ctx->rfc_active)
   {
@@ -28,7 +28,7 @@ void comboctx_free(struct as_alloc_local *loc, struct comboctx *ctx)
   reassctx_free(loc, &ctx->u.reass);
 }
 
-void comboctx_promote(struct as_alloc_local *loc, struct comboctx *ctx)
+void comboctx_promote(struct allocif *loc, struct comboctx *ctx)
 {
   struct rfc815ctx *newctx;
   struct linked_list_node *iter;
@@ -53,7 +53,7 @@ void comboctx_promote(struct as_alloc_local *loc, struct comboctx *ctx)
 }
 
 void comboctx_add(
-  struct as_alloc_local *loc, struct comboctx *ctx, struct packet *pkt)
+  struct allocif *loc, struct comboctx *ctx, struct packet *pkt)
 {
   if (!ctx->rfc_active && ctx->packet_count > 65535/1514)
   {
@@ -63,14 +63,14 @@ void comboctx_add(
   if (ctx->rfc_active)
   {
     rfc815ctx_add(ctx->u.rfc, pkt);
-    as_free_mt(loc, pkt);
+    allocif_free(loc, pkt);
     return;
   }
   reassctx_add(&ctx->u.reass, pkt);
 }
 
 struct packet *
-comboctx_reassemble(struct as_alloc_local *loc, struct comboctx *ctx)
+comboctx_reassemble(struct allocif *loc, struct comboctx *ctx)
 {
   if (ctx->rfc_active)
   {

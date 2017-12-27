@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "allocif.h"
 #include "packet.h"
 #include "ipfrag.h"
 
@@ -26,10 +26,10 @@ static inline int reassctx_complete(struct reassctx *ctx)
   return linked_list_is_empty(&ctx->hole_list);
 }
 
-void reassctx_free(struct as_alloc_local *loc, struct reassctx *ctx);
+void reassctx_free(struct allocif *loc, struct reassctx *ctx);
 
 struct packet *
-reassctx_reassemble(struct as_alloc_local *loc, struct reassctx *ctx);
+reassctx_reassemble(struct allocif *loc, struct reassctx *ctx);
 
 void reassctx_add(struct reassctx *ctx, struct packet *pkt);
 

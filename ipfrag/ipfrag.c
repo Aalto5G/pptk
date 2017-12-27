@@ -1,14 +1,14 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "allocif.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
 #include "mypcap.h"
 #include "ipfrag.h"
 
-int fragment4(struct as_alloc_local *loc, const void *pkt, uint16_t sz,
+int fragment4(struct allocif *loc, const void *pkt, uint16_t sz,
               struct fragment *frags, size_t fragnum)
 {
   const void *ether = pkt;
@@ -87,8 +87,8 @@ int fragment4(struct as_alloc_local *loc, const void *pkt, uint16_t sz,
   for (i = 0; i < fragnum; i++)
   {
     frags[i].pkt =
-      as_alloc_mt(loc,
-                  packet_size(ETHER_HDR_LEN + iphdrlen + frags[i].datalen));
+      allocif_alloc(loc,
+                    packet_size(ETHER_HDR_LEN + iphdrlen + frags[i].datalen));
     if (frags[i].pkt == NULL)
     {
       for (;;)
@@ -98,7 +98,7 @@ int fragment4(struct as_alloc_local *loc, const void *pkt, uint16_t sz,
           return -ENOMEM;
         }
         i--;
-        as_free_mt(loc, frags[i].pkt);
+        allocif_free(loc, frags[i].pkt);
       }
     }
   }

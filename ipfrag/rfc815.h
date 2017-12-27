@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "allocif.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -33,7 +33,7 @@ struct rfc815ctx {
   char pkt[65535];
 };
 
-struct packet *rfc815ctx_reassemble(struct as_alloc_local *loc, struct rfc815ctx *ctx);
+struct packet *rfc815ctx_reassemble(struct allocif *loc, struct rfc815ctx *ctx);
 
 void rfc815ctx_init(struct rfc815ctx *ctx);
 

@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include "iphdr.h"
-#include "asalloc.h"
+#include "llalloc.h"
 #include "packet.h"
 #include "containerof.h"
 #include "ipfrag.h"
@@ -44,10 +44,10 @@ struct ipq {
 
 void ipq_init(struct ipq *ipq);
 
-void ipq_free(struct as_alloc_local *loc, struct ipq *ipq);
+void ipq_free(struct allocif *loc, struct ipq *ipq);
 
-struct packet *ip_frag_reassemble(struct as_alloc_local *loc, struct ipq *qp);
+struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp);
 
-int ip_frag_queue(struct as_alloc_local *loc, struct ipq *qp, struct packet *pkt);
+int ip_frag_queue(struct allocif *loc, struct ipq *qp, struct packet *pkt);
 
 #endif

@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include "iphdr.h"
-#include "asalloc.h"
+#include "llalloc.h"
 #include "packet.h"
 #include "containerof.h"
 #include "ipfrag.h"
@@ -22,8 +22,8 @@ int main(int argc, char **argv)
   char *tcp;
   char edst[6] = {0x02,0x00,0x00,0x00,0x00,0x01};
   char esrc[6] = {0x02,0x00,0x00,0x00,0x00,0x02};
-  struct as_alloc_global glob;
-  struct as_alloc_local loc;
+  struct ll_alloc_st st;
+  struct allocif intf = {.ops = &ll_allocif_ops_st, .userdata = &st};
   struct packet *reassembled;
   uint64_t begin, end;
   int j;
@@ -52,8 +52,7 @@ int main(int argc, char **argv)
   memset(((char*)tcp) + 20, 'X', sizeof(pkt)-14-20-20);
   tcp_set_cksum_calc(ip, 20, tcp, sizeof(pkt)-14-20);
 
-  as_alloc_global_init(&glob, 1000, 4096);
-  as_alloc_local_init(&loc, &glob, 1000);
+  ll_alloc_st_init(&st, 1000, 4096);
 
 
   printf("beginning randomized tests\n");
@@ -70,22 +69,22 @@ int main(int argc, char **argv)
     fragment[1].datastart -= 8; // FIXME rm
     fragment[1].datalen += 8; // FIXME rm
     fragment[1].pkt = NULL;
-    if (fragment4(&loc, pkt, sz, fragment, 2) != 0)
+    if (fragment4(&intf, pkt, sz, fragment, 2) != 0)
     {
       abort();
     }
   
     ipq_init(&ipq);
   
-    if (ip_frag_queue(&loc, &ipq, fragment[0].pkt) != -EINPROGRESS)
+    if (ip_frag_queue(&intf, &ipq, fragment[0].pkt) != -EINPROGRESS)
     {
       abort();
     }
-    if (ip_frag_queue(&loc, &ipq, fragment[1].pkt) != 0)
+    if (ip_frag_queue(&intf, &ipq, fragment[1].pkt) != 0)
     {
       abort();
     }
-    reassembled = ip_frag_reassemble(&loc, &ipq);
+    reassembled = ip_frag_reassemble(&intf, &ipq);
     if (reassembled->sz != sz)
     {
       printf("size mismatch %d %d\n", (int)reassembled->sz, (int)sz);
@@ -105,14 +104,13 @@ int main(int argc, char **argv)
       }
       abort();
     }
-    as_free_mt(&loc, reassembled);
-    ipq_free(&loc, &ipq);
+    ll_free_st(&st, reassembled);
+    ipq_free(&intf, &ipq);
   }
   end = gettime64();
   printf("%g MPPS\n", 20e6/(end-begin));
 
-  as_alloc_local_free(&loc);
-  as_alloc_global_free(&glob);
+  ll_alloc_st_free(&st);
    
   return 0;
 }

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "llalloc.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -12,8 +12,8 @@
 
 int main(int argc, char **argv)
 {
-  struct as_alloc_global glob;
-  struct as_alloc_local loc;
+  struct ll_alloc_st st;
+  struct allocif intf = {.ops = &ll_allocif_ops_st, .userdata = &st};
   struct fragment fragment[2];
   char pkt[2102] = {0};
   size_t sz = sizeof(pkt);
@@ -49,15 +49,14 @@ int main(int argc, char **argv)
   tcp_set_data_offset(tcp, 20);
   memset(((char*)tcp) + 20, 'X', sizeof(pkt)-14-20-20);
   tcp_set_cksum_calc(ip, 20, tcp, sizeof(pkt)-14-20);
-  as_alloc_global_init(&glob, 1000, 1536);
-  as_alloc_local_init(&loc, &glob, 1000);
+  ll_alloc_st_init(&st, 1000, 1536);
   fragment[0].datastart = 0;
   fragment[0].datalen = 1514 - 14 - 20;
   fragment[0].pkt = NULL;
   fragment[1].datastart = 1514 - 14 - 20;
   fragment[1].datalen = sz - 14 - 20 - (1514 - 14 - 20);
   fragment[1].pkt = NULL;
-  if (fragment4(&loc, pkt, sz, fragment, 2) != 0)
+  if (fragment4(&intf, pkt, sz, fragment, 2) != 0)
   {
     abort();
   }
@@ -79,7 +78,7 @@ int main(int argc, char **argv)
     abort();
   }
   printf("beginning test 1\n");
-  reassembled = rfc815ctx_reassemble(&loc, &ctx);
+  reassembled = rfc815ctx_reassemble(&intf, &ctx);
   if (reassembled->sz != sz)
   {
     printf("3\n");
@@ -101,7 +100,7 @@ int main(int argc, char **argv)
     abort();
   }
 #endif
-  as_free_mt(&loc, reassembled);
+  ll_free_st(&st, reassembled);
 
   printf("beginning test 2\n");
 
@@ -118,7 +117,7 @@ int main(int argc, char **argv)
     printf("6\n");
     abort();
   }
-  reassembled = rfc815ctx_reassemble(&loc, &ctx);
+  reassembled = rfc815ctx_reassemble(&intf, &ctx);
   if (reassembled->sz != sz)
   {
     printf("7\n");
@@ -131,15 +130,17 @@ int main(int argc, char **argv)
     abort();
   }
 #endif
-  as_free_mt(&loc, reassembled);
+  ll_free_st(&st, reassembled);
   
-  as_free_mt(&loc, fragment[0].pkt);
-  as_free_mt(&loc, fragment[1].pkt);
+  ll_free_st(&st, fragment[0].pkt);
+  ll_free_st(&st, fragment[1].pkt);
 
   printf("beginning randomized tests\n");
 
   for (j = 0; j < 10*1000; j++)
   {
+    printf("seeding random %d\n", j);
+    srand(j);
     rfc815ctx_init(&ctx);
     i = 0;
     for (;;)
@@ -154,12 +155,12 @@ int main(int argc, char **argv)
         fragment[0].datalen = 1 + (rand() % (sz - 14 - 20 - fragment[0].datastart));
       }
       fragment[0].pkt = NULL;
-      if (fragment4(&loc, pkt, sz, fragment, 1) != 0)
+      if (fragment4(&intf, pkt, sz, fragment, 1) != 0)
       {
         abort();
       }
       rfc815ctx_add(&ctx, fragment[0].pkt);
-      as_free_mt(&loc, fragment[0].pkt);
+      ll_free_st(&st, fragment[0].pkt);
       if (rfc815ctx_complete(&ctx))
       {
         break;
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
       i++;
     }
     printf("%d packets\n", i);
-    reassembled = rfc815ctx_reassemble(&loc, &ctx);
+    reassembled = rfc815ctx_reassemble(&intf, &ctx);
     if (reassembled->sz != sz)
     {
       printf("size mismatch %zu %zu\n", reassembled->sz, sz);
@@ -180,11 +181,10 @@ int main(int argc, char **argv)
       abort();
     }
 #endif
-    as_free_mt(&loc, reassembled);
+    ll_free_st(&st, reassembled);
   }
 
-  as_alloc_local_free(&loc);
-  as_alloc_global_free(&glob);
+  ll_alloc_st_free(&st);
   
   return 0;
 }

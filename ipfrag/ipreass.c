@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "llalloc.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -19,19 +19,19 @@ void reassctx_init(struct reassctx *ctx)
   linked_list_add_tail(&ctx->first_hole.node, &ctx->hole_list);
 }
 
-void reassctx_free(struct as_alloc_local *loc, struct reassctx *ctx)
+void reassctx_free(struct allocif *loc, struct reassctx *ctx)
 {
   struct linked_list_node *iter, *tmp;
   LINKED_LIST_FOR_EACH_SAFE(iter, tmp, &ctx->packet_list)
   {
     struct packet *pkt = CONTAINER_OF(iter, struct packet, node);
     linked_list_delete(&pkt->node);
-    as_free_mt(loc, pkt);
+    allocif_free(loc, pkt);
   }
 }
 
 struct packet *
-reassctx_reassemble(struct as_alloc_local *loc, struct reassctx *ctx)
+reassctx_reassemble(struct allocif *loc, struct reassctx *ctx)
 {
   struct packet *first_packet;
   const char *ether, *ip;
@@ -49,7 +49,7 @@ reassctx_reassemble(struct as_alloc_local *loc, struct reassctx *ctx)
   ip = ether_const_payload(ether);
   hdr_len = ip_hdr_len(ip);
   sz = ETHER_HDR_LEN + hdr_len + ctx->most_restricting_last + 1;
-  pkt = as_alloc_mt(loc, packet_size(sz));
+  pkt = allocif_alloc(loc, packet_size(sz));
   if (pkt == NULL)
   {
     return NULL;

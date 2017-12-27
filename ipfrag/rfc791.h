@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "allocif.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -22,11 +22,11 @@ struct rfc791ctx {
   uint64_t bits[128];
 };
 
-struct packet *rfc791ctx_reassemble(struct as_alloc_local *loc, struct rfc791ctx *ctx);
+struct packet *rfc791ctx_reassemble(struct allocif *loc, struct rfc791ctx *ctx);
 
 void rfc791ctx_init(struct rfc791ctx *ctx);
 
-void rfc791ctx_free(struct as_alloc_local *loc, struct rfc791ctx *ctx);
+void rfc791ctx_free(struct allocif *loc, struct rfc791ctx *ctx);
 
 int rfc791ctx_complete(struct rfc791ctx *ctx);
 

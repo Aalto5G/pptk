@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "asalloc.h"
+#include "allocif.h"
 #include "iphdr.h"
 #include "packet.h"
 #include "ipcksum.h"
@@ -10,13 +10,13 @@
 #include "containerof.h"
 #include "rfc815.h"
 
-struct packet *rfc815ctx_reassemble(struct as_alloc_local *loc, struct rfc815ctx *ctx)
+struct packet *rfc815ctx_reassemble(struct allocif *loc, struct rfc815ctx *ctx)
 {
   struct packet *pkt;
   size_t sz;
   char *ether2, *ip2, *pay2;
   sz = ctx->hdr_len + ctx->most_restricting_last + 1;
-  pkt = as_alloc_mt(loc, packet_size(sz));
+  pkt = allocif_alloc(loc, packet_size(sz));
   if (pkt == NULL)
   {
     return NULL;
