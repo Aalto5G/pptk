@@ -1,5 +1,5 @@
 ALLOC_SRC_LIB := llalloc.c
-ALLOC_SRC := $(ALLOC_SRC_LIB) llperfst.c
+ALLOC_SRC := $(ALLOC_SRC_LIB) llperfst.c allociftest.c
 
 ALLOC_SRC_LIB := $(patsubst %,$(DIRALLOC)/%,$(ALLOC_SRC_LIB))
 ALLOC_SRC := $(patsubst %,$(DIRALLOC)/%,$(ALLOC_SRC))
@@ -23,14 +23,18 @@ clean_$(LCALLOC): clean_ALLOC
 distclean_$(LCALLOC): distclean_ALLOC
 unit_$(LCALLOC): unit_ALLOC
 
-ALLOC: $(DIRALLOC)/liballoc.a $(DIRALLOC)/llperfst
+ALLOC: $(DIRALLOC)/liballoc.a $(DIRALLOC)/llperfst $(DIRALLOC)/allociftest
 
-unit_ALLOC: $(DIRALLOC)/llperfst
+unit_ALLOC: $(DIRALLOC)/llperfst $(DIRALLOC)/allociftest
 	$(DIRALLOC)/llperfst
+	$(DIRALLOC)/allociftest
 
 $(DIRALLOC)/liballoc.a: $(ALLOC_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
+
+$(DIRALLOC)/allociftest: $(DIRALLOC)/allociftest.o $(DIRALLOC)/liballoc.a $(LIBS_ALLOC) $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_ALLOC) -lpthread
 
 $(DIRALLOC)/llperfst: $(DIRALLOC)/llperfst.o $(DIRALLOC)/liballoc.a $(LIBS_ALLOC) $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_ALLOC) -lpthread

@@ -1,8 +1,26 @@
 #include "llalloc.h"
+#include "allocif.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <pthread.h>
+
+static void *ll_allocif_st(struct allocif *intf, size_t sz)
+{
+  struct ll_alloc_st *st = intf->userdata;
+  return ll_alloc_st(st, sz);
+}
+
+static void ll_freeif_st(struct allocif *intf, void *block)
+{
+  struct ll_alloc_st *st = intf->userdata;
+  ll_free_st(st, block);
+}
+
+const struct allocif_ops ll_allocif_ops_st = {
+  .alloc = ll_allocif_st,
+  .free = ll_freeif_st,
+};
 
 int ll_alloc_st_init(
   struct ll_alloc_st *st, size_t capacity, size_t native_size)

@@ -72,4 +72,6 @@ static inline void ll_free_st(struct ll_alloc_st *st, void *buf)
   st->size++;
 }
 
+extern const struct allocif_ops ll_allocif_ops_st;
+
 #endif
