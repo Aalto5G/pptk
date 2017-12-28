@@ -1,5 +1,5 @@
-#ifndef _RBTREE_H_
-#define _RBTREE_H_
+#ifndef _AVLTREE_H_
+#define _AVLTREE_H_
 
 struct avl_tree_node {
   int balance;
