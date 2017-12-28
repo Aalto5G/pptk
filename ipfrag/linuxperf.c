@@ -1,3 +1,10 @@
+/*
+ * Authors:
+ * - Juha-Matti Tilli <juha-matti.tilli@iki.fi>
+ *
+ * This file is covered by GNU GENERAL PUBLIC LICENSE Version 2.
+ */
+
 #include <errno.h>
 #include <stdint.h>
 #include "iphdr.h"
