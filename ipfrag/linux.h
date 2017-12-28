@@ -1,3 +1,24 @@
+/*
+ * Authors:
+ * - Fred N. van Kempen <waltje@uWalt.NL.Mugnet.ORG>
+ * - Alan Cox <alan@lxorguk.ukuu.org.uk>
+ * - Juha-Matti Tilli <juha-matti.tilli@iki.fi>
+ *
+ * Fixes:
+ * - Alan Cox        :       Split from ip.c , see ip_input.c for history.
+ * - David S. Miller :       Begin massive cleanup...
+ * - Andi Kleen      :       Add sysctls.
+ * - xxxx            :       Overlapfrag bug.
+ * - Ultima          :       ip_expire() kernel panic.
+ * - Bill Hawes      :       Frag accounting and evictor fixes.
+ * - John McDonald   :       0 length frag bug.
+ * - Alexey Kuznetsov:       SMP races, threading, cleanup.
+ * - Patrick McHardy :       LRU queue of frag heads for evictor.
+ * - Juha-Matti Tilli:       Modify implementation to work in user space.
+ *
+ * This file is covered by GNU GENERAL PUBLIC LICENSE Version 2.
+ */
+
 #ifndef _LINUX_H_
 #define _LINUX_H_
 
