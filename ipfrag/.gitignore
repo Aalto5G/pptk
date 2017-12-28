@@ -6,5 +6,6 @@
 /ipreassperf
 /comboperf
 /linuxperf
+/linuxtest
 /rfc791test
 /rfc791perf
