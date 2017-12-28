@@ -155,10 +155,9 @@ int pcap_out_ctx_write(
   return 0;
 }
 
-int pcap_in_ctx_init(
-  struct pcap_in_ctx *ctx, const char *fname, int enforce_ethernet)
+int pcap_in_ctx_init_file(
+  struct pcap_in_ctx *ctx, FILE *f, int enforce_ethernet)
 {
-  FILE *f = fopen(fname, "rb");
   char hdr[24];
   uint16_t version_major, version_minor;
   uint32_t network;
@@ -229,4 +228,11 @@ int pcap_in_ctx_init(
   ctx->f = f;
   
   return 0;
+}
+
+int pcap_in_ctx_init(
+  struct pcap_in_ctx *ctx, const char *fname, int enforce_ethernet)
+{
+  FILE *f = fopen(fname, "rb");
+  return pcap_in_ctx_init_file(ctx, f, enforce_ethernet);
 }

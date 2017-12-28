@@ -54,6 +54,9 @@ int pcapng_out_ctx_write(
 int pcapng_out_ctx_init(
   struct pcapng_out_ctx *ctx, const char *fname);
 
+int pcapng_in_ctx_init_file(
+  struct pcapng_in_ctx *ctx, FILE *f, int enforce_ethernet);
+
 int pcapng_in_ctx_init(
   struct pcapng_in_ctx *ctx, const char *fname, int enforce_ethernet);
 

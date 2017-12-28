@@ -7,8 +7,7 @@
 #include <unistd.h>
 #include "byteswap.h"
 #include "hdr.h"
-#include "mypcap.h"
-#include "mypcapng.h"
+#include "mypcapjoker.h"
 #include "iphdr.h"
 
 static void usage(const char *argv0)
@@ -19,8 +18,8 @@ static void usage(const char *argv0)
 
 int main(int argc, char **argv)
 {
-  struct pcapng_in_ctx inctx1;
-  struct pcapng_in_ctx inctx2;
+  struct pcap_joker_ctx inctx1;
+  struct pcap_joker_ctx inctx2;
   void *buf1 = NULL, *buf2 = NULL;
   const char *ifname1, *ifname2;
   size_t buf1capacity = 0, buf2capacity = 0;
@@ -44,20 +43,20 @@ int main(int argc, char **argv)
   {
     usage(argv[0]);
   }
-  if (pcapng_in_ctx_init(&inctx1, argv[optind], 1) != 0)
+  if (pcap_joker_ctx_init(&inctx1, argv[optind], 1, NULL) != 0)
   {
     printf("can't open first input file\n");
     exit(1);
   }
-  if (pcapng_in_ctx_init(&inctx2, argv[optind + 1], 1) != 0)
+  if (pcap_joker_ctx_init(&inctx2, argv[optind + 1], 1, NULL) != 0)
   {
     printf("can't open second input file\n");
     exit(1);
   }
   for (;;)
   {
-    result1 = pcapng_in_ctx_read(&inctx1, &buf1, &buf1capacity, &len1, &snap1, NULL, &ifname1);
-    result2 = pcapng_in_ctx_read(&inctx2, &buf2, &buf2capacity, &len2, &snap2, NULL, &ifname2);
+    result1 = pcap_joker_ctx_read(&inctx1, &buf1, &buf1capacity, &len1, &snap1, NULL, &ifname1);
+    result2 = pcap_joker_ctx_read(&inctx2, &buf2, &buf2capacity, &len2, &snap2, NULL, &ifname2);
     if (result1 < 0)
     {
       printf("error reading from first input file\n");
@@ -124,8 +123,8 @@ int main(int argc, char **argv)
       exit(1);
     }
   }
-  pcapng_in_ctx_free(&inctx1);
-  pcapng_in_ctx_free(&inctx2);
+  pcap_joker_ctx_free(&inctx1);
+  pcap_joker_ctx_free(&inctx2);
   free(buf1);
   free(buf2);
   return 0;

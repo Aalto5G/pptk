@@ -7,7 +7,7 @@
 #include "ipcksum.h"
 #include "packet.h"
 #include "net/netmap_user.h"
-#include "mypcap.h"
+#include "mypcapjoker.h"
 #include <sys/poll.h>
 #include "time64.h"
 #include "netmapcommon.h"
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   size_t snap = 0;
   int sz;
   DYNARR(struct pkt*) ar = DYNARR_INITER;
-  struct pcap_in_ctx inctx;
+  struct pcap_joker_ctx inctx;
   uint64_t bytes = 0, pkts = 0;
   uint64_t last_bytes = 0, last_pkts = 0;
   uint64_t last_time64 = 0;
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  if (pcap_in_ctx_init(&inctx, argv[2], 1) != 0)
+  if (pcap_joker_ctx_init(&inctx, argv[2], 1, "eth0") != 0)
   {
     printf("cannot open %s\n", argv[2]);
     exit(1);
@@ -62,7 +62,8 @@ int main(int argc, char **argv)
     int ret;
     struct pkt *pkt;
     uint64_t time64;
-    ret = pcap_in_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64);
+    ret = pcap_joker_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64,
+                              NULL);
     if (ret == 0)
     {
       break;

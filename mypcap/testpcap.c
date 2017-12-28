@@ -6,18 +6,18 @@
 #include <sys/time.h>
 #include "byteswap.h"
 #include "hdr.h"
-#include "mypcap.h"
+#include "mypcapjoker.h"
 
 int main(int argc, char **argv)
 {
-  struct pcap_in_ctx inctx;
+  struct pcap_joker_ctx inctx;
   struct pcap_out_ctx outctx;
   void *buf = NULL;
   size_t bufcapacity = 0;
   size_t len, snap;
   int result;
   uint64_t time64;
-  if (pcap_in_ctx_init(&inctx, "pcap.pcap", 1) != 0)
+  if (pcap_joker_ctx_init(&inctx, "pcap.pcap", 1, "eth0") != 0)
   {
     printf("can't init ctx\n");
     abort();
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     printf("can't init outctx\n");
     abort();
   }
-  while ((result = pcap_in_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64)) > 0)
+  while ((result = pcap_joker_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64, NULL)) > 0)
   {
     time_t time = time64/1000/1000;
     printf("len %zu snap %zu time %s\n", len, snap, ctime(&time));
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     printf("error\n");
     abort();
   }
-  pcap_in_ctx_free(&inctx);
+  pcap_joker_ctx_free(&inctx);
   pcap_out_ctx_free(&outctx);
   free(buf);
   return 0;

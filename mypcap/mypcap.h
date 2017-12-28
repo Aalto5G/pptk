@@ -35,6 +35,9 @@ int pcap_out_ctx_init(
 int pcap_out_ctx_write(
   struct pcap_out_ctx *ctx, void *buf, size_t size, uint64_t time64);
 
+int pcap_in_ctx_init_file(
+  struct pcap_in_ctx *ctx, FILE *f, int enforce_ethernet);
+
 int pcap_in_ctx_init(
   struct pcap_in_ctx *ctx, const char *fname, int enforce_ethernet);
 

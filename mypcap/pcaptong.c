@@ -10,7 +10,7 @@
 #include "byteswap.h"
 #include "hdr.h"
 #include "iphdr.h"
-#include "mypcap.h"
+#include "mypcapjoker.h"
 #include "mypcapng.h"
 
 static void usage(const char *argv0)
@@ -21,7 +21,7 @@ static void usage(const char *argv0)
 
 int main(int argc, char **argv)
 {
-  struct pcap_in_ctx inctx;
+  struct pcap_joker_ctx inctx;
   struct pcapng_out_ctx outctx;
   void *buf = NULL;
   size_t bufcapacity = 0;
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   {
     usage(argv[0]);
   }
-  if (pcap_in_ctx_init(&inctx, argv[optind], 1) != 0)
+  if (pcap_joker_ctx_init(&inctx, argv[optind], 1, NULL) != 0)
   {
     printf("can't open input file\n");
     exit(1);
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     printf("can't open output file\n");
     exit(1);
   }
-  while ((result = pcap_in_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64)) > 0)
+  while ((result = pcap_joker_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64, NULL)) > 0)
   {
     if (snap != len && !truncated)
     {
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     printf("read error\n");
     exit(1);
   }
-  pcap_in_ctx_free(&inctx);
+  pcap_joker_ctx_free(&inctx);
   pcapng_out_ctx_free(&outctx);
   free(buf);
   return 0;

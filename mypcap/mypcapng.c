@@ -756,10 +756,9 @@ int pcapng_in_ctx_read(
   return 1;
 }
 
-int pcapng_in_ctx_init(
-  struct pcapng_in_ctx *ctx, const char *fname, int enforce_ethernet)
+int pcapng_in_ctx_init_file(
+  struct pcapng_in_ctx *ctx, FILE *f, int enforce_ethernet)
 {
-  FILE *f = fopen(fname, "rb");
   if (f == NULL)
   {
     return -ENOENT;
@@ -770,4 +769,11 @@ int pcapng_in_ctx_init(
   DYNARR_INIT(&ctx->interfaces);
   
   return 0;
+}
+
+int pcapng_in_ctx_init(
+  struct pcapng_in_ctx *ctx, const char *fname, int enforce_ethernet)
+{
+  FILE *f = fopen(fname, "rb");
+  return pcapng_in_ctx_init_file(ctx, f, enforce_ethernet);
 }

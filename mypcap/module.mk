@@ -1,4 +1,4 @@
-MYPCAP_SRC_LIB := mypcap.c mypcapng.c
+MYPCAP_SRC_LIB := mypcap.c mypcapng.c mypcapjoker.c
 MYPCAP_SRC := $(MYPCAP_SRC_LIB) testpcap.c testpcapng.c pcaptong.c pcapngcmp.c pcapcmp.c
 
 MYPCAP_SRC_LIB := $(patsubst %,$(DIRMYPCAP)/%,$(MYPCAP_SRC_LIB))
