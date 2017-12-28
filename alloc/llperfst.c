@@ -9,7 +9,7 @@
 
 struct ll_alloc_st st;
 const int alloc_capacity = 10000;
-const int alloc_native_size = 1536;
+const int alloc_native_size = 1;
 
 int main(int argc, char **argv)
 {

@@ -25,6 +25,10 @@ const struct allocif_ops ll_allocif_ops_st = {
 int ll_alloc_st_init(
   struct ll_alloc_st *st, size_t capacity, size_t native_size)
 {
+  if (native_size < sizeof(struct linked_list_node))
+  {
+    native_size = sizeof(struct linked_list_node);
+  }
   st->capacity = 0;
   st->size = 0;
   st->native_size = 0;
