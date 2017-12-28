@@ -105,7 +105,8 @@ void *queue_deq_one(struct queue *queue)
     }
   }
   was_full = queue_is_full(queue);
-  item = queue->buf[queue->start++];
+  item = queue->buf[queue->start];
+  queue->buf[queue->start++] = NULL;
   if (queue->start >= queue->bufsiz)
   {
     queue->start = 0;
@@ -179,7 +180,8 @@ size_t queue_deq_many(struct queue *queue, void **out, size_t sz)
   was_full = queue_is_full(queue);
   while (!queue_is_empty(queue) && i < sz)
   {
-    out[i++] = queue->buf[queue->start++];
+    out[i++] = queue->buf[queue->start];
+    queue->buf[queue->start++] = NULL;
     if (queue->start >= queue->bufsiz)
     {
       queue->start = 0;
@@ -224,7 +226,8 @@ size_t queue_timeddeq_many(
   was_full = queue_is_full(queue);
   while (!queue_is_empty(queue) && i < sz)
   {
-    out[i++] = queue->buf[queue->start++];
+    out[i++] = queue->buf[queue->start];
+    queue->buf[queue->start++] = NULL;
     if (queue->start >= queue->bufsiz)
     {
       queue->start = 0;

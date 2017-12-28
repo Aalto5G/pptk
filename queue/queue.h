@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/time.h>
 
 struct queue {
@@ -55,6 +56,7 @@ void queue_enq_many(struct queue *queue, void **in, size_t sz);
 static inline void queue_cache_flush(struct queue_cache *cache)
 {
   queue_enq_many(cache->queue, cache->buf, cache->size);
+  memset(cache->buf, 0, sizeof(cache->buf[0])*cache->size);
   cache->size = 0;
 }
 
