@@ -31,7 +31,7 @@ void netmapfunc(struct packet *pkt, void *userdata)
 {
   struct netmapfunc_userdata *ud = userdata;
   nm_my_inject(ud->nmd, packet_data(pkt), pkt->sz);
-  as_free_mt(ud->loc, pkt);
+  allocif_free(ud->intf, pkt);
 }
 
 void netmapfunc2(struct packet *pkt, void *userdata)
@@ -45,5 +45,5 @@ void netmapfunc2(struct packet *pkt, void *userdata)
   {
     nm_my_inject(ud->dlnmd, packet_data(pkt), pkt->sz);
   }
-  as_free_mt(ud->loc, pkt);
+  allocif_free(ud->intf, pkt);
 }
