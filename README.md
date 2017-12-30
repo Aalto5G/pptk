@@ -1,3 +1,41 @@
+# PPTK
+
+PPTK is a packet processing toolkit. Note it's for processing. It is not for
+reception or transmission, although it is intended to be used with netmap.
+There is however no tight connection to netmap in PPTK, so PPTK can be used
+along with regular raw sockets as well.
+
+PPTK aims to do things correctly. So, for example, fragment reassembly supports
+an arbitrary number of fragments per packet and handles overlapping fragments
+properly. This is in contrast to DPDK, that supports only 4 fragments per
+packet and is otherwise highly suspicious.
+
+Whenever feasible, the already provided implementations are used. So, we aren't
+interested in creating new implementations of spin locks (mutexes provided
+already in Linux are fine) or read-write locks (the Linux read-write locks
+don't have writer starvation by readers). This is in contrast to DPDK or
+OpenDataPlane.
+
+PPTK is very librarylike. You can easily pick only some parts from PPTK and
+provide implementation for the rest yourself. There is no need to call early
+from main a function to initialize PPTK, like you must do for DPDK or
+OpenDataPlane.
+
+There is no requirement of configuring huge pages. There is no requirement for
+root permissions unless doing raw packet I/O.
+
+If there are multiple ways of doing things, many ways are supported. So for
+example timers can be done by AVL trees, red-black trees, skip lists or link
+heaps. Also, timer wheel is provided but it is expected that link heap is
+superior. Similarly, IP fragment reassembly supports many ways. This is in
+contrast to DPDK and OpenDataPlane, of which DPDK has only skip list timers,
+OpenDataPlane has only timer wheel, and both have only one way of reassembling
+IP datagrams (in ODP, the datagram reassembly is just an example).
+
+Please note that some code is under a peculiar license. So, for example the
+skip list based timer code taken from DPDK is under BSD license and the Linux
+IP fragment reassembly code is under GPLv2.
+
 # Prerequisites
 
 Needless to say, compiler tools and GNU make must be available. To actually
