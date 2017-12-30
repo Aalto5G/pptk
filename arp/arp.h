@@ -7,6 +7,7 @@
 #include "linkedlist.h"
 #include "containerof.h"
 #include "siphash.h"
+#include "hashseed.h"
 
 struct arp_entry {
   struct hash_list_node node;
@@ -16,11 +17,9 @@ struct arp_entry {
   struct linked_list_head list;
 };
 
-const char arphashkey[16];
-
 static inline uint32_t ip_hash(uint32_t ip)
 {
-  return siphash64(arphashkey, ip);
+  return siphash64(hash_seed_get(), ip);
 }
 
 static inline uint32_t arp_entry_hash(struct arp_entry *e)

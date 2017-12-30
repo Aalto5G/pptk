@@ -6,8 +6,6 @@
 #include "linkedlist.h"
 #include "containerof.h"
 
-const char arphashkey[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
-
 uint32_t arp_entry_hash_fn(struct hash_list_node *node, void *userdata)
 {
   return arp_entry_hash(CONTAINER_OF(node, struct arp_entry, node));
