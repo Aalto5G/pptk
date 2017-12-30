@@ -13,11 +13,11 @@ NETMAP_OBJ := $(patsubst %.c,%.o,$(NETMAP_SRC))
 NETMAP_DEP_LIB := $(patsubst %.c,%.d,$(NETMAP_SRC_LIB))
 NETMAP_DEP := $(patsubst %.c,%.d,$(NETMAP_SRC))
 
-CFLAGS_NETMAP := -I$(DIRPACKET) -I$(DIRLINKEDLIST) -I$(DIRIPHDR) -I$(DIRMISC) -I$(DIRLOG) -I$(DIRHASHTABLE) -I$(DIRHASHLIST) -I$(DIRARP) -I$(DIRPORTS) -I$(DIRALLOC) -I$(DIRDYNARR) -I$(DIRMYPCAP)
+CFLAGS_NETMAP := -I$(DIRPACKET) -I$(DIRLINKEDLIST) -I$(DIRIPHDR) -I$(DIRMISC) -I$(DIRLOG) -I$(DIRHASHTABLE) -I$(DIRHASHLIST) -I$(DIRPORTS) -I$(DIRALLOC) -I$(DIRDYNARR) -I$(DIRMYPCAP)
 
 MAKEFILES_NETMAP := $(DIRNETMAP)/module.mk
 
-LIBS_NETMAP := $(DIRALLOC)/liballoc.a $(DIRIPHDR)/libiphdr.a $(DIRLOG)/liblog.a $(DIRARP)/libarp.a $(DIRPORTS)/libports.a $(DIRHASHTABLE)/libhashtable.a $(DIRHASHLIST)/libhashlist.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
+LIBS_NETMAP := $(DIRALLOC)/liballoc.a $(DIRIPHDR)/libiphdr.a $(DIRLOG)/liblog.a $(DIRPORTS)/libports.a $(DIRHASHTABLE)/libhashtable.a $(DIRHASHLIST)/libhashlist.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
 
 .PHONY: NETMAP clean_NETMAP distclean_NETMAP unit_NETMAP $(LCNETMAP) clean_$(LCNETMAP) distclean_$(LCNETMAP) unit_$(LCNETMAP)
 

@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
 #define NETMAP_WITH_LIBS
 #include <pthread.h>
-#include "arp.h"
 #include "iphdr.h"
 #include "ipcksum.h"
 #include "packet.h"

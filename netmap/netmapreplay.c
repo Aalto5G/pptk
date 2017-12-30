@@ -2,7 +2,6 @@
 #define NETMAP_WITH_LIBS
 #include <pthread.h>
 #include "dynarr.h"
-#include "arp.h"
 #include "iphdr.h"
 #include "ipcksum.h"
 #include "packet.h"
