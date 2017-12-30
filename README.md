@@ -1,9 +1,8 @@
 # Prerequisites
 
-You need to have flex and bison installed in order to compile this project.
-Also, needless to say, compiler tools and GNU make must be available. To
-actually communicate with real network interfaces, you also need netmap, but
-more on that later.
+Needless to say, compiler tools and GNU make must be available. To actually
+communicate with real network interfaces, you also need netmap, but more on
+that later.
 
 # Git history
 
