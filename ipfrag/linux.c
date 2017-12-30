@@ -89,8 +89,8 @@ struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp)
     pay = ip_payload(ip);
     frag_off = ip_frag_off(ip);
     within_off = pkt->positive.offset - frag_off;
-    memcpy(&pay2[pkt->positive.offset], &pay[within_off], pkt->sz - 14 - 20 - pkt->positive.pulled);
-    //printf("%d(%d) %d\n", pkt->positive.offset, frag_off, (int)(frag_off + pkt->sz - 14 - 20 - pkt->positive.pulled));
+    memcpy(&pay2[pkt->positive.offset], &pay[within_off], pkt->sz - pkt->positive.pulled);
+    //printf("%d(%d) %d\n", pkt->positive.offset, frag_off, (int)(frag_off + pkt->sz - pkt->positive.pulled));
     pkt = CONTAINER_OF(pkt->node.next, struct packet, node);
   }
   return pkt2;
@@ -112,7 +112,7 @@ int ip_frag_queue(struct allocif *loc, struct ipq *qp, struct packet *pkt)
 	{
 		printf("%d-%d\n", (int)next->positive.offset,
 		       (int)next->positive.offset +
-		       (int)(next->sz - 14 - 20 - next->positive.pulled));
+		       (int)(next->sz - next->positive.pulled));
 	}
 	printf("-------- END QUEUE ---------\n");
 #endif
@@ -177,7 +177,7 @@ int ip_frag_queue(struct allocif *loc, struct ipq *qp, struct packet *pkt)
 #endif
 
         err = -ENOMEM;
-        //pkt->positive.pulled += 14 + ihl;
+        pkt->positive.pulled += 14 + ihl;
 
         /* Find out which fragments are in front and at the back of us
          * in the chain of fragments so far.  We must know where to put
@@ -202,7 +202,7 @@ found:
          * any overlaps are eliminated.
          */
         if (prev) {
-                int i = (prev->positive.offset + prev->sz - 14 - 20 - prev->positive.pulled) - offset; // FIXME 20
+                int i = (prev->positive.offset + prev->sz - prev->positive.pulled) - offset;
 
                 if (i > 0) {
                         offset += i;
@@ -224,7 +224,7 @@ found:
         while (next && next->positive.offset < end) {
                 int i = end - next->positive.offset; /* overlap is 'i' bytes */
 
-                if (i < (int)(next->sz - 14 - 20 - next->positive.pulled)) { // FIXME 20
+                if (i < (int)(next->sz - next->positive.pulled)) {
                         /* Eat head of the next overlapped fragment
                          * and leave the loop. The next ones cannot overlap.
                          */
@@ -245,7 +245,7 @@ found:
                         else
                                 qp->q.fragments = next;
 
-                        qp->q.meat -= (free_it->sz - 14 - 20 - free_it->positive.pulled); // FIXME 20
+                        qp->q.meat -= (free_it->sz - free_it->positive.pulled);
                         allocif_free(loc, free_it);
                 }
         }
@@ -261,11 +261,11 @@ found:
         else
                 qp->q.fragments = pkt;
 
-        qp->q.meat += pkt->sz - 14 - ihl - pkt->positive.pulled;
+        qp->q.meat += pkt->sz - pkt->positive.pulled;
         if (offset == 0)
                 qp->q.flags |= INET_FRAG_FIRST_IN;
 
-        fragsize = pkt->sz - ihl - 14 - pkt->positive.pulled + ihl;
+        fragsize = pkt->sz - pkt->positive.pulled + ihl;
 
         if (fragsize > qp->q.max_size)
                 qp->q.max_size = fragsize;
