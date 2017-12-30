@@ -35,6 +35,7 @@ $(DIRPACKET)/packettest: $(DIRPACKET)/packettest.o $(DIRPACKET)/libpacket.a $(MA
 
 $(PACKET_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_PACKET)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_PACKET)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_PACKET)
 
 $(PACKET_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_PACKET)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_PACKET)

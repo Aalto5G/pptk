@@ -36,6 +36,7 @@ $(DIRTIMERAVL)/timeravltest: $(DIRTIMERAVL)/timeravltest.o $(DIRTIMERAVL)/libtim
 
 $(TIMERAVL_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERAVL)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_TIMERAVL)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_TIMERAVL)
 
 $(TIMERAVL_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_TIMERAVL)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_TIMERAVL)

@@ -32,6 +32,7 @@ $(DIRARP)/libarp.a: $(ARP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
 
 $(ARP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_ARP)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_ARP)
 
 $(ARP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_ARP)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_ARP)

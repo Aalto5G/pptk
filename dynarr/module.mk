@@ -35,6 +35,7 @@ $(DIRDYNARR)/dynarrtest: $(DIRDYNARR)/dynarrtest.o $(DIRDYNARR)/libdynarr.a $(MA
 
 $(DYNARR_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_DYNARR)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_DYNARR)
 
 $(DYNARR_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_DYNARR)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_DYNARR)

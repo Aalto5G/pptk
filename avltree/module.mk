@@ -36,6 +36,7 @@ $(DIRAVLTREE)/avltreetest: $(DIRAVLTREE)/avltreetest.o $(DIRAVLTREE)/libavltree.
 
 $(AVLTREE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_AVLTREE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_AVLTREE)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_AVLTREE)
 
 $(AVLTREE_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_AVLTREE)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_AVLTREE)

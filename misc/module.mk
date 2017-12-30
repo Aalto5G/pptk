@@ -67,6 +67,7 @@ $(DIRMISC)/siphashperf: $(DIRMISC)/siphashperf.o $(DIRMISC)/libmisc.a $(MAKEFILE
 
 $(MISC_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_MISC)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_MISC)
 
 $(MISC_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_MISC)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_MISC)

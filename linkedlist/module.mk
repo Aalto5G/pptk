@@ -35,6 +35,7 @@ $(DIRLINKEDLIST)/listtest: $(DIRLINKEDLIST)/listtest.o $(DIRLINKEDLIST)/liblinke
 
 $(LINKEDLIST_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LINKEDLIST)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_LINKEDLIST)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_LINKEDLIST)
 
 $(LINKEDLIST_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_LINKEDLIST)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_LINKEDLIST)

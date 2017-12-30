@@ -35,6 +35,7 @@ $(DIRLOG)/logtest: $(DIRLOG)/logtest.o $(DIRLOG)/liblog.a $(MAKEFILES_COMMON) $(
 
 $(LOG_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LOG)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_LOG)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_LOG)
 
 $(LOG_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_LOG)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_LOG)

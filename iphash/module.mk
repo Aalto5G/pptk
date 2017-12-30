@@ -51,6 +51,7 @@ $(DIRIPHASH)/iphashtest6: $(DIRIPHASH)/iphashtest6.o $(DIRIPHASH)/libiphash.a $(
 
 $(IPHASH_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_IPHASH)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_IPHASH)
 
 $(IPHASH_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_IPHASH)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_IPHASH)

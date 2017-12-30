@@ -66,6 +66,7 @@ $(DIRIPFRAG)/combotest: $(DIRIPFRAG)/combotest.o $(DIRIPFRAG)/libipfrag.a $(LIBS
 
 $(IPFRAG_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_IPFRAG)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_IPFRAG)
 
 $(IPFRAG_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_IPFRAG)

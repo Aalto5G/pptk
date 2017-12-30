@@ -32,6 +32,7 @@ $(DIRHASHLIST)/libhashlist.a: $(HASHLIST_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILE
 
 $(HASHLIST_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_HASHLIST)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_HASHLIST)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_HASHLIST)
 
 $(HASHLIST_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_HASHLIST)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_HASHLIST)

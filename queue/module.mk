@@ -38,6 +38,7 @@ $(DIRQUEUE)/queueenergy: $(DIRQUEUE)/queueenergy.o $(DIRQUEUE)/libqueue.a $(MAKE
 
 $(QUEUE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_QUEUE)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_QUEUE)
 
 $(QUEUE_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_QUEUE)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_QUEUE)

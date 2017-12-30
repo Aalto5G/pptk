@@ -37,6 +37,7 @@ $(DIRRANDOM)/random_mt_test: $(DIRRANDOM)/random_mt_test.o $(DIRRANDOM)/librando
 
 $(RANDOM_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_RANDOM)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_RANDOM)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_RANDOM)
 
 $(RANDOM_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_RANDOM)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_RANDOM)

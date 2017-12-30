@@ -43,6 +43,7 @@ $(DIRIPHDR)/ipcksumperf: $(DIRIPHDR)/ipcksumperf.o $(DIRIPHDR)/libiphdr.a $(MAKE
 
 $(IPHDR_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_IPHDR)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_IPHDR)
 
 $(IPHDR_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_IPHDR)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_IPHDR)

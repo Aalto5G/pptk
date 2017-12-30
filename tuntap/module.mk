@@ -35,6 +35,7 @@ $(DIRTUNTAP)/tapsilent: $(DIRTUNTAP)/tapsilent.o $(DIRTUNTAP)/libtuntap.a $(MAKE
 
 $(TUNTAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_TUNTAP)
+	$(CC) $(CFLAGS) -S -c -o $*.s $*.c $(CFLAGS_TUNTAP)
 
 $(TUNTAP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_TUNTAP)

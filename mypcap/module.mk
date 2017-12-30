@@ -48,6 +48,7 @@ $(DIRMYPCAP)/pcapcmp: $(DIRMYPCAP)/pcapcmp.o $(DIRMYPCAP)/libmypcap.a $(LIBS_MYP
 
 $(MYPCAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_MYPCAP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_MYPCAP)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_MYPCAP)
 
 $(MYPCAP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_MYPCAP)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_MYPCAP)

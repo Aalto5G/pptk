@@ -51,6 +51,7 @@ $(DIRNETMAP)/netmapreplay: $(DIRNETMAP)/netmapreplay.o $(DIRNETMAP)/libnetmap.a 
 
 $(NETMAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_NETMAP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_NETMAP)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_NETMAP)
 
 $(NETMAP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_NETMAP)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_NETMAP)

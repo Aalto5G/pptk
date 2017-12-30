@@ -41,6 +41,7 @@ $(DIRALLOC)/llperfst: $(DIRALLOC)/llperfst.o $(DIRALLOC)/liballoc.a $(LIBS_ALLOC
 
 $(ALLOC_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_ALLOC)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_ALLOC)
 
 $(ALLOC_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_ALLOC)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_ALLOC)

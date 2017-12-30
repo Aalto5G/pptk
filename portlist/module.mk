@@ -35,6 +35,7 @@ $(DIRPORTLIST)/portlisttest: $(DIRPORTLIST)/portlisttest.o $(DIRPORTLIST)/libpor
 
 $(PORTLIST_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_PORTLIST)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_PORTLIST)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_PORTLIST)
 
 $(PORTLIST_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_PORTLIST)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_PORTLIST)

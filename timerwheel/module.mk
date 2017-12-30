@@ -35,6 +35,7 @@ $(DIRTIMERWHEEL)/timertest: $(DIRTIMERWHEEL)/timertest.o $(DIRTIMERWHEEL)/libtim
 
 $(TIMERWHEEL_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERWHEEL)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_TIMERWHEEL)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_TIMERWHEEL)
 
 $(TIMERWHEEL_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_TIMERWHEEL)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_TIMERWHEEL)

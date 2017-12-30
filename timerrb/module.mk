@@ -36,6 +36,7 @@ $(DIRTIMERRB)/timerrbtest: $(DIRTIMERRB)/timerrbtest.o $(DIRTIMERRB)/libtimerrb.
 
 $(TIMERRB_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_TIMERRB)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_TIMERRB)
 
 $(TIMERRB_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_TIMERRB)

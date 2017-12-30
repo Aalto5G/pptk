@@ -36,6 +36,7 @@ $(DIRRBTREE)/rbtreetest: $(DIRRBTREE)/rbtreetest.o $(DIRRBTREE)/librbtree.a $(LI
 
 $(RBTREE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_RBTREE)
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_RBTREE)
 
 $(RBTREE_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_RBTREE)
