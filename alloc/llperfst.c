@@ -15,9 +15,20 @@ int main(int argc, char **argv)
 {
   struct timeval tv1, tv2;
   size_t count = 0;
+  void *buf[4096];
+  int i;
+
   if (ll_alloc_st_init(&st, alloc_capacity, alloc_native_size) != 0)
   {
     abort();
+  }
+  for (i = 0; i < 4096; i++)
+  {
+    buf[i] = ll_alloc_st(&st, alloc_native_size);
+  }
+  for (i = 0; i < 4096; i++)
+  {
+    ll_free_st(&st, buf[i]);
   }
   gettimeofday(&tv1, NULL);
   for (;;)
