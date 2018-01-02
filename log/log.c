@@ -22,6 +22,9 @@ struct globals {
   uint32_t max;
   uint32_t interval;
   uint32_t missed_events[LOG_LEVEL_COUNT];
+  uint64_t max_size;
+  char logfile[512];
+  char logfile_prev[512];
 };
 
 struct globals globals = {
@@ -32,6 +35,7 @@ struct globals globals = {
   .max = 1000,
   .interval = 1000*1000,
   .missed_events = {},
+  .max_size = 256*1024*1024,
 };
 
 static inline const char *log_level_string(enum log_level level)
@@ -65,6 +69,16 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
     abort();
   }
   pthread_mutex_lock(&globals.mtx);
+  if (globals.f)
+  {
+    long pos = ftell(globals.f);
+    if (pos >= 0 && (uint64_t)pos > globals.max_size)
+    {
+      fclose(globals.f);
+      rename(globals.logfile, globals.logfile_prev);
+      globals.f = fopen(globals.logfile, "a");
+    }
+  }
   time_condition = gettime64() - globals.last_time64 > globals.interval;
   if (globals.burst[level] == 0 && !time_condition)
   {
@@ -166,7 +180,6 @@ void log_close(void)
 
 void log_open(const char *progname, enum log_level file_level, enum log_level console_level)
 {
-  char logfile[256] = {0};
   char lowerbuf[256] = {0};
   char *it;
   snprintf(lowerbuf, sizeof(lowerbuf), "%s", progname);
@@ -174,8 +187,9 @@ void log_open(const char *progname, enum log_level file_level, enum log_level co
   {
     *it = tolower(*it);
   }
-  snprintf(logfile, sizeof(logfile), "%s.log", lowerbuf);
-  globals.f = fopen(logfile, "a");
+  snprintf(globals.logfile, sizeof(globals.logfile), "%s.log", lowerbuf);
+  snprintf(globals.logfile_prev, sizeof(globals.logfile_prev), "%s.baklog", lowerbuf);
+  globals.f = fopen(globals.logfile, "a");
   atomic_init(&global_log_file_level, file_level);
   atomic_init(&global_log_console_level, console_level);
   globals.progname = progname;
