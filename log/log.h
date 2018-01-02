@@ -14,6 +14,8 @@ enum log_level {
   LOG_LEVEL_NOTICE = 5,
   LOG_LEVEL_INFO = 6,
   LOG_LEVEL_DEBUG = 7,
+  LOG_LEVEL_MAX = LOG_LEVEL_DEBUG,
+  LOG_LEVEL_COUNT = LOG_LEVEL_MAX + 1,
 };
 
 extern atomic_uint global_log_file_level;
