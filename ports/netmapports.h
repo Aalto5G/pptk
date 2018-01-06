@@ -18,6 +18,12 @@ struct netmapfunc2_userdata {
   struct allocif *intf;
   struct nm_desc *ulnmd;
   struct nm_desc *dlnmd;
+  int lan;
+  int wan;
+  int out;
+  struct pcapng_out_ctx *lanctx;
+  struct pcapng_out_ctx *wanctx;
+  struct pcapng_out_ctx *outctx;
 };
 
 #endif
