@@ -1,7 +1,7 @@
 /*
- * WARNING WARNING WARNING! This code is copypasted from Linux kernel, and
- * therefore, it's infected by the General Public Virus version 2. This
- * is here just to demonstrate how slow SHA-1 hashing is.
+ * Obtained from Linux kernel.
+ *
+ * This file is covered by GNU GENERAL PUBLIC LICENSE Version 2.
  */
 
 #include <stdint.h>
