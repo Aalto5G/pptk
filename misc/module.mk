@@ -10,7 +10,7 @@ MISC_OBJ := $(patsubst %.c,%.o,$(MISC_SRC))
 MISC_DEP_LIB := $(patsubst %.c,%.d,$(MISC_SRC_LIB))
 MISC_DEP := $(patsubst %.c,%.d,$(MISC_SRC))
 
-CFLAGS_MISC :=
+CFLAGS_MISC := -I$(DIRLOG)
 
 MAKEFILES_MISC := $(DIRMISC)/module.mk
 

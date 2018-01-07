@@ -198,7 +198,7 @@ int pcapng_out_ctx_write(
   ret = pcapng_write_ifname(ctx, intf);
   if (ret != 0)
   {
-    printf("write ifname failed\n");
+    //printf("write ifname failed\n");
     return ret;
   }
 found:

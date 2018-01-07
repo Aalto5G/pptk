@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include "net/netmap_user.h"
 #include "netmapcommon.h"
+#include "log.h"
 
 void set_promisc_mode(int sockfd, const char *ifname, int on)
 {
@@ -16,7 +17,8 @@ void set_promisc_mode(int sockfd, const char *ifname, int on)
   }
   if (strncmp(ifname, "netmap:", 7) != 0)
   {
-    printf("invalid interface name, does not begin with netmap:\n");
+    log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+            "invalid interface name, does not begin with netmap:");
     exit(1);
   }
   if (on)
@@ -24,25 +26,29 @@ void set_promisc_mode(int sockfd, const char *ifname, int on)
     snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname + 7);
     if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0)
     {
-      printf("can't get interface flags\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't get interface flags");
       exit(1);
     }
     ifr.ifr_flags &= ~IFF_PROMISC;
     if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0)
     {
-      printf("can't turn promiscuous mode off\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't turn promiscuous mode off");
       exit(1);
     }
     snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname + 7);
     if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0)
     {
-      printf("can't get interface flags\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't get interface flags");
       exit(1);
     }
     ifr.ifr_flags |= IFF_PROMISC;
     if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0)
     {
-      printf("can't turn promiscuous mode on\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't turn promiscuous mode on");
       exit(1);
     }
   }
@@ -51,25 +57,29 @@ void set_promisc_mode(int sockfd, const char *ifname, int on)
     snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname + 7);
     if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0)
     {
-      printf("can't get interface flags\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't get interface flags");
       exit(1);
     }
     ifr.ifr_flags |= IFF_PROMISC;
     if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0)
     {
-      printf("can't turn promiscuous mode on\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't turn promiscuous mode on");
       exit(1);
     }
     snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname + 7);
     if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0)
     {
-      printf("can't get interface flags\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't get interface flags");
       exit(1);
     }
     ifr.ifr_flags &= ~IFF_PROMISC;
     if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0)
     {
-      printf("can't turn promiscuous mode off\n");
+      log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+              "can't turn promiscuous mode off");
       exit(1);
     }
   }
@@ -84,13 +94,15 @@ int link_status(int sockfd, const char *ifname)
   }
   if (strncmp(ifname, "netmap:", 7) != 0)
   {
-    printf("invalid interface name, does not begin with netmap:\n");
+    log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+            "invalid interface name, does not begin with netmap:");
     exit(1);
   }
   snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname + 7);
   if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0)
   {
-    printf("can't get interface flags\n");
+    log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+            "can't get interface flags");
     exit(1);
   }
   return !!(ifr.ifr_flags & IFF_RUNNING);
@@ -108,6 +120,7 @@ void link_wait(int sockfd, const char *ifname)
     }
     sleep(1);
   }
-  printf("interface %s is down\n", ifname);
+  log_log(LOG_LEVEL_CRIT, "NETMAPCOMMON",
+          "interface %s is down", ifname);
   exit(1);
 }

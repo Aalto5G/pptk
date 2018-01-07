@@ -4,6 +4,7 @@
 #include "net/netmap_user.h"
 #include "time64.h"
 #include "mypcapng.h"
+#include "log.h"
 #include <sys/poll.h>
 
 static inline void nm_my_inject(struct nm_desc *nmd, void *data, size_t sz)
@@ -47,7 +48,7 @@ void netmapfunc2(struct packet *pkt, void *userdata)
       if (pcapng_out_ctx_write(ud->wanctx, packet_data(pkt), pkt->sz,
           gettime64(), "out"))
       {
-        printf("can't record packet\n");
+        log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
         exit(1);
       }
     }
@@ -56,7 +57,7 @@ void netmapfunc2(struct packet *pkt, void *userdata)
       if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
           gettime64(), "out"))
       {
-        printf("can't record packet\n");
+        log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
         exit(1);
       }
     }
@@ -69,7 +70,7 @@ void netmapfunc2(struct packet *pkt, void *userdata)
       if (pcapng_out_ctx_write(ud->lanctx, packet_data(pkt), pkt->sz,
           gettime64(), "out"))
       {
-        printf("can't record packet\n");
+        log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
         exit(1);
       }
     }
@@ -78,7 +79,7 @@ void netmapfunc2(struct packet *pkt, void *userdata)
       if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
           gettime64(), "in"))
       {
-        printf("can't record packet\n");
+        log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
         exit(1);
       }
     }
