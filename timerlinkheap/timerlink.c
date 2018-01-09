@@ -186,37 +186,47 @@ static inline void timer_linkheap_swap(
   x2->left = left1;
   x2->right = right1;
   x2->parent = parent1;
-  if (x2->parent == NULL)
+  if (parent1 == parent2)
   {
-    heap->root = x2;
-  }
-  else if (x2->parent->left == x1)
-  {
-    x2->parent->left = x2;
-  }
-  else if (x2->parent->right == x1)
-  {
-    x2->parent->right = x2;
+    struct timer_link *tmp;
+    tmp = parent1->left;
+    parent1->left = parent1->right;
+    parent1->right = tmp;
   }
   else
   {
-    abort();
-  }
-  if (x1->parent == NULL)
-  {
-    heap->root = x1;
-  }
-  else if (x1->parent->left == x2)
-  {
-    x1->parent->left = x1;
-  }
-  else if (x1->parent->right == x2)
-  {
-    x1->parent->right = x1;
-  }
-  else
-  {
-    abort();
+    if (x2->parent == NULL)
+    {
+      heap->root = x2;
+    }
+    else if (x2->parent->left == x1)
+    {
+      x2->parent->left = x2;
+    }
+    else if (x2->parent->right == x1)
+    {
+      x2->parent->right = x2;
+    }
+    else
+    {
+      abort();
+    }
+    if (x1->parent == NULL)
+    {
+      heap->root = x1;
+    }
+    else if (x1->parent->left == x2)
+    {
+      x1->parent->left = x1;
+    }
+    else if (x1->parent->right == x2)
+    {
+      x1->parent->right = x1;
+    }
+    else
+    {
+      abort();
+    }
   }
   if (x1->left != NULL)
   {
