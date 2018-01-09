@@ -67,8 +67,14 @@ static inline void timer_linkheap_init(struct timer_linkheap *heap)
 
 static inline void timer_linkheap_free(struct timer_linkheap *heap)
 {
+  if (heap->root != NULL || heap->size != 0)
+  {
+    abort();
+  }
+#if 0
   heap->root = NULL;
   heap->size = 0;
+#endif
 }
 
 void timer_linkheap_add(struct timer_linkheap *heap, struct timer_link *timer);

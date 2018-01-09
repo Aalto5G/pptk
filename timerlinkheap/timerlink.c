@@ -367,6 +367,10 @@ void timer_linkheap_remove(struct timer_linkheap *heap, struct timer_link *timer
   {
     abort();
   }
+  if (last->left != NULL || last->right != NULL)
+  {
+    abort();
+  }
   if (timer == last)
   {
     if (timer->parent != NULL)
@@ -394,6 +398,10 @@ void timer_linkheap_remove(struct timer_linkheap *heap, struct timer_link *timer
   timer_linkheap_swap(heap, timer, last);
   if (timer->parent->left == timer)
   {
+    if (timer->parent->right != NULL)
+    {
+      abort();
+    }
     timer->parent->left = NULL;
   }
   else if (timer->parent->right == timer)
@@ -401,6 +409,11 @@ void timer_linkheap_remove(struct timer_linkheap *heap, struct timer_link *timer
     timer->parent->right = NULL;
   }
   else
+  {
+    abort();
+  }
+  timer->parent = NULL;
+  if (timer->left != NULL || timer->right != NULL)
   {
     abort();
   }
