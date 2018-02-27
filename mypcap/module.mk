@@ -1,5 +1,5 @@
 MYPCAP_SRC_LIB := mypcap.c mypcapng.c mypcapjoker.c
-MYPCAP_SRC := $(MYPCAP_SRC_LIB) testpcap.c testpcapng.c pcaptong.c pcapngcmp.c pcapcmp.c
+MYPCAP_SRC := $(MYPCAP_SRC_LIB) testpcap.c testpcapng.c pcaptong.c pcapngcmp.c pcapcmp.c pcaptoregular.c
 
 MYPCAP_SRC_LIB := $(patsubst %,$(DIRMYPCAP)/%,$(MYPCAP_SRC_LIB))
 MYPCAP_SRC := $(patsubst %,$(DIRMYPCAP)/%,$(MYPCAP_SRC))
@@ -22,7 +22,7 @@ clean_$(LCMYPCAP): clean_MYPCAP
 distclean_$(LCMYPCAP): distclean_MYPCAP
 unit_$(LCMYPCAP): unit_MYPCAP
 
-MYPCAP: $(DIRMYPCAP)/libmypcap.a $(DIRMYPCAP)/testpcap $(DIRMYPCAP)/testpcapng $(DIRMYPCAP)/pcaptong $(DIRMYPCAP)/pcapngcmp $(DIRMYPCAP)/pcapcmp
+MYPCAP: $(DIRMYPCAP)/libmypcap.a $(DIRMYPCAP)/testpcap $(DIRMYPCAP)/testpcapng $(DIRMYPCAP)/pcaptong $(DIRMYPCAP)/pcapngcmp $(DIRMYPCAP)/pcapcmp $(DIRMYPCAP)/pcaptoregular
 
 unit_MYPCAP:
 	@true
@@ -38,6 +38,9 @@ $(DIRMYPCAP)/testpcapng: $(DIRMYPCAP)/testpcapng.o $(DIRMYPCAP)/libmypcap.a $(LI
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MYPCAP)
 
 $(DIRMYPCAP)/pcaptong: $(DIRMYPCAP)/pcaptong.o $(DIRMYPCAP)/libmypcap.a $(LIBS_MYPCAP) $(MAKEFILES_COMMON) $(MAKEFILES_MYPCAP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MYPCAP)
+
+$(DIRMYPCAP)/pcaptoregular: $(DIRMYPCAP)/pcaptoregular.o $(DIRMYPCAP)/libmypcap.a $(LIBS_MYPCAP) $(MAKEFILES_COMMON) $(MAKEFILES_MYPCAP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_MYPCAP)
 
 $(DIRMYPCAP)/pcapngcmp: $(DIRMYPCAP)/pcapngcmp.o $(DIRMYPCAP)/libmypcap.a $(LIBS_MYPCAP) $(MAKEFILES_COMMON) $(MAKEFILES_MYPCAP)
