@@ -2,6 +2,9 @@ PORTS_SRC_LIB := ports.c
 ifeq ($(WITH_NETMAP),yes)
 PORTS_SRC_LIB += netmapports.c
 endif
+ifeq ($(WITH_ODP),yes)
+PORTS_SRC_LIB += odpports.c
+endif
 PORTS_SRC := $(PORTS_SRC_LIB)
 
 PORTS_SRC_LIB := $(patsubst %,$(DIRPORTS)/%,$(PORTS_SRC_LIB))
@@ -16,6 +19,9 @@ PORTS_DEP := $(patsubst %.c,%.d,$(PORTS_SRC))
 CFLAGS_PORTS := -I$(DIRHASHLIST) -I$(DIRMISC) -I$(DIRPACKET) -I$(DIRLINKEDLIST) -I$(DIRALLOC) -I$(DIRMYPCAP) -I$(DIRDYNARR) -I$(DIRHASHTABLE) -I$(DIRLOG)
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_PORTS += -I$(NETMAP_INCDIR)
+endif
+ifeq ($(WITH_ODP),yes)
+CFLAGS_PORTS += -I$(ODP_DIR)/include
 endif
 
 MAKEFILES_PORTS := $(DIRPORTS)/module.mk
