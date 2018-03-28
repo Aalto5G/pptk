@@ -11,6 +11,8 @@ int main(int argc, char **argv)
   char *buf = "abcdef"; 
   char *buf2 = "abcdefg"; 
   char *buf3 = "abcdefghijklmnopqrstuvwxyz";
+  char iptcp6hdr[] = "\x60\x0\x0\x0\x0\x17\x6\x40\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x1\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x1\x0\x14\x0\x50\x0\x0\x0\x0\x0\x0\x0\x0\x50\x2\x20\x0\xba\xa\x0\x0\x66\x6f\x6f";
+  char ipudp6hdr[] = "\x60\x0\x0\x0\x0\xb\x11\x40\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x1\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x1\x0\x35\x0\x35\x0\xb\x29\xfd\x66\x6f\x6f";
   char iphdr[] = "\x45\x0\x0\x14\x0\x1\x0\x0\x40\x0\x7c\xe7\x7f\x0\x0\x1\x7f\x0\x0\x1";
   char iptcphdr[] = "\x45\x00\x00\x2b\x00\x01\x00\x00\x40\x06\x7c\xca\x7f\x00\x00\x01\x7f\x00\x00\x01\x00\x14\x00\x50\x00\x00\x00\x00\x00\x00\x00\x00\x50\x02\x20\x00\xbc\x09\x00\x00\x66\x6f\x6f";
   char ipudphdr[] = "\x45\x0\x0\x1f\x0\x1\x0\x0\x40\x11\x7c\xcb\x7f\x0\x0\x1\x7f\x0\x0\x1\x0\x35\x0\x35\x0\xb\x2b\xfc\x66\x6f\x6f";
@@ -34,7 +36,7 @@ int main(int argc, char **argv)
     abort();
   }
 
-  for (i = 0; i < 1000000; i++)
+  for (i = 0; i < 0; i++)
   {
     uint32_t new_src = rand();
     uint32_t new_dst = rand();
@@ -55,6 +57,14 @@ int main(int argc, char **argv)
   }
   ip_decr_ttl_cksum_update(iptcphdr);
   if (ip_hdr_cksum_calc(iptcphdr, 20) != 0)
+  {
+    abort();
+  }
+  if (tcp6_cksum_calc(iptcp6hdr, 40, iptcp6hdr+40, sizeof(iptcp6hdr)-40-1) != 0)
+  {
+    abort();
+  }
+  if (udp6_cksum_calc(ipudp6hdr, 40, ipudp6hdr+40, sizeof(ipudp6hdr)-40-1) != 0)
   {
     abort();
   }
@@ -88,6 +98,17 @@ int main(int argc, char **argv)
   }
   udp_set_cksum_calc(ipudphdr, 20, ipudphdr+20, sizeof(ipudphdr)-20-1);
   if (udp_cksum_calc(ipudphdr, 20, ipudphdr+20, sizeof(ipudphdr)-20-1) != 0)
+  {
+    abort();
+  }
+
+  tcp6_set_cksum_calc(iptcp6hdr, 40, iptcp6hdr+40, sizeof(iptcp6hdr)-40-1);
+  if (tcp6_cksum_calc(iptcp6hdr, 40, iptcp6hdr+40, sizeof(iptcp6hdr)-40-1) != 0)
+  {
+    abort();
+  }
+  udp6_set_cksum_calc(ipudp6hdr, 40, ipudp6hdr+40, sizeof(ipudp6hdr)-40-1);
+  if (udp6_cksum_calc(ipudp6hdr, 40, ipudp6hdr+40, sizeof(ipudp6hdr)-40-1) != 0)
   {
     abort();
   }

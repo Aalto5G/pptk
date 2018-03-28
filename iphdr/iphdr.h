@@ -66,6 +66,99 @@ static inline uint8_t ip_version(const void *pkt)
   return (hdr_get8h(&cpkt[0])>>4)&0xF;
 }
 
+static inline uint8_t ipv6_traffic_class(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return  (hdr_get8h(&cpkt[0])&0xF) |
+         ((hdr_get8h(&cpkt[1])>>4)&0xF);
+         
+}
+
+static inline void ipv6_set_traffic_class(void *pkt, uint8_t cls)
+{
+  char *cpkt = pkt;
+  uint8_t ch;
+  ch = hdr_get8h(&cpkt[0]);
+  hdr_set8h(&cpkt[0], (ch&0xF0) | (cls>>4));
+  ch = hdr_get8h(&cpkt[1]);
+  hdr_set8h(&cpkt[1], (ch&0x0F) | ((cls&0xF) << 4));
+}
+
+static inline void ipv6_set_flow_label(void *pkt, uint32_t fl)
+{
+  char *cpkt = pkt;
+  uint8_t ch;
+  ch = hdr_get8h(&cpkt[1]);
+  hdr_set8h(&cpkt[1], (ch&0xF0) | ((fl>>16)&0xF));
+  hdr_set16n(&cpkt[2], fl&0xFFFF);
+}
+
+static inline void ipv6_set_payload_length(void *pkt, uint16_t paylen)
+{
+  char *cpkt = pkt;
+  hdr_set16n(&cpkt[4], paylen);
+}
+
+static inline void ipv6_set_next_hdr(void *pkt, uint8_t nexthdr)
+{
+  char *cpkt = pkt;
+  hdr_set8h(&cpkt[6], nexthdr);
+}
+
+static inline void ipv6_set_hop_limit(void *pkt, uint8_t hl)
+{
+  char *cpkt = pkt;
+  hdr_set8h(&cpkt[7], hl);
+}
+
+static inline uint32_t ipv6_flow_label(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return (((hdr_get8h(&cpkt[1]))&0xF)<<16) | hdr_get16n(&cpkt[2]);
+}
+
+static inline uint16_t ipv6_payload_length(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get16n(&cpkt[4]);
+}
+
+static inline uint8_t ipv6_nexthdr(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get8h(&cpkt[6]);
+}
+
+static inline uint8_t ipv6_hop_limit(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get8h(&cpkt[7]);
+}
+
+static inline void *ipv6_src(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[8];
+}
+
+static inline void *ipv6_dst(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[8+16];
+}
+
+static inline const void *ipv6_const_src(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[8];
+}
+
+static inline const void *ipv6_const_dst(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[8+16];
+}
+
 static inline void ip_set_version(void *pkt, uint8_t version)
 {
   char *cpkt = pkt;

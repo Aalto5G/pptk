@@ -51,6 +51,12 @@ uint16_t tcp_cksum_calc(
 uint16_t udp_cksum_calc(
   const void *iphdr, uint16_t iplen, const void *udphdr, uint16_t udplen);
 
+uint16_t tcp6_cksum_calc(
+  const void *iphdr, uint16_t iplen, const void *tcphdr, uint16_t tcplen);
+
+uint16_t udp6_cksum_calc(
+  const void *iphdr, uint16_t iplen, const void *udphdr, uint16_t udplen);
+
 static inline void ip_set_hdr_cksum_calc(void *iphdr, uint16_t iplen)
 {
   uint16_t cksum;
@@ -78,6 +84,21 @@ static inline void tcp_set_cksum_calc(
   tcp_set_cksum(tcphdr, tcp_cksum_calc(iphdr, iplen, tcphdr, tcplen));
 }
 
+static inline void tcp6_set_cksum_calc(
+  const void *iphdr, uint16_t iplen, void *tcphdr, uint16_t tcplen)
+{
+  if (iplen < 40)
+  {
+    abort();
+  }
+  if (tcplen < 20)
+  {
+    abort();
+  }
+  tcp_set_cksum(tcphdr, 0);
+  tcp_set_cksum(tcphdr, tcp6_cksum_calc(iphdr, iplen, tcphdr, tcplen));
+}
+
 static inline void udp_set_cksum_calc(
   const void *iphdr, uint16_t iplen, void *udphdr, uint16_t udplen)
 {
@@ -91,6 +112,21 @@ static inline void udp_set_cksum_calc(
   }
   udp_set_cksum(udphdr, 0);
   udp_set_cksum(udphdr, udp_cksum_calc(iphdr, iplen, udphdr, udplen));
+}
+
+static inline void udp6_set_cksum_calc(
+  const void *iphdr, uint16_t iplen, void *udphdr, uint16_t udplen)
+{
+  if (iplen < 40)
+  {
+    abort();
+  }
+  if (udplen < 8)
+  {
+    abort();
+  }
+  udp_set_cksum(udphdr, 0);
+  udp_set_cksum(udphdr, udp6_cksum_calc(iphdr, iplen, udphdr, udplen));
 }
 
 static inline uint16_t ip_update_cksum16(
