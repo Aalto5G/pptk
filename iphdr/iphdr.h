@@ -159,6 +159,91 @@ static inline const void *ipv6_const_dst(const void *pkt)
   return &cpkt[8+16];
 }
 
+static inline uint32_t ipv6_extlen(uint8_t nexthdr, uint8_t lenfield)
+{
+  if (nexthdr == 44) // FRAG
+  {
+    return 8;
+  }
+  if (nexthdr == 51) // AH
+  {
+    return ((uint32_t)(uint8_t)lenfield) * 4 + 8;
+  }
+  return ((uint32_t)(uint8_t)lenfield) * 8 + 8;
+}
+
+static inline int is_ipv6_nexthdr(uint8_t nexthdr)
+{
+  return (nexthdr == 0 || // hop-by-hop options, OK
+          nexthdr == 60 || // destination options, OK
+          nexthdr == 43 || // routing, OK
+          nexthdr == 44 || // FRAG, OK
+          nexthdr == 51); // AH, OK
+          //nexthdr == 135 || // mobility,
+          //nexthdr == 139 || // host identity protocol version 2
+          //nexthdr == 140); // Shim6
+}
+
+// NB: assumes ipv6 total length field has been validated
+static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
+{
+  char *cipv6 = ipv6;
+  uint16_t plen = ipv6_payload_length(ipv6);
+  uint32_t tlen = plen + 40;
+  uint16_t off = 40;
+  uint8_t nexthdr = ipv6_nexthdr(ipv6);
+  while (is_ipv6_nexthdr(nexthdr))
+  {
+    uint32_t extlen;
+    if (off + 1U >= tlen)
+    {
+      return NULL;
+    }
+    nexthdr = cipv6[off];
+    extlen = ipv6_extlen(nexthdr, cipv6[off + 1]);
+    if (off + extlen > tlen)
+    {
+      return NULL;
+    }
+    off += extlen;
+  }
+  if (proto)
+  {
+    *proto = nexthdr;
+  }
+  return &cipv6[off];
+}
+
+// NB: assumes ipv6 total length field has been validated
+static inline const void *ipv6_const_proto_hdr(const void *ipv6, uint8_t *proto)
+{
+  const char *cipv6 = ipv6;
+  uint16_t plen = ipv6_payload_length(ipv6);
+  uint32_t tlen = plen + 40;
+  uint16_t off = 40;
+  uint8_t nexthdr = ipv6_nexthdr(ipv6);
+  while (is_ipv6_nexthdr(nexthdr))
+  {
+    uint32_t extlen;
+    if (off + 1U >= tlen)
+    {
+      return NULL;
+    }
+    nexthdr = cipv6[off];
+    extlen = ipv6_extlen(nexthdr, cipv6[off + 1]);
+    if (off + extlen > tlen)
+    {
+      return NULL;
+    }
+    off += extlen;
+  }
+  if (proto)
+  {
+    *proto = nexthdr;
+  }
+  return &cipv6[off];
+}
+
 static inline void ip_set_version(void *pkt, uint8_t version)
 {
   char *cpkt = pkt;
