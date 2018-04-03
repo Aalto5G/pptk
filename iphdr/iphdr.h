@@ -225,7 +225,7 @@ static inline void *ip46_src(void *pkt)
   {
     return ip_src_ptr(pkt);
   }
-  else if (ip_version(pkt) == 4)
+  else if (ip_version(pkt) == 6)
   {
     return ipv6_src(pkt);
   }
@@ -241,7 +241,7 @@ static inline void ip46_set_src(void *pkt, const void *addr)
   {
     memcpy(ip_src_ptr(pkt), addr, 4);
   }
-  else if (ip_version(pkt) == 4)
+  else if (ip_version(pkt) == 6)
   {
     memcpy(ipv6_src(pkt), addr, 16);
   }
@@ -257,7 +257,7 @@ static inline void *ip46_dst(void *pkt)
   {
     return ip_dst_ptr(pkt);
   }
-  else if (ip_version(pkt) == 4)
+  else if (ip_version(pkt) == 6)
   {
     return ipv6_dst(pkt);
   }
@@ -273,7 +273,7 @@ static inline void ip46_set_dst(void *pkt, const void *addr)
   {
     memcpy(ip_dst_ptr(pkt), addr, 4);
   }
-  else if (ip_version(pkt) == 4)
+  else if (ip_version(pkt) == 6)
   {
     memcpy(ipv6_dst(pkt), addr, 16);
   }
@@ -301,7 +301,7 @@ static inline const void *ip46_const_src(const void *pkt)
   {
     return ip_const_src_ptr(pkt);
   }
-  else if (ip_version(pkt) == 4)
+  else if (ip_version(pkt) == 6)
   {
     return ipv6_const_src(pkt);
   }
@@ -317,7 +317,7 @@ static inline const void *ip46_const_dst(const void *pkt)
   {
     return ip_const_dst_ptr(pkt);
   }
-  else if (ip_version(pkt) == 4)
+  else if (ip_version(pkt) == 6)
   {
     return ipv6_const_dst(pkt);
   }
