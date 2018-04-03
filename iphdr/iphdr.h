@@ -93,13 +93,32 @@ static inline void ipv6_set_flow_label(void *pkt, uint32_t fl)
   hdr_set16n(&cpkt[2], fl&0xFFFF);
 }
 
-static inline void ipv6_set_payload_length(void *pkt, uint16_t paylen)
+static inline void ip46_set_flow_label(void *pkt, uint32_t fl)
+{
+  if (ip_version(pkt) == 4)
+  {
+    if (fl != 0)
+    {
+      abort();
+    }
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    ipv6_set_flow_label(pkt, fl);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void ipv6_set_payload_len(void *pkt, uint16_t paylen)
 {
   char *cpkt = pkt;
   hdr_set16n(&cpkt[4], paylen);
 }
 
-static inline void ipv6_set_next_hdr(void *pkt, uint8_t nexthdr)
+static inline void ipv6_set_nexthdr(void *pkt, uint8_t nexthdr)
 {
   char *cpkt = pkt;
   hdr_set8h(&cpkt[6], nexthdr);
@@ -117,7 +136,23 @@ static inline uint32_t ipv6_flow_label(const void *pkt)
   return (((hdr_get8h(&cpkt[1]))&0xF)<<16) | hdr_get16n(&cpkt[2]);
 }
 
-static inline uint16_t ipv6_payload_length(const void *pkt)
+static inline uint32_t ip46_flow_label(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return 0;
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    return ipv6_flow_label(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline uint16_t ipv6_payload_len(const void *pkt)
 {
   const char *cpkt = pkt;
   return hdr_get16n(&cpkt[4]);
@@ -127,6 +162,18 @@ static inline uint8_t ipv6_nexthdr(const void *pkt)
 {
   const char *cpkt = pkt;
   return hdr_get8h(&cpkt[6]);
+}
+
+static inline void *ipv6_nexthdr_ptr(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[40];
+}
+
+static inline const void *ipv6_nexthdr_const_ptr(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[40];
 }
 
 static inline uint8_t ipv6_hop_limit(const void *pkt)
@@ -159,6 +206,127 @@ static inline const void *ipv6_const_dst(const void *pkt)
   return &cpkt[8+16];
 }
 
+static inline void *ip_src_ptr(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[12];
+}
+
+static inline void *ip_dst_ptr(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[16];
+}
+
+
+static inline void *ip46_src(void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_src_ptr(pkt);
+  }
+  else if (ip_version(pkt) == 4)
+  {
+    return ipv6_src(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void ip46_set_src(void *pkt, const void *addr)
+{
+  if (ip_version(pkt) == 4)
+  {
+    memcpy(ip_src_ptr(pkt), addr, 4);
+  }
+  else if (ip_version(pkt) == 4)
+  {
+    memcpy(ipv6_src(pkt), addr, 16);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void *ip46_dst(void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_dst_ptr(pkt);
+  }
+  else if (ip_version(pkt) == 4)
+  {
+    return ipv6_dst(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void ip46_set_dst(void *pkt, const void *addr)
+{
+  if (ip_version(pkt) == 4)
+  {
+    memcpy(ip_dst_ptr(pkt), addr, 4);
+  }
+  else if (ip_version(pkt) == 4)
+  {
+    memcpy(ipv6_dst(pkt), addr, 16);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline const void *ip_const_src_ptr(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[12];
+}
+
+static inline const void *ip_const_dst_ptr(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[16];
+}
+
+static inline const void *ip46_const_src(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_const_src_ptr(pkt);
+  }
+  else if (ip_version(pkt) == 4)
+  {
+    return ipv6_const_src(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline const void *ip46_const_dst(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_const_dst_ptr(pkt);
+  }
+  else if (ip_version(pkt) == 4)
+  {
+    return ipv6_const_dst(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
 static inline uint32_t ipv6_extlen(uint8_t nexthdr, uint8_t lenfield)
 {
   if (nexthdr == 44) // FRAG
@@ -188,7 +356,7 @@ static inline int is_ipv6_nexthdr(uint8_t nexthdr)
 static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
 {
   char *cipv6 = ipv6;
-  uint16_t plen = ipv6_payload_length(ipv6);
+  uint16_t plen = ipv6_payload_len(ipv6);
   uint32_t tlen = plen + 40;
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
@@ -218,7 +386,7 @@ static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
 static inline const void *ipv6_const_proto_hdr(const void *ipv6, uint8_t *proto)
 {
   const char *cipv6 = ipv6;
-  uint16_t plen = ipv6_payload_length(ipv6);
+  uint16_t plen = ipv6_payload_len(ipv6);
   uint32_t tlen = plen + 40;
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
@@ -259,6 +427,19 @@ static inline uint8_t ip_hdr_len(const void *pkt)
   return ((hdr_get8h(&cpkt[0]))&0xF)*4;
 }
 
+static inline uint8_t ip46_hdr_len(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_hdr_len(pkt);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    return 40;
+  }
+  abort();
+}
+
 static inline void ip_set_hdr_len(void *pkt, uint8_t hdr_len)
 {
   char *cpkt = pkt;
@@ -273,6 +454,40 @@ static inline void ip_set_hdr_len(void *pkt, uint8_t hdr_len)
   cpkt[0] = uch;
 }
 
+static inline void ip46_set_hdr_len(void *pkt, uint8_t hdr_len)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_hdr_len(pkt, hdr_len);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    if (hdr_len != 40)
+    {
+      abort();
+    }
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void ip46_set_min_hdr_len(void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_hdr_len(pkt, 20);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+  }
+  else
+  {
+    abort();
+  }
+}
+
 static inline uint16_t ip_total_len(const void *pkt)
 {
   const char *cpkt = pkt;
@@ -283,6 +498,74 @@ static inline void ip_set_total_len(void *pkt, uint16_t total_len)
 {
   char *cpkt = pkt;
   hdr_set16n(&cpkt[2], total_len);
+}
+
+static inline void ip46_set_total_len(void *pkt, uint16_t total_len)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_total_len(pkt, total_len);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    if (total_len < 40)
+    {
+      abort();
+    }
+    ipv6_set_payload_len(pkt, total_len - 40);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void ip46_set_payload_len(void *pkt, uint16_t payload_len)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_total_len(pkt, payload_len + 20);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    ipv6_set_payload_len(pkt, payload_len);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline uint16_t ip46_total_len(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_total_len(pkt);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    return ipv6_payload_len(pkt) + 40;
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline uint16_t ip46_payload_len(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_total_len(pkt) - ip_hdr_len(pkt);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    return ipv6_payload_len(pkt);
+  }
+  else
+  {
+    abort();
+  }
 }
 
 static inline int ip_more_frags(const void *pkt)
@@ -319,6 +602,25 @@ static inline void ip_set_dont_frag(void *pkt, int bit)
   hdr_set8h(&cpkt[6], u8);
 }
 
+static inline void ip46_set_dont_frag(void *pkt, int bit)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_dont_frag(pkt, bit);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    if (!bit)
+    {
+      abort();
+    }
+  }
+  else
+  {
+    abort();
+  }
+}
+
 static inline int ip_rsvd_bit(const void *pkt)
 {
   const char *cpkt = pkt;
@@ -346,6 +648,25 @@ static inline void ip_set_id(void *pkt, uint16_t id)
 {
   char *cpkt = pkt;
   hdr_set16n(&cpkt[4], id);
+}
+
+static inline void ip46_set_id(void *pkt, uint16_t ipid)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_id(pkt, ipid);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    if (ipid)
+    {
+      abort();
+    }
+  }
+  else
+  {
+    abort();
+  }
 }
 
 static inline uint16_t ip_frag_off(const void *pkt)
@@ -401,10 +722,74 @@ static inline uint8_t ip_proto(const void *pkt)
   return hdr_get8h(&cpkt[9]);
 }
 
+static inline uint8_t ip46_proto(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_proto(pkt);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    return ipv6_nexthdr(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
 static inline void ip_set_proto(void *pkt, uint8_t proto)
 {
   char *cpkt = pkt;
   hdr_set8h(&cpkt[9], proto);
+}
+
+static inline void ip46_set_proto(void *pkt, uint8_t proto)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_proto(pkt, proto);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    ipv6_set_nexthdr(pkt, proto);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline uint8_t ip46_ttl(const void *pkt)
+{
+  if (ip_version(pkt) == 4)
+  {
+    return ip_ttl(pkt);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    return ipv6_hop_limit(pkt);
+  }
+  else
+  {
+    abort();
+  }
+}
+
+static inline void ip46_set_ttl(void *pkt, uint8_t ttl)
+{
+  if (ip_version(pkt) == 4)
+  {
+    ip_set_ttl(pkt, ttl);
+  }
+  else if (ip_version(pkt) == 6)
+  {
+    ipv6_set_hop_limit(pkt, ttl);
+  }
+  else
+  {
+    abort();
+  }
 }
 
 static inline uint16_t ip_hdr_cksum(const void *pkt)
@@ -448,9 +833,19 @@ static inline void *ip_payload(void *pkt)
   return ((char*)pkt) + ip_hdr_len(pkt);
 }
 
+static inline void *ip46_payload(void *pkt)
+{
+  return ((char*)pkt) + ip46_hdr_len(pkt);
+}
+
 static inline const void *ip_const_payload(const void *pkt)
 {
   return ((const char*)pkt) + ip_hdr_len(pkt);
+}
+
+static inline const void *ip46_const_payload(const void *pkt)
+{
+  return ((const char*)pkt) + ip46_hdr_len(pkt);
 }
 
 static inline uint16_t tcp_src_port(const void *pkt)

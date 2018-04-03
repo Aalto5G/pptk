@@ -45,6 +45,23 @@ void ip_cksum_feed(struct ip_cksum_ctx *ctx, const void *buf, size_t sz);
 
 uint16_t ip_hdr_cksum_calc(const void *iphdr, uint16_t iplen);
 
+static inline uint16_t ip46_hdr_cksum_calc(const void *iphdr)
+{
+  uint16_t iplen = ip46_hdr_len(iphdr);
+  if (ip_version(iphdr) == 4)
+  {
+    return ip_hdr_cksum_calc(iphdr, iplen);
+  }
+  else if (ip_version(iphdr) == 6)
+  {
+    return 0;
+  }
+  else
+  {
+    abort();
+  }
+}
+
 uint16_t tcp_cksum_calc(
   const void *iphdr, uint16_t iplen, const void *tcphdr, uint16_t tcplen);
 
@@ -53,6 +70,30 @@ uint16_t udp_cksum_calc(
 
 uint16_t tcp6_cksum_calc(
   const void *iphdr, uint16_t iplen, const void *tcphdr, uint16_t tcplen);
+
+static inline uint16_t tcp46_cksum_calc(
+  const void *iphdr)
+{
+  uint16_t tcplen = ip46_payload_len(iphdr);
+  uint16_t iplen = ip46_hdr_len(iphdr);
+  const void *tcphdr = ip46_const_payload(iphdr);
+  if (ip46_proto(iphdr) != 6)
+  {
+    abort();
+  }
+  if (ip_version(iphdr) == 4)
+  {
+    return tcp_cksum_calc(iphdr, iplen, tcphdr, tcplen);
+  }
+  else if (ip_version(iphdr) == 6)
+  {
+    return tcp6_cksum_calc(iphdr, iplen, tcphdr, tcplen);
+  }
+  else
+  {
+    abort();
+  }
+}
 
 uint16_t udp6_cksum_calc(
   const void *iphdr, uint16_t iplen, const void *udphdr, uint16_t udplen);
@@ -67,6 +108,23 @@ static inline void ip_set_hdr_cksum_calc(void *iphdr, uint16_t iplen)
   ip_set_hdr_cksum(iphdr, 0);
   cksum = ip_hdr_cksum_calc(iphdr, iplen);
   ip_set_hdr_cksum(iphdr, cksum);
+}
+
+static inline void ip46_set_hdr_cksum_calc(void *iphdr)
+{
+  if (ip_version(iphdr) == 4)
+  {
+    uint16_t iplen = ip_hdr_len(iphdr);
+    ip_set_hdr_cksum_calc(iphdr, iplen);
+  }
+  else if (ip_version(iphdr) == 6)
+  {
+    // nop
+  }
+  else
+  {
+    abort();
+  }
 }
 
 static inline void tcp_set_cksum_calc(
@@ -97,6 +155,29 @@ static inline void tcp6_set_cksum_calc(
   }
   tcp_set_cksum(tcphdr, 0);
   tcp_set_cksum(tcphdr, tcp6_cksum_calc(iphdr, iplen, tcphdr, tcplen));
+}
+
+static inline void tcp46_set_cksum_calc(void *iphdr)
+{
+  uint16_t tcplen = ip46_payload_len(iphdr);
+  uint16_t iplen = ip46_hdr_len(iphdr);
+  void *tcphdr = ip46_payload(iphdr);
+  if (ip46_proto(iphdr) != 6)
+  {
+    abort();
+  }
+  if (ip_version(iphdr) == 4)
+  {
+    tcp_set_cksum_calc(iphdr, iplen, tcphdr, tcplen);
+  }
+  else if (ip_version(iphdr) == 6)
+  {
+    tcp6_set_cksum_calc(iphdr, iplen, tcphdr, tcplen);
+  }
+  else
+  {
+    abort();
+  }
 }
 
 static inline void udp_set_cksum_calc(
