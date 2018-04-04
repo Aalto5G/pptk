@@ -352,6 +352,18 @@ static inline int is_ipv6_nexthdr(uint8_t nexthdr)
           //nexthdr == 140); // Shim6
 }
 
+static inline uint16_t ipv6_frag_off(const void *frag)
+{
+  const char *cfrag = frag;
+  return (hdr_get16n(&cfrag[2])&0xFFF8);
+}
+
+static inline uint16_t ipv6_more_frags(const void *frag)
+{
+  const char *cfrag = frag;
+  return !!(hdr_get16n(&cfrag[2])&1);
+}
+
 // NB: assumes ipv6 total length field has been validated
 static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
 {
@@ -363,9 +375,13 @@ static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
   while (is_ipv6_nexthdr(nexthdr))
   {
     uint32_t extlen;
-    if (off + 1U >= tlen)
+    if (off + 8U > tlen)
     {
       return NULL;
+    }
+    if (nexthdr == 44 && ipv6_frag_off(&cipv6[off]) > 0)
+    {
+      break;
     }
     nexthdr = cipv6[off];
     extlen = ipv6_extlen(nexthdr, cipv6[off + 1]);
@@ -393,9 +409,13 @@ static inline const void *ipv6_const_proto_hdr(const void *ipv6, uint8_t *proto)
   while (is_ipv6_nexthdr(nexthdr))
   {
     uint32_t extlen;
-    if (off + 1U >= tlen)
+    if (off + 8U > tlen)
     {
       return NULL;
+    }
+    if (nexthdr == 44 && ipv6_frag_off(&cipv6[off]) > 0)
+    {
+      break;
     }
     nexthdr = cipv6[off];
     extlen = ipv6_extlen(nexthdr, cipv6[off + 1]);
