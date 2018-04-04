@@ -365,13 +365,18 @@ static inline uint16_t ipv6_more_frags(const void *frag)
 }
 
 // NB: assumes ipv6 total length field has been validated
-static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
+static inline void *ipv6_proto_hdr_2(
+  void *ipv6, uint8_t *proto,
+  int *is_fragmented_ptr, uint16_t *frag_hdr_off_ptr,
+  uint16_t *proto_hdr_off_from_frag)
 {
   char *cipv6 = ipv6;
   uint16_t plen = ipv6_payload_len(ipv6);
   uint32_t tlen = plen + 40;
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
+  int is_fragmented = 0;
+  uint16_t frag_hdr_off;
   while (is_ipv6_nexthdr(nexthdr))
   {
     uint32_t extlen;
@@ -379,9 +384,14 @@ static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
     {
       return NULL;
     }
-    if (nexthdr == 44 && ipv6_frag_off(&cipv6[off]) > 0)
+    if (nexthdr == 44)
     {
-      break;
+      is_fragmented = 1;
+      frag_hdr_off = off;
+      if (ipv6_frag_off(&cipv6[off]) > 0)
+      {
+        break;
+      }
     }
     nexthdr = cipv6[off];
     extlen = ipv6_extlen(nexthdr, cipv6[off + 1]);
@@ -395,17 +405,42 @@ static inline void *ipv6_proto_hdr(void *ipv6, uint8_t *proto)
   {
     *proto = nexthdr;
   }
+  if (is_fragmented_ptr)
+  {
+    *is_fragmented_ptr = is_fragmented;
+  }
+  if (is_fragmented)
+  {
+    if (frag_hdr_off_ptr)
+    {
+      *frag_hdr_off_ptr = frag_hdr_off;
+    }
+    if (proto_hdr_off_from_frag)
+    {
+      *proto_hdr_off_from_frag = off - frag_hdr_off;
+    }
+  }
   return &cipv6[off];
+}
+static inline void *ipv6_proto_hdr(
+  void *ipv6, uint8_t *proto)
+{
+  return ipv6_proto_hdr_2(ipv6, proto, NULL, NULL, NULL);
 }
 
 // NB: assumes ipv6 total length field has been validated
-static inline const void *ipv6_const_proto_hdr(const void *ipv6, uint8_t *proto)
+static inline const void *ipv6_const_proto_hdr_2(
+  const void *ipv6, uint8_t *proto,
+  int *is_fragmented_ptr, uint16_t *frag_hdr_off_ptr,
+  uint16_t *proto_hdr_off_from_frag)
 {
   const char *cipv6 = ipv6;
   uint16_t plen = ipv6_payload_len(ipv6);
   uint32_t tlen = plen + 40;
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
+  int is_fragmented = 0;
+  uint16_t frag_hdr_off;
   while (is_ipv6_nexthdr(nexthdr))
   {
     uint32_t extlen;
@@ -413,9 +448,14 @@ static inline const void *ipv6_const_proto_hdr(const void *ipv6, uint8_t *proto)
     {
       return NULL;
     }
-    if (nexthdr == 44 && ipv6_frag_off(&cipv6[off]) > 0)
+    if (nexthdr == 44)
     {
-      break;
+      is_fragmented = 1;
+      frag_hdr_off = off;
+      if (ipv6_frag_off(&cipv6[off]) > 0)
+      {
+        break;
+      }
     }
     nexthdr = cipv6[off];
     extlen = ipv6_extlen(nexthdr, cipv6[off + 1]);
@@ -429,7 +469,27 @@ static inline const void *ipv6_const_proto_hdr(const void *ipv6, uint8_t *proto)
   {
     *proto = nexthdr;
   }
+  if (is_fragmented_ptr)
+  {
+    *is_fragmented_ptr = is_fragmented;
+  }
+  if (is_fragmented)
+  {
+    if (frag_hdr_off_ptr)
+    {
+      *frag_hdr_off_ptr = frag_hdr_off;
+    }
+    if (proto_hdr_off_from_frag)
+    {
+      *proto_hdr_off_from_frag = off - frag_hdr_off;
+    }
+  }
   return &cipv6[off];
+}
+static inline const void *ipv6_const_proto_hdr(
+  const void *ipv6, uint8_t *proto)
+{
+  return ipv6_const_proto_hdr_2(ipv6, proto, NULL, NULL, NULL);
 }
 
 static inline void ip_set_version(void *pkt, uint8_t version)
