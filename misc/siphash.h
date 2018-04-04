@@ -173,7 +173,7 @@ static inline void siphash_feed_buf(
   uint64_t b = 0;
   while (buflen >= 8)
   {
-    siphash_feed_u64(ctx, hdr_get32h(cbuf));
+    siphash_feed_u64(ctx, hdr_get64h(cbuf));
     cbuf += 8;
     buflen -= 8;
   }
@@ -208,7 +208,7 @@ static inline uint64_t siphash_buf(
   siphash_init(&ctx, key);
   while (buflen >= 8)
   {
-    siphash_feed_u64(&ctx, hdr_get32h(cbuf));
+    siphash_feed_u64(&ctx, hdr_get64h(cbuf));
     cbuf += 8;
     buflen -= 8;
   }
