@@ -1100,7 +1100,7 @@ static inline void tcp_set_data_offset(void *pkt, uint8_t data_off)
 {
   uint8_t val;
   char *cpkt = pkt;
-  if (data_off % 4 != 0)
+  if (data_off % 4 != 0 || data_off > 60)
   {
     abort();
   }
