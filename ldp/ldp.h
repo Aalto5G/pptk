@@ -37,4 +37,6 @@ ldp_interface_open(const char *name, int numinq, int numoutq);
 
 void ldp_interface_close(struct ldp_interface *intf);
 
+int ldp_in_queue_poll(struct ldp_in_queue *inq, uint64_t timeout_usec);
+
 #endif

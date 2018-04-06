@@ -1,11 +1,8 @@
-LDP_SRC_LIB :=
+LDP_SRC_LIB := ldp.c
 ifeq ($(WITH_NETMAP),yes)
-LDP_SRC_LIB += ldp.c
+LDP_SRC_LIB += ldpnetmap.c
 endif
-LDP_SRC := $(LDP_SRC_LIB)
-ifeq ($(WITH_NETMAP),yes)
-LDP_SRC += testldp.c ldpfwd.c
-endif
+LDP_SRC := $(LDP_SRC_LIB) testldp.c ldpfwd.c
 
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
 LDP_SRC := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC))
@@ -29,11 +26,10 @@ clean_$(LCLDP): clean_LDP
 distclean_$(LCLDP): distclean_LDP
 unit_$(LCLDP): unit_LDP
 
-LDP: $(DIRLDP)/libldp.a
+LDP: $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/ldpfwd
 
 ifeq ($(WITH_NETMAP),yes)
-LDP: $(DIRLDP)/testldp $(DIRLDP)/ldpfwd
-CFLAGS_LDP += -I$(NETMAP_INCDIR)
+CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
 endif
 
 unit_LDP:
