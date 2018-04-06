@@ -27,4 +27,26 @@ struct ldpfunc2_userdata {
   struct pcapng_out_ctx *outctx;
 };
 
+struct ldpfunc3_userdata {
+  struct allocif *intf;
+  struct ldp_out_queue *uloutq;
+  struct ldp_out_queue *dloutq;
+  struct packet *uloutbuf[1000];
+  struct packet *dloutbuf[1000];
+  size_t uloutcnt;
+  size_t dloutcnt;
+  int lan;
+  int wan;
+  int out;
+  struct pcapng_out_ctx *lanctx;
+  struct pcapng_out_ctx *wanctx;
+  struct pcapng_out_ctx *outctx;
+};
+
+void ldpfunc3flushul(struct ldpfunc3_userdata *ud);
+
+void ldpfunc3flushdl(struct ldpfunc3_userdata *ud);
+
+void ldpfunc3(struct packet *pkt, void *userdata);
+
 #endif
