@@ -1,9 +1,12 @@
 # PPTK
 
-PPTK is a packet processing toolkit. Note it's for processing. It is not for
-reception or transmission, although it is intended to be used with netmap.
-There is however no tight connection to netmap in PPTK, so PPTK can be used
-along with regular raw sockets as well.
+PPTK is a packet processing toolkit. Originally it was only for processing. It
+was not for reception or transmission, although it was intended to be used with
+netmap. There is however no tight connection to netmap in PPTK, so PPTK can be
+used along with regular raw sockets as well.
+
+However, now there's LDP (L Data Plane) included in PPTK as well. Read this
+document fully for more information.
 
 PPTK aims to do things correctly. So, for example, fragment reassembly supports
 an arbitrary number of fragments per packet and handles overlapping fragments
@@ -35,6 +38,22 @@ IP datagrams (in ODP, the datagram reassembly is just an example).
 Please note that some code is under a peculiar license. So, for example the
 skip list based timer code taken from DPDK is under BSD license and the Linux
 IP fragment reassembly code is under GPLv2.
+
+# LDP
+
+LDP is L Data Plane. What does the L mean, then? Well, everyone can interpret
+it in a different way. It can mean Linux, as LDP will probably never support
+any other platform. It can also mean lightweight, as LDP is much lighterweight
+than other data plane wrappers like OpenDataPlane (ODP).
+
+LDP aims to mainly offer a lighterweight alternative to ODP. Packet reception
+does not require allocating memory in LDP, which is the main benefit of LDP
+over ODP. Instead, packets are invalidated the next time a packet burst is
+received or the next time information is synchronized with the kernel by
+polling on the file descriptor. This means the packet input areas belonging to
+the network interface card in netmap can be used.
+
+LDP does not support DPDK, which is a major difference from ODP.
 
 # Prerequisites
 
