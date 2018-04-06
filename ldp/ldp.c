@@ -389,7 +389,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq)
   intf->inq = inqs;
   intf->outq = outqs;
 
-  insock->max_sz = 1514;
+  insock->max_sz = 1514; // FIXME get MTU
   insock->num_bufs = 128;
   insock->bufs = malloc(insock->num_bufs*sizeof(*insock->bufs));
   if (insock->bufs == NULL)
