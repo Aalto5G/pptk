@@ -259,6 +259,7 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
       }
       goto err;
     }
+    innmq->q.fd = innmq->nmd->fd;
   }
   for (i = 0; i < numoutq; i++)
   {
@@ -291,6 +292,7 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
       }
       goto err;
     }
+    outnmq->q.fd = outnmq->nmd->fd;
   }
   intf->num_inq = numinq;
   intf->num_outq = numoutq;
