@@ -111,6 +111,10 @@ DIRMYPCAP := mypcap
 LCMYPCAP := mypcap
 MODULES += MYPCAP
 
+DIRLDP := ldp
+LCLDP := ldp
+MODULES += LDP
+
 CFLAGS := -g -O2 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith -Werror -std=gnu11
 
 .PHONY: all clean distclean unit
