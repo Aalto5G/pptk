@@ -82,7 +82,7 @@ int ldp_in_queue_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
 static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
                                         struct ldp_packet *pkts, int num)
 {
-  int i;
+  int i, j;
   int fd = inq->fd;
   int ret;
   struct ldp_in_queue_socket *insock;
@@ -93,6 +93,7 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
     num = insock->num_bufs;
   }
 
+  struct sockaddr_ll names[num];
   struct mmsghdr msgs[num];
   struct iovec iovecs[num][1];
 
@@ -103,17 +104,24 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
   {
     msgs[i].msg_hdr.msg_iovlen = 1;
     msgs[i].msg_hdr.msg_iov = iovecs[i];
+    msgs[i].msg_hdr.msg_namelen = sizeof(names[i]);
+    msgs[i].msg_hdr.msg_name = &names[i];
     iovecs[i][0].iov_base = insock->bufs[i];
     iovecs[i][0].iov_len = insock->max_sz;
   }
   ret = recvmmsg(fd, msgs, num, MSG_DONTWAIT, NULL);
+  j = 0;
   for (i = 0; i < ret; i++)
   {
-    // FIXME bypass own packets
-    pkts[i].data = insock->bufs[i];
-    pkts[i].sz = msgs[i].msg_len;
+    if (names[i].sll_pkttype == PACKET_OUTGOING)
+    {
+      continue;
+    }
+    pkts[j].data = insock->bufs[i];
+    pkts[j].sz = msgs[i].msg_len;
+    j++;
   }
-  return ret;
+  return j;
 }
 
 static int ldp_out_queue_inject_socket(struct ldp_out_queue *outq,
@@ -240,8 +248,12 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq)
   {
     abort();
   }
+
+#ifdef PACKET_QDISC_BYPASS
   int one = 1;
+  one = 1;
   setsockopt(outsock->q.fd, SOL_PACKET, PACKET_QDISC_BYPASS, &one, sizeof(one));
+#endif
 
   memset(&sockaddr_ll, 0, sizeof(sockaddr_ll));
   sockaddr_ll.sll_family = AF_PACKET;
