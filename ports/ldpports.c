@@ -1,6 +1,6 @@
 #include "ports.h"
 #include "ldpports.h"
-#include <ldp_api.h>
+#include "ldp.h"
 #include "time64.h"
 #include "mypcapng.h"
 #include "log.h"
@@ -9,9 +9,7 @@
 void ldpfunc(struct packet *pkt, void *userdata)
 {
   struct ldpfunc_userdata *ud = userdata;
-  char *buf;
   struct ldp_packet pkts[1];
-  int sent;
   pkts[0].data = packet_data(pkt);
   pkts[0].sz = pkt->sz;
   ldp_out_inject(ud->outq, pkts, 1);
@@ -22,8 +20,6 @@ void ldpfunc2(struct packet *pkt, void *userdata)
 {
   struct ldpfunc2_userdata *ud = userdata;
   struct ldp_packet pkts[1];
-  char *buf;
-  int sent;
   pkts[0].data = packet_data(pkt);
   pkts[0].sz = pkt->sz;
   if (pkt->direction == PACKET_DIRECTION_UPLINK)

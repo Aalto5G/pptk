@@ -12,7 +12,7 @@ void ldpfunc2(struct packet *pkt, void *userdata);
 
 struct ldpfunc_userdata {
   struct allocif *intf;
-  struct ldp_out_queue outq;
+  struct ldp_out_queue *outq;
 };
 
 struct ldpfunc2_userdata {
