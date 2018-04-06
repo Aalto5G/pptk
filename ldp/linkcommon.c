@@ -10,6 +10,7 @@
 int ldp_set_promisc_mode(int sockfd, const char *ifname, int on)
 {
   struct ifreq ifr;
+  memset(&ifr, 0, sizeof(ifr));
   if (strncmp(ifname, "null:", 5) == 0)
   {
     return 0;
@@ -74,6 +75,7 @@ int ldp_set_promisc_mode(int sockfd, const char *ifname, int on)
 int ldp_link_status(int sockfd, const char *ifname)
 {
   struct ifreq ifr;
+  memset(&ifr, 0, sizeof(ifr));
   if (strncmp(ifname, "vale", 4) == 0)
   {
     return 1;
