@@ -71,8 +71,7 @@ int main(int argc, char **argv)
       last_dlbytes = dlbytes;
     }
 
-    num = dlintf->inq[0]->nextpkts(
-      dlintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
+    num = ldp_in_nextpkts(dlintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
     if (num < 0)
     {
       num = 0;
@@ -82,10 +81,9 @@ int main(int argc, char **argv)
       ulpkts++;
       ulbytes += pkts[i].sz;
     }
-    ulintf->outq[0]->inject(ulintf->outq[0], pkts, num);
+    ldp_out_inject(ulintf->outq[0], pkts, num);
 
-    num = ulintf->inq[0]->nextpkts(
-      ulintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
+    num = ldp_in_nextpkts(ulintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
     if (num < 0)
     {
       num = 0;
@@ -95,7 +93,7 @@ int main(int argc, char **argv)
       dlpkts++;
       dlbytes += pkts[i].sz;
     }
-    dlintf->outq[0]->inject(dlintf->outq[0], pkts, num);
+    ldp_out_inject(dlintf->outq[0], pkts, num);
 
   }
   return 0;

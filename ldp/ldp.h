@@ -32,6 +32,28 @@ struct ldp_out_queue {
   void (*close)(struct ldp_out_queue *outq);
 };
 
+static inline int ldp_in_nextpkts(struct ldp_in_queue *inq,
+                                  struct ldp_packet *pkts, int num)
+{
+  return inq->nextpkts(inq, pkts, num);
+}
+
+static inline int ldp_in_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
+{
+  return inq->poll(inq, timeout_usec);
+}
+
+static inline int ldp_out_inject(struct ldp_out_queue *outq,
+                                 struct ldp_packet *pkts, int num)
+{
+  return outq->inject(outq, pkts, num);
+}
+
+static inline int ldp_out_txsync(struct ldp_out_queue *outq)
+{
+  return outq->txsync(outq);
+}
+
 struct ldp_interface *
 ldp_interface_open(const char *name, int numinq, int numoutq);
 

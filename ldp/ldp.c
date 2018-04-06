@@ -15,6 +15,7 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 #include "ldp.h"
+#include "ldpnull.h"
 #include "containerof.h"
 #if WITH_NETMAP
 #include "ldpnetmap.h"
@@ -322,7 +323,11 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
   {
     abort();
   }
-  if (strncmp(name, "netmap:", 7) == 0)
+  if (strncmp(name, "null:", 5) == 0)
+  {
+    return ldp_interface_open_null(name, numinq, numoutq);
+  }
+  else if (strncmp(name, "netmap:", 7) == 0)
   {
 #if WITH_NETMAP
     return ldp_interface_open_netmap(name, numinq, numoutq);
