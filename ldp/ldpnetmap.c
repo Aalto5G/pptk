@@ -229,7 +229,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq)
     nmr.nr_flags = NR_REG_ONE_NIC;
     nmr.nr_ringid = i | NETMAP_NO_TX_POLL;
     nmr.nr_rx_slots = 256;
-    nmr.nr_tx_slots = 256;
+    nmr.nr_tx_slots = 64;
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
     innmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
