@@ -53,8 +53,6 @@ received or the next time information is synchronized with the kernel by
 polling on the file descriptor. This means the packet input areas belonging to
 the network interface card in netmap can be used.
 
-LDP does not support DPDK, which is a major difference from ODP.
-
 # Prerequisites
 
 Needless to say, compiler tools and GNU make must be available. To actually
