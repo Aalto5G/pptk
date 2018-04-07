@@ -287,6 +287,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq)
   intf->num_outq = numoutq;
   intf->inq = inqs;
   intf->outq = outqs;
+  snprintf(intf->name, sizeof(intf->name), "%s", name);
 
   insock->max_sz = mtu + 14;
   insock->num_bufs = 128;

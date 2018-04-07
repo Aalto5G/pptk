@@ -3,12 +3,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <net/if.h>
 
 struct ldp_interface {
   int num_inq;
   struct ldp_in_queue **inq;
   int num_outq;
   struct ldp_out_queue **outq;
+  char name[IF_NAMESIZE];
 };
 
 struct ldp_packet {

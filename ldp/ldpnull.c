@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include "ldp.h"
 #include "ldpnull.h"
@@ -120,5 +121,6 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq)
   intf->num_outq = numoutq;
   intf->inq = inqs;
   intf->outq = outqs;
+  snprintf(intf->name, sizeof(intf->name), "%s", name);
   return intf;
 }
