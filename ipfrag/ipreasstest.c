@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   {
     abort();
   }
-  if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+  if (memcmp(reassembled->data, pkt, sz) != 0)
   {
     abort();
   }
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
   {
     abort();
   }
-  if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+  if (memcmp(reassembled->data, pkt, sz) != 0)
   {
     abort();
   }
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
       printf("size mismatch %zu %zu\n", reassembled->sz, sz);
       abort();
     }
-    if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+    if (memcmp(reassembled->data, pkt, sz) != 0)
     {
       printf("packet data mismatch\n");
       abort();

@@ -97,9 +97,9 @@ int main(int argc, char **argv)
       printf("size mismatch %d %d\n", (int)reassembled->sz, (int)sz);
       abort();
     }
-    if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+    if (memcmp(reassembled->data, pkt, sz) != 0)
     {
-      char *pkt2 = packet_data(reassembled);
+      char *pkt2 = reassembled->data;
       size_t idx;
       printf("data mismatch\n");
       for (idx = 0; idx < sz; idx++)

@@ -30,17 +30,23 @@ struct packet {
   };
   enum packet_direction direction;
   size_t sz;
+  void *data;
   // after this: packet data
 };
 
-static inline void *packet_data(struct packet *pkt)
+static inline void *packet_calc_data(struct packet *pkt)
 {
   return ((char*)pkt) + sizeof(struct packet);
 }
 
+static inline void *packet_data(struct packet *pkt)
+{
+  return pkt->data;
+}
+
 static inline const void *packet_const_data(const struct packet *pkt)
 {
-  return ((const char*)pkt) + sizeof(struct packet);
+  return pkt->data;
 }
 
 static inline size_t packet_size(size_t sz)

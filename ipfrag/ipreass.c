@@ -45,7 +45,7 @@ reassctx_reassemble(struct allocif *loc, struct reassctx *ctx)
     abort();
   }
   first_packet = CONTAINER_OF(ctx->packet_list.node.next, struct packet, node);
-  ether = packet_data(first_packet);
+  ether = first_packet->data;
   ip = ether_const_payload(ether);
   hdr_len = ip_hdr_len(ip);
   sz = ETHER_HDR_LEN + hdr_len + ctx->most_restricting_last + 1;
@@ -56,7 +56,8 @@ reassctx_reassemble(struct allocif *loc, struct reassctx *ctx)
   }
   pkt->sz = sz;
   pkt->direction = first_packet->direction;
-  ether2 = packet_data(pkt);
+  pkt->data = packet_calc_data(pkt);
+  ether2 = pkt->data;
   memcpy(ether2, ether, ETHER_HDR_LEN + hdr_len);
   ip2 = ether_payload(ether2);
   ip_set_frag_off(ip2, 0);
@@ -69,7 +70,7 @@ reassctx_reassemble(struct allocif *loc, struct reassctx *ctx)
     struct packet *pktorig = CONTAINER_OF(iter, struct packet, node);
     const char *etherorig, *iporig, *payorig;
     uint16_t first, len;
-    etherorig = packet_data(pktorig);
+    etherorig = pktorig->data;
     iporig = ether_const_payload(etherorig);
     payorig = ip_const_payload(iporig);
     first = ip_frag_off(iporig);
@@ -101,7 +102,7 @@ static void linktest(struct reassctx *ctx)
 
 void reassctx_add(struct reassctx *ctx, struct packet *pkt)
 {
-  const char *ether = packet_data(pkt);
+  const char *ether = pkt->data;
   const char *ip = ether_const_payload(ether);
   uint16_t data_first;
   uint16_t data_last;

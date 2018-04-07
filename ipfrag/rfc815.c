@@ -23,7 +23,8 @@ struct packet *rfc815ctx_reassemble(struct allocif *loc, struct rfc815ctx *ctx)
   }
   pkt->sz = sz;
   pkt->direction = ctx->direction;
-  ether2 = packet_data(pkt);
+  pkt->data = packet_calc_data(pkt);
+  ether2 = pkt->data;
   //printf("hdr_len %zu\n", (size_t)ctx->hdr_len);
   memcpy(ether2, ctx->pkt_header, ctx->hdr_len);
   ip2 = ether_payload(ether2);
@@ -123,7 +124,7 @@ static void linktest(struct rfc815ctx *ctx)
 
 void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
 {
-  const char *ether = packet_data(pkt);
+  const char *ether = pkt->data;
   const char *ip = ether_const_payload(ether);
   uint16_t data_first;
   uint16_t data_last;

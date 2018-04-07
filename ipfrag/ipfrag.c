@@ -89,6 +89,7 @@ int fragment4(struct allocif *loc, const void *pkt, uint16_t sz,
     frags[i].pkt =
       allocif_alloc(loc,
                     packet_size(ETHER_HDR_LEN + iphdrlen + frags[i].datalen));
+    frags[i].pkt->data = packet_calc_data(frags[i].pkt);
     if (frags[i].pkt == NULL)
     {
       for (;;)
@@ -107,7 +108,7 @@ int fragment4(struct allocif *loc, const void *pkt, uint16_t sz,
     void *ether2;
     void *ip2;
     void *pay2;
-    ether2 = packet_data(frags[i].pkt);
+    ether2 = frags[i].pkt->data;
     frags[i].pkt->sz = ETHER_HDR_LEN + iphdrlen + frags[i].datalen;
     memcpy(ether2, ether, ETHER_HDR_LEN + iphdrlen);
     ip2 = ether_payload(ether2);

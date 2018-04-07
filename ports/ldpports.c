@@ -10,7 +10,7 @@ void ldpfunc(struct packet *pkt, void *userdata)
 {
   struct ldpfunc_userdata *ud = userdata;
   struct ldp_packet pkts[1];
-  pkts[0].data = packet_data(pkt);
+  pkts[0].data = pkt->data;
   pkts[0].sz = pkt->sz;
   ldp_out_inject(ud->outq, pkts, 1);
   allocif_free(ud->intf, pkt);
@@ -20,14 +20,14 @@ void ldpfunc2(struct packet *pkt, void *userdata)
 {
   struct ldpfunc2_userdata *ud = userdata;
   struct ldp_packet pkts[1];
-  pkts[0].data = packet_data(pkt);
+  pkts[0].data = pkt->data;
   pkts[0].sz = pkt->sz;
   if (pkt->direction == PACKET_DIRECTION_UPLINK)
   {
     ldp_out_inject(ud->uloutq, pkts, 1);
     if (ud->wan)
     {
-      if (pcapng_out_ctx_write(ud->wanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->wanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -36,7 +36,7 @@ void ldpfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -49,7 +49,7 @@ void ldpfunc2(struct packet *pkt, void *userdata)
     ldp_out_inject(ud->dloutq, pkts, 1);
     if (ud->lan)
     {
-      if (pcapng_out_ctx_write(ud->lanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->lanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -58,7 +58,7 @@ void ldpfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "in"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -75,7 +75,7 @@ void ldpfunc3flushdl(struct ldpfunc3_userdata *ud)
   size_t i;
   for (i = 0; i < ud->dloutcnt; i++)
   {
-    ldppkts[i].data = packet_data(ud->dloutbuf[i]);
+    ldppkts[i].data = ud->dloutbuf[i]->data;
     ldppkts[i].sz = ud->dloutbuf[i]->sz;
   }
   ldp_out_inject(ud->dloutq, ldppkts, ud->dloutcnt);
@@ -92,7 +92,7 @@ void ldpfunc3flushul(struct ldpfunc3_userdata *ud)
   size_t i;
   for (i = 0; i < ud->uloutcnt; i++)
   {
-    ldppkts[i].data = packet_data(ud->uloutbuf[i]);
+    ldppkts[i].data = ud->uloutbuf[i]->data;
     ldppkts[i].sz = ud->uloutbuf[i]->sz;
   }
   ldp_out_inject(ud->uloutq, ldppkts, ud->uloutcnt);
@@ -119,7 +119,7 @@ void ldpfunc3(struct packet *pkt, void *userdata)
     ud->uloutbuf[ud->uloutcnt++] = pkt;
     if (ud->wan)
     {
-      if (pcapng_out_ctx_write(ud->wanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->wanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -128,7 +128,7 @@ void ldpfunc3(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -149,7 +149,7 @@ void ldpfunc3(struct packet *pkt, void *userdata)
     ud->dloutbuf[ud->dloutcnt++] = pkt;
     if (ud->lan)
     {
-      if (pcapng_out_ctx_write(ud->lanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->lanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -158,7 +158,7 @@ void ldpfunc3(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "in"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");

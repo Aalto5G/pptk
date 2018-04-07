@@ -85,12 +85,12 @@ int main(int argc, char **argv)
     abort();
   }
 #if 1
-  if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+  if (memcmp(reassembled->data, pkt, sz) != 0)
   {
     size_t si;
     for (si = 0; si < sz; si++)
     {
-      if (((char*)packet_data(reassembled))[si] != (char)pkt[si])
+      if (((char*)reassembled->data)[si] != (char)pkt[si])
       {
         printf("mismatch %zu\n", si);
         break;
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     abort();
   }
 #if 1
-  if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+  if (memcmp(reassembled->data, pkt, sz) != 0)
   {
     printf("8\n");
     abort();
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
       abort();
     }
 #if 1
-    if (memcmp(packet_data(reassembled), pkt, sz) != 0)
+    if (memcmp(reassembled->data, pkt, sz) != 0)
     {
       printf("packet data mismatch\n");
       abort();

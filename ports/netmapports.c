@@ -33,7 +33,7 @@ static inline void nm_my_inject(struct nm_desc *nmd, void *data, size_t sz)
 void netmapfunc(struct packet *pkt, void *userdata)
 {
   struct netmapfunc_userdata *ud = userdata;
-  nm_my_inject(ud->nmd, packet_data(pkt), pkt->sz);
+  nm_my_inject(ud->nmd, pkt->data, pkt->sz);
   allocif_free(ud->intf, pkt);
 }
 
@@ -42,10 +42,10 @@ void netmapfunc2(struct packet *pkt, void *userdata)
   struct netmapfunc2_userdata *ud = userdata;
   if (pkt->direction == PACKET_DIRECTION_UPLINK)
   {
-    nm_my_inject(ud->ulnmd, packet_data(pkt), pkt->sz);
+    nm_my_inject(ud->ulnmd, pkt->data, pkt->sz);
     if (ud->wan)
     {
-      if (pcapng_out_ctx_write(ud->wanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->wanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -54,7 +54,7 @@ void netmapfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -64,10 +64,10 @@ void netmapfunc2(struct packet *pkt, void *userdata)
   }
   else
   {
-    nm_my_inject(ud->dlnmd, packet_data(pkt), pkt->sz);
+    nm_my_inject(ud->dlnmd, pkt->data, pkt->sz);
     if (ud->lan)
     {
-      if (pcapng_out_ctx_write(ud->lanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->lanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -76,7 +76,7 @@ void netmapfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "in"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");

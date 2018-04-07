@@ -70,10 +70,11 @@ struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp)
   pkt = qp->q.fragments;
   //printf("%d\n", qp->q.len);
   //printf("%d\n", qp->q.meat);
-  ether = packet_data(pkt);
+  ether = pkt->data;
   ip = ether_payload(ether);
   pkt2 = allocif_alloc(loc, packet_size(14 + ip_hdr_len(ip) + qp->q.len));
-  ether2 = packet_data(pkt2);
+  pkt2->data = packet_calc_data(pkt2);
+  ether2 = pkt2->data;
   ip2 = ether_payload(ether2);
   //printf("copying %d\n", 14 + ip_hdr_len(ip));
   pkt2->sz = qp->q.len + 14 + ip_hdr_len(ip);
@@ -85,7 +86,7 @@ struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp)
   pay2 = ip_payload(ip2);
   while (pkt != NULL)
   {
-    ip = ether_payload(packet_data(pkt));
+    ip = ether_payload(pkt->data);
     pay = ip_payload(ip);
     frag_off = ip_frag_off(ip);
     within_off = pkt->positive.offset - frag_off;
@@ -98,7 +99,7 @@ struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp)
 
 int ip_frag_queue(struct allocif *loc, struct ipq *qp, struct packet *pkt)
 {
-        void *ip = ether_payload(packet_data(pkt));
+        void *ip = ether_payload(pkt->data);
         struct packet *prev, *next;
         unsigned int fragsize;
         int offset;

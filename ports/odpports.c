@@ -14,7 +14,7 @@ void odpfunc(struct packet *pkt, void *userdata)
   int sent;
   odppkt = odp_packet_alloc(ud->pool, pkt->sz);
   buf = odp_packet_data(odppkt);
-  memcpy(buf, packet_data(pkt), pkt->sz);
+  memcpy(buf, pkt->data, pkt->sz);
   sent = odp_pktout_send(ud->outq, &odppkt, 1);
   if (sent < 0)
   {
@@ -37,7 +37,7 @@ void odpfunc2(struct packet *pkt, void *userdata)
   {
     odppkt = odp_packet_alloc(ud->pool, pkt->sz);
     buf = odp_packet_data(odppkt);
-    memcpy(buf, packet_data(pkt), pkt->sz);
+    memcpy(buf, pkt->data, pkt->sz);
     sent = odp_pktout_send(ud->uloutq, &odppkt, 1);
     if (sent < 0)
     {
@@ -49,7 +49,7 @@ void odpfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->wan)
     {
-      if (pcapng_out_ctx_write(ud->wanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->wanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -58,7 +58,7 @@ void odpfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -70,7 +70,7 @@ void odpfunc2(struct packet *pkt, void *userdata)
   {
     odppkt = odp_packet_alloc(ud->pool, pkt->sz);
     buf = odp_packet_data(odppkt);
-    memcpy(buf, packet_data(pkt), pkt->sz);
+    memcpy(buf, pkt->data, pkt->sz);
     sent = odp_pktout_send(ud->dloutq, &odppkt, 1);
     if (sent < 0)
     {
@@ -82,7 +82,7 @@ void odpfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->lan)
     {
-      if (pcapng_out_ctx_write(ud->lanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->lanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -91,7 +91,7 @@ void odpfunc2(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "in"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -139,7 +139,7 @@ void odpfunc3(struct packet *pkt, void *userdata)
   {
     odppkt = odp_packet_alloc(ud->pool, pkt->sz);
     buf = odp_packet_data(odppkt);
-    memcpy(buf, packet_data(pkt), pkt->sz);
+    memcpy(buf, pkt->data, pkt->sz);
     if (ud->uloutcnt >= sizeof(ud->uloutbuf)/sizeof(*ud->uloutbuf))
     {
       odpfunc3flushul(ud);
@@ -162,7 +162,7 @@ void odpfunc3(struct packet *pkt, void *userdata)
 #endif
     if (ud->wan)
     {
-      if (pcapng_out_ctx_write(ud->wanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->wanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -171,7 +171,7 @@ void odpfunc3(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -183,7 +183,7 @@ void odpfunc3(struct packet *pkt, void *userdata)
   {
     odppkt = odp_packet_alloc(ud->pool, pkt->sz);
     buf = odp_packet_data(odppkt);
-    memcpy(buf, packet_data(pkt), pkt->sz);
+    memcpy(buf, pkt->data, pkt->sz);
     if (ud->dloutcnt >= sizeof(ud->dloutbuf)/sizeof(*ud->dloutbuf))
     {
       odpfunc3flushdl(ud);
@@ -206,7 +206,7 @@ void odpfunc3(struct packet *pkt, void *userdata)
 #endif
     if (ud->lan)
     {
-      if (pcapng_out_ctx_write(ud->lanctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->lanctx, pkt->data, pkt->sz,
           gettime64(), "out"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");
@@ -215,7 +215,7 @@ void odpfunc3(struct packet *pkt, void *userdata)
     }
     if (ud->out)
     {
-      if (pcapng_out_ctx_write(ud->outctx, packet_data(pkt), pkt->sz,
+      if (pcapng_out_ctx_write(ud->outctx, pkt->data, pkt->sz,
           gettime64(), "in"))
       {
         log_log(LOG_LEVEL_CRIT, "PORTS", "can't record packet");

@@ -64,9 +64,9 @@ int main(int argc, char **argv)
   }
 
   pcap_out_ctx_write(&outctx,
-                     packet_data(fragment[0].pkt), fragment[0].pkt->sz, 0);
+                     fragment[0].pkt->data, fragment[0].pkt->sz, 0);
   pcap_out_ctx_write(&outctx,
-                     packet_data(fragment[1].pkt), fragment[1].pkt->sz, 0);
+                     fragment[1].pkt->data, fragment[1].pkt->sz, 0);
 
   pcap_out_ctx_free(&outctx);
   ll_free_st(&st, fragment[0].pkt);

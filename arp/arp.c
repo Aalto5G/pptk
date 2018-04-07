@@ -17,7 +17,7 @@ void arp_cache_drain(struct arp_entry *entry, struct port *port)
   {
     struct linked_list_node *node = entry->list.node.next;
     struct packet *pkt = CONTAINER_OF(node, struct packet, node);
-    void *ether = packet_data(pkt);
+    void *ether = pkt->data;
     memcpy(ether_dst(ether), entry->mac, 6);
     linked_list_delete(node);
     if (port)
