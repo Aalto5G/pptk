@@ -50,4 +50,26 @@ static inline int ldp_interface_link_wait(struct ldp_interface *intf)
   return ret;
 }
 
+int ldp_mac_addr(int sockfd, const char *ifname, void *mac);
+
+static inline int ldp_interface_mac_addr(struct ldp_interface *intf, void *mac)
+{
+  int ret, sockfd;
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0)
+  {
+    if (errno > 0)
+    {
+      return -errno;
+    }
+    else
+    {
+      return -ENETDOWN;
+    }
+  }
+  ret = ldp_mac_addr(sockfd, intf->name, mac);
+  close(sockfd);
+  return ret;
+}
+
 #endif

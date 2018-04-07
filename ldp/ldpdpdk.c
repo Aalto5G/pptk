@@ -382,3 +382,22 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
   snprintf(intf->name, sizeof(intf->name), "%s", name);
   return intf;
 }
+
+int ldp_dpdk_mac_addr(int portid, void *mac)
+{
+  rte_eth_macaddr_get(portid, (struct ether_addr *)mac);
+  return 0;
+}
+
+int ldp_dpdk_promisc_mode_set(int portid, int on)
+{
+  if (on)
+  {
+    rte_eth_promiscuous_enable(portid);
+  }
+  else
+  {
+    rte_eth_promiscuous_disable(portid);
+  }
+  return 0;
+}
