@@ -52,7 +52,10 @@ int main(int argc, char **argv)
     pfds[0].events = POLLIN;
     pfds[1].fd = ulintf->inq[0]->fd;
     pfds[1].events = POLLIN;
-    poll(pfds, 2, 5);
+    if (pfds[0].fd >= 0 && pfds[1].fd >= 0)
+    {
+      poll(pfds, 2, 5);
+    }
     time64 = gettime64();
     if (time64 - last_time64 > 1000*1000)
     {
