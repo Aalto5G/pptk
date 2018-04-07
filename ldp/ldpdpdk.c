@@ -23,6 +23,7 @@ struct ldp_port_dpdk {
 struct ldp_in_queue_dpdk {
   struct ldp_in_queue q;
   struct ldp_port_dpdk *port;
+  int minptr;
   int num;
   int qid;
   struct rte_mbuf *pkts_burst[128];
@@ -135,6 +136,23 @@ static int ldp_in_queue_nextpkts_dpdk(struct ldp_in_queue *inq,
 
   indpdkq = CONTAINER_OF(inq, struct ldp_in_queue_dpdk, q);
 
+  if (indpdkq->minptr < indpdkq->num)
+  {
+    max_num = num;
+    if (max_num > indpdkq->num - indpdkq->minptr)
+    {
+      max_num = indpdkq->num - indpdkq->minptr;
+    }
+    for (i = 0; i < max_num; i++)
+    {
+      struct rte_mbuf *mbuf = indpdkq->pkts_burst[indpdkq->minptr + i];
+      pkts[i].data = rte_pktmbuf_mtod(mbuf, char *);
+      pkts[i].sz = rte_pktmbuf_pkt_len(mbuf);
+    }
+    indpdkq->minptr += max_num;
+    return max_num;
+  }
+
   for (i = 0; i < indpdkq->num; i++)
   {
     struct rte_mbuf *mbuf = indpdkq->pkts_burst[i];
@@ -142,16 +160,26 @@ static int ldp_in_queue_nextpkts_dpdk(struct ldp_in_queue *inq,
     indpdkq->pkts_burst[i] = NULL;
   }
   indpdkq->num = 0;
+  indpdkq->minptr = 0;
 
   max_num = num;
   if (max_num > (int)(sizeof(indpdkq->pkts_burst)/sizeof(*indpdkq->pkts_burst)))
   {
     max_num = sizeof(indpdkq->pkts_burst)/sizeof(*indpdkq->pkts_burst);
   }
+  if (max_num < 4)
+  {
+    max_num = 4; // some drivers require a minimum burst size
+  }
   nb_rx = rte_eth_rx_burst(indpdkq->port->portid, indpdkq->qid,
                            indpdkq->pkts_burst,
                            max_num);
   indpdkq->num = nb_rx;
+  if (nb_rx > num)
+  {
+    nb_rx = num;
+  }
+  indpdkq->minptr = nb_rx;
   for (i = 0; i < nb_rx; i++)
   {
     struct rte_mbuf *mbuf = indpdkq->pkts_burst[i];
@@ -329,6 +357,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_dpdk, q);
     innmq->port = port;
     innmq->num = 0;
+    innmq->minptr = 0;
     innmq->qid = i;
     innmq->q.nextpkts = ldp_in_queue_nextpkts_dpdk;
     innmq->q.poll = ldp_in_queue_poll;
