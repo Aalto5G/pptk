@@ -20,6 +20,9 @@
 #if WITH_NETMAP
 #include "ldpnetmap.h"
 #endif
+#if WITH_DPDK
+#include "ldpdpdk.h"
+#endif
 
 struct ldp_in_queue_socket {
   struct ldp_in_queue q;
@@ -332,9 +335,20 @@ void ldp_interface_close(struct ldp_interface *intf)
 struct ldp_interface *
 ldp_interface_open(const char *name, int numinq, int numoutq)
 {
+  long portid;
+  char *endptr;
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
     abort();
+  }
+  portid = strtol(name, &endptr, 10);
+  if (*name != '\0' && *endptr == '\0' && portid >= 0 && portid <= INT_MAX)
+  {
+#if WITH_DPDK
+    return ldp_interface_open_dpdk(name, numinq, numoutq);
+#else
+    return NULL;
+#endif
   }
   if (strncmp(name, "null:", 5) == 0)
   {

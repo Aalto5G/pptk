@@ -130,6 +130,9 @@ WITH_NETMAP=no
 NETMAP_INCDIR=
 WITH_ODP=no
 ODP_DIR=/usr/local
+WITH_DPDK=no
+DDPK_INCDIR=
+DPDK_LIBDIR=
 LIBS_ODPDEP=/usr/lib/x86_64-linux-gnu/libssl.a /usr/lib/x86_64-linux-gnu/libcrypto.a
 include opts.mk
 

@@ -1,0 +1,4 @@
+If you have interfaces veth1 and veth2, you can start ldpfwd with DPDK using
+this command-line:
+
+LDP_DPDK_ARGV="prog --vdev=eth_pcap0,iface=veth1 --vdev=eth_pcap1,iface=veth2" sudo -E ./ldpfwd 0 1
