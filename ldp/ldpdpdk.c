@@ -321,6 +321,10 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
   {
     abort(); // FIXME better error handling
   }
+  intf->promisc_mode_set = NULL;
+  intf->link_wait = NULL;
+  intf->link_status = NULL;
+  intf->mac_addr = NULL;
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {

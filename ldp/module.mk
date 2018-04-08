@@ -5,6 +5,9 @@ endif
 ifeq ($(WITH_DPDK),yes)
 LDP_SRC_LIB += ldpdpdk.c
 endif
+ifeq ($(WITH_ODP),yes)
+LDP_SRC_LIB += ldpodp.c
+endif
 LDP_SRC := $(LDP_SRC_LIB) testldp.c ldpfwd.c
 
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
@@ -33,6 +36,13 @@ LDP: $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/ldpfwd
 
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
+endif
+ifeq ($(WITH_ODP),yes)
+CFLAGS_LDP += -I$(ODP_DIR)/include -DWITH_ODP
+LDFLAGS_LDP += $(ODP_DIR)/lib/libodp-linux.a
+LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libcrypto.a
+LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libconfig.a
+LDFLAGS_LDP += -lrt -ldl
 endif
 ifeq ($(WITH_DPDK),yes)
 CFLAGS_LDP += -I$(DPDK_INCDIR) -DWITH_DPDK

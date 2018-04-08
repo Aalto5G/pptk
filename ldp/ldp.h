@@ -11,6 +11,10 @@ struct ldp_interface {
   int num_outq;
   struct ldp_out_queue **outq;
   char name[IF_NAMESIZE];
+  int (*mac_addr)(struct ldp_interface *intf, void *mac);
+  int (*promisc_mode_set)(struct ldp_interface *intf, int on);
+  int (*link_wait)(struct ldp_interface *intf);
+  int (*link_status)(struct ldp_interface *intf);
 };
 
 struct ldp_packet {

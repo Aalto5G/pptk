@@ -23,6 +23,9 @@
 #if WITH_DPDK
 #include "ldpdpdk.h"
 #endif
+#if WITH_ODP
+#include "ldpodp.h"
+#endif
 
 struct ldp_in_queue_socket {
   struct ldp_in_queue q;
@@ -179,6 +182,10 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq)
   {
     abort(); // FIXME better error handling
   }
+  intf->promisc_mode_set = NULL;
+  intf->link_wait = NULL;
+  intf->link_status = NULL;
+  intf->mac_addr = NULL;
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
@@ -353,6 +360,14 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
   if (strncmp(name, "null:", 5) == 0)
   {
     return ldp_interface_open_null(name, numinq, numoutq);
+  }
+  else if (strncmp(name, "odp:", 4) == 0)
+  {
+#if WITH_ODP
+    return ldp_interface_open_odp(name+4, numinq, numoutq);
+#else
+    return NULL;
+#endif
   }
   else if (strncmp(name, "netmap:", 7) == 0)
   {
