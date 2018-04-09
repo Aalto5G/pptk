@@ -5,6 +5,17 @@
 #include <stdint.h>
 #include <net/if.h>
 
+struct ldp_interface_settings {
+  int mtu_set;
+  uint16_t mtu;
+  int mac_addr_set;
+  char mac[6];
+  int promisc_set;
+  int promisc_on;
+  int allmulti_set;
+  int allmulti_on;
+};
+
 struct ldp_interface {
   int num_inq;
   struct ldp_in_queue **inq;
@@ -12,7 +23,9 @@ struct ldp_interface {
   struct ldp_out_queue **outq;
   char name[IF_NAMESIZE];
   int (*mac_addr)(struct ldp_interface *intf, void *mac);
+  int (*mac_addr_set)(struct ldp_interface *intf, const void *mac);
   int (*promisc_mode_set)(struct ldp_interface *intf, int on);
+  int (*allmulti_set)(struct ldp_interface *intf, int on);
   int (*link_wait)(struct ldp_interface *intf);
   int (*link_status)(struct ldp_interface *intf);
 };
@@ -61,7 +74,14 @@ static inline int ldp_out_txsync(struct ldp_out_queue *outq)
 }
 
 struct ldp_interface *
-ldp_interface_open(const char *name, int numinq, int numoutq);
+ldp_interface_open_2(const char *name, int numinq, int numoutq,
+                     const struct ldp_interface_settings *settings);
+
+static inline struct ldp_interface *
+ldp_interface_open(const char *name, int numinq, int numoutq)
+{
+  return ldp_interface_open_2(name, numinq, numoutq, NULL);
+}
 
 void ldp_interface_close(struct ldp_interface *intf);
 

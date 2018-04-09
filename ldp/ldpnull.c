@@ -53,7 +53,8 @@ static int ldp_out_queue_txsync_null(struct ldp_out_queue *outq)
 }
 
 struct ldp_interface *
-ldp_interface_open_null(const char *name, int numinq, int numoutq)
+ldp_interface_open_null(const char *name, int numinq, int numoutq,
+                        const struct ldp_interface_settings *settings)
 {
   struct ldp_interface *intf;
   struct ldp_in_queue **inqs;
@@ -70,9 +71,11 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq)
     abort(); // FIXME better error handling
   }
   intf->promisc_mode_set = NULL;
+  intf->allmulti_set = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;
   intf->mac_addr = NULL;
+  intf->mac_addr_set = NULL;
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {

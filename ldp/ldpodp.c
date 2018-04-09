@@ -14,6 +14,7 @@
 #include <string.h>
 #include "ldp.h"
 #include "ldpodp.h"
+#include "linkcommon.h"
 #include "containerof.h"
 
 #define POOL_NUM_PKT 1024
@@ -291,7 +292,8 @@ static int ldp_out_queue_txsync_odp(struct ldp_out_queue *outq)
 }
 
 struct ldp_interface *
-ldp_interface_open_odp(const char *name, int numinq, int numoutq)
+ldp_interface_open_odp(const char *name, int numinq, int numoutq,
+                       const struct ldp_interface_settings *settings)
 {
   struct ldp_interface *intf;
   struct ldp_in_queue **inqs;
@@ -386,6 +388,32 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq)
   intf->inq = inqs;
   intf->outq = outqs;
   snprintf(intf->name, sizeof(intf->name), "%s", name);
+  if (settings && settings->mtu_set)
+  {
+#if ODP_VERSION_API_MAJOR >= 17
+    if (odp_pktin_maxlen(pktio) != settings->mtu)
+    {
+      abort(); // FIXME better error handling
+    }
+#else
+    if (odp_pktio_mtu(pktio) != settings->mtu)
+    {
+      abort(); // FIXME better error handling
+    }
+#endif
+  }
+  if (settings && settings->promisc_set)
+  {
+    ldp_interface_set_promisc_mode(intf, settings->promisc_on);
+  }
+  if (settings && settings->allmulti_set)
+  {
+    ldp_interface_set_allmulti(intf, settings->allmulti_on);
+  }
+  if (settings && settings->mac_addr_set)
+  {
+    ldp_interface_set_mac_addr(intf, settings->mac);
+  }
   return intf;
 }
 

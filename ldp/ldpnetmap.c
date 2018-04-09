@@ -12,6 +12,7 @@
 #include "net/netmap_user.h"
 #include "ldp.h"
 #include "ldpnetmap.h"
+#include "linkcommon.h"
 #include "containerof.h"
 
 
@@ -150,7 +151,8 @@ static int check_channels(const char *name, int numinq)
 }
 
 struct ldp_interface *
-ldp_interface_open_netmap(const char *name, int numinq, int numoutq)
+ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
+                          const struct ldp_interface_settings *settings)
 {
   char nmifnamebuf[1024] = {0};
   struct ldp_interface *intf;
@@ -159,7 +161,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq)
   struct nmreq nmr;
   int i;
   int max;
-  const char *devname;
+  const char *devname = NULL;
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
     abort();
@@ -191,9 +193,11 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq)
     abort(); // FIXME better error handling
   }
   intf->promisc_mode_set = NULL;
+  intf->allmulti_set = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;
   intf->mac_addr = NULL;
+  intf->mac_addr_set = NULL;
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
@@ -213,6 +217,20 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq)
       abort(); // FIXME better error handling
     }
     inqs[i] = &innmq->q;
+  }
+  if (settings && settings->mtu_set && devname)
+  {
+    // Do this early in case we can't do it for a running interface
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0)
+    {
+      abort(); // FIXME better error handling
+    }
+    if (ldp_set_mtu(sockfd, devname, settings->mtu) != 0)
+    {
+      abort(); // FIXME better error handling
+    }
+    close(sockfd);
   }
   for (i = 0; i < numoutq; i++)
   {
@@ -289,6 +307,18 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq)
   intf->inq = inqs;
   intf->outq = outqs;
   snprintf(intf->name, sizeof(intf->name), "%s", name);
+  if (settings && settings->promisc_set)
+  {
+    ldp_interface_set_promisc_mode(intf, settings->promisc_on);
+  }
+  if (settings && settings->allmulti_set)
+  {
+    ldp_interface_set_allmulti(intf, settings->allmulti_on);
+  }
+  if (settings && settings->mac_addr_set)
+  {
+    ldp_interface_set_mac_addr(intf, settings->mac);
+  }
   return intf;
 
 err:

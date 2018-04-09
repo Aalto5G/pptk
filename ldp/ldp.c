@@ -160,7 +160,8 @@ static int ldp_out_queue_inject_socket(struct ldp_out_queue *outq,
 }
 
 static struct ldp_interface *
-ldp_interface_open_socket(const char *name, int numinq, int numoutq)
+ldp_interface_open_socket(const char *name, int numinq, int numoutq,
+                          const struct ldp_interface_settings *settings)
 {
   struct ldp_interface *intf;
   struct ldp_in_queue **inqs;
@@ -183,9 +184,11 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq)
     abort(); // FIXME better error handling
   }
   intf->promisc_mode_set = NULL;
+  intf->allmulti_set = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;
   intf->mac_addr = NULL;
+  intf->mac_addr_set = NULL;
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
@@ -340,7 +343,8 @@ void ldp_interface_close(struct ldp_interface *intf)
 }
 
 struct ldp_interface *
-ldp_interface_open(const char *name, int numinq, int numoutq)
+ldp_interface_open_2(const char *name, int numinq, int numoutq,
+                     const struct ldp_interface_settings *settings)
 {
   long portid;
   char *endptr;
@@ -352,19 +356,19 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
   if (*name != '\0' && *endptr == '\0' && portid >= 0 && portid <= INT_MAX)
   {
 #if WITH_DPDK
-    return ldp_interface_open_dpdk(name, numinq, numoutq);
+    return ldp_interface_open_dpdk(name, numinq, numoutq, settings);
 #else
     return NULL;
 #endif
   }
   if (strncmp(name, "null:", 5) == 0)
   {
-    return ldp_interface_open_null(name, numinq, numoutq);
+    return ldp_interface_open_null(name, numinq, numoutq, settings);
   }
   else if (strncmp(name, "odp:", 4) == 0)
   {
 #if WITH_ODP
-    return ldp_interface_open_odp(name+4, numinq, numoutq);
+    return ldp_interface_open_odp(name+4, numinq, numoutq, settings);
 #else
     return NULL;
 #endif
@@ -372,7 +376,7 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
   else if (strncmp(name, "netmap:", 7) == 0)
   {
 #if WITH_NETMAP
-    return ldp_interface_open_netmap(name, numinq, numoutq);
+    return ldp_interface_open_netmap(name, numinq, numoutq, settings);
 #else
     return NULL;
 #endif
@@ -380,10 +384,10 @@ ldp_interface_open(const char *name, int numinq, int numoutq)
   else if (strncmp(name, "vale", 4) == 0)
   {
 #if WITH_NETMAP
-    return ldp_interface_open_netmap(name, numinq, numoutq);
+    return ldp_interface_open_netmap(name, numinq, numoutq, settings);
 #else
     return NULL;
 #endif
   }
-  return ldp_interface_open_socket(name, numinq, numoutq);
+  return ldp_interface_open_socket(name, numinq, numoutq, settings);
 }

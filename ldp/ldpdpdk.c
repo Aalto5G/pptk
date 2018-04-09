@@ -13,6 +13,7 @@
 #include <rte_string_fns.h>
 #include "ldp.h"
 #include "ldpdpdk.h"
+#include "linkcommon.h"
 #include "containerof.h"
 
 struct ldp_port_dpdk {
@@ -232,7 +233,8 @@ static int ldp_out_queue_txsync_dpdk(struct ldp_out_queue *outq)
 }
 
 struct ldp_interface *
-ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
+ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
+                        const struct ldp_interface_settings *settings)
 {
   struct ldp_interface *intf;
   struct ldp_in_queue **inqs;
@@ -301,6 +303,14 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
       return NULL;
     }
   }
+  if (settings && settings->mtu_set)
+  {
+    if (rte_eth_dev_set_mtu(portid, settings->mtu) != 0)
+    {
+      printf("5.5\n");
+      return NULL;
+    }
+  }
   ret = rte_eth_dev_start(portid);
   if (ret < 0)
   {
@@ -322,9 +332,11 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
     abort(); // FIXME better error handling
   }
   intf->promisc_mode_set = NULL;
+  intf->allmulti_set = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;
   intf->mac_addr = NULL;
+  intf->mac_addr_set = NULL;
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
@@ -384,6 +396,18 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq)
   intf->inq = inqs;
   intf->outq = outqs;
   snprintf(intf->name, sizeof(intf->name), "%s", name);
+  if (settings && settings->promisc_set)
+  {
+    ldp_interface_set_promisc_mode(intf, settings->promisc_on);
+  }
+  if (settings && settings->allmulti_set)
+  {
+    ldp_interface_set_allmulti(intf, settings->allmulti_on);
+  }
+  if (settings && settings->mac_addr_set)
+  {
+    ldp_interface_set_mac_addr(intf, settings->mac);
+  }
   return intf;
 }
 
@@ -391,6 +415,13 @@ int ldp_dpdk_mac_addr(int portid, void *mac)
 {
   rte_eth_macaddr_get(portid, (struct ether_addr *)mac);
   return 0;
+}
+
+int ldp_dpdk_set_mac_addr(int portid, const void *mac)
+{
+  char mac2[6];
+  memcpy(mac2, mac, 6);
+  return rte_eth_dev_default_mac_addr_set(portid, (struct ether_addr *)mac2);
 }
 
 int ldp_dpdk_promisc_mode_set(int portid, int on)
@@ -402,6 +433,19 @@ int ldp_dpdk_promisc_mode_set(int portid, int on)
   else
   {
     rte_eth_promiscuous_disable(portid);
+  }
+  return 0;
+}
+
+int ldp_dpdk_allmulti_set(int portid, int on)
+{
+  if (on)
+  {
+    rte_eth_allmulticast_enable(portid);
+  }
+  else
+  {
+    rte_eth_allmulticast_disable(portid);
   }
   return 0;
 }
