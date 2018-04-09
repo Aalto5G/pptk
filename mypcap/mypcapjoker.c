@@ -66,5 +66,9 @@ int pcap_joker_ctx_init(
   const char *ifname)
 {
   FILE *f = fopen(fname, "rb");
+  if (f == NULL)
+  {
+    return -1;
+  }
   return pcap_joker_ctx_init_file(ctx, f, enforce_ethernet, ifname);
 }
