@@ -1,4 +1,4 @@
-LDP_SRC_LIB := ldp.c ldpnull.c linkcommon.c
+LDP_SRC_LIB := ldp.c ldpnull.c linkcommon.c ldppcap.c
 ifeq ($(WITH_NETMAP),yes)
 LDP_SRC_LIB += ldpnetmap.c
 endif

@@ -40,6 +40,7 @@ struct ldp_in_queue {
   int (*nextpkts)(struct ldp_in_queue *inq,
                   struct ldp_packet *pkts, int num);
   int (*poll)(struct ldp_in_queue *inq, uint64_t timeout_usec);
+  int (*eof)(struct ldp_in_queue *inq);
   void (*close)(struct ldp_in_queue *inq);
 };
 
@@ -60,6 +61,15 @@ static inline int ldp_in_nextpkts(struct ldp_in_queue *inq,
 static inline int ldp_in_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
 {
   return inq->poll(inq, timeout_usec);
+}
+
+static inline int ldp_in_eof(struct ldp_in_queue *inq)
+{
+  if (inq->eof == NULL)
+  {
+    return 0;
+  }
+  return inq->eof(inq);
 }
 
 static inline int ldp_out_inject(struct ldp_out_queue *outq,

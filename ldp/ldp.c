@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include "ldp.h"
 #include "ldpnull.h"
+#include "ldppcap.h"
 #include "containerof.h"
 #if WITH_NETMAP
 #include "ldpnetmap.h"
@@ -287,6 +288,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
 
   insock->q.nextpkts = ldp_in_queue_nextpkts_socket;
   insock->q.poll = ldp_in_queue_poll;
+  insock->q.eof = NULL;
   insock->q.close = ldp_in_queue_close_socket;
 
   outsock->q.inject = ldp_out_queue_inject_socket;
@@ -361,7 +363,11 @@ ldp_interface_open_2(const char *name, int numinq, int numoutq,
     return NULL;
 #endif
   }
-  if (strncmp(name, "null:", 5) == 0)
+  if (strncmp(name, "pcap:", 5) == 0)
+  {
+    return ldp_interface_open_pcap(name, numinq, numoutq, settings);
+  }
+  else if (strncmp(name, "null:", 5) == 0)
   {
     return ldp_interface_open_null(name, numinq, numoutq, settings);
   }

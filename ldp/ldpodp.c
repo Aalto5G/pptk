@@ -369,6 +369,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     innmq->odpq = odpinqs[i];
     innmq->q.nextpkts = ldp_in_queue_nextpkts_odp;
     innmq->q.poll = ldp_in_queue_poll;
+    innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_odp;
     innmq->q.fd = -1;
   }

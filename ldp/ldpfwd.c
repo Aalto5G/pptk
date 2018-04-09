@@ -45,6 +45,13 @@ int main(int argc, char **argv)
     struct pollfd pfds[2];
     uint64_t time64;
 
+    if (ldp_in_eof(ulintf->inq[0]) &&
+        ldp_in_eof(dlintf->inq[0]))
+    {
+      printf("EOF, exiting\n");
+      exit(0);
+    }
+
     ulintf->outq[0]->txsync(ulintf->outq[0]);
     dlintf->outq[0]->txsync(dlintf->outq[0]);
 

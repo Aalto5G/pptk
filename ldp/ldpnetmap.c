@@ -257,6 +257,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     innmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
     innmq->q.nextpkts = ldp_in_queue_nextpkts_netmap;
     innmq->q.poll = ldp_in_queue_poll;
+    innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_netmap;
     if (innmq->nmd == NULL)
     {
