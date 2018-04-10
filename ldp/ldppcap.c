@@ -357,8 +357,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   {
     return NULL;
   }
-  name += 5;
-  name2 = strdup(name);
+  name2 = strdup(name + 5);
   if (name2 == NULL)
   {
     abort();
