@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include "ldp.h"
 #include "ldpnull.h"
+#include "linkcommon.h"
 #include "ldppcap.h"
 #include "containerof.h"
 #if WITH_NETMAP
@@ -214,6 +215,22 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   }
 
   memset(&ifr, 0, sizeof(ifr));
+  if (settings && settings->mtu_set)
+  {
+    ifr.ifr_mtu = settings->mtu;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    if (ioctl(insock->q.fd, SIOCSIFMTU, &ifr) != 0)
+    {
+      close(insock->q.fd);
+      free(insock);
+      free(inqs);
+      free(outqs);
+      free(intf);
+      return NULL;
+    }
+  }
+
+  memset(&ifr, 0, sizeof(ifr));
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
   if (ioctl(insock->q.fd, SIOCGIFMTU, &ifr) != 0)
   {
@@ -319,6 +336,19 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
     {
       abort();
     }
+  }
+
+  if (settings && settings->promisc_set)
+  {
+    ldp_interface_set_promisc_mode(intf, settings->promisc_on);
+  }
+  if (settings && settings->allmulti_set)
+  {
+    ldp_interface_set_allmulti(intf, settings->allmulti_on);
+  }
+  if (settings && settings->mac_addr_set)
+  {
+    ldp_interface_set_mac_addr(intf, settings->mac);
   }
 
   return intf;
