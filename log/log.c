@@ -174,7 +174,10 @@ void log_impl_log(enum log_level level, const char *compname, const char *file, 
 
 void log_close(void)
 {
-  fclose(globals.f);
+  if (globals.f != NULL)
+  {
+    fclose(globals.f);
+  }
   globals.f = NULL;
 }
 
