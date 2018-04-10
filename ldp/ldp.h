@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <net/if.h>
+#include "time64.h"
 
 struct ldp_interface_settings {
   int mtu_set;
@@ -39,6 +40,8 @@ struct ldp_in_queue {
   int fd;
   int (*nextpkts)(struct ldp_in_queue *inq,
                   struct ldp_packet *pkts, int num);
+  int (*nextpkts_ts)(struct ldp_in_queue *inq,
+                     struct ldp_packet *pkts, int num, uint64_t *time64);
   int (*poll)(struct ldp_in_queue *inq, uint64_t timeout_usec);
   int (*eof)(struct ldp_in_queue *inq);
   void (*close)(struct ldp_in_queue *inq);
@@ -56,6 +59,23 @@ static inline int ldp_in_nextpkts(struct ldp_in_queue *inq,
                                   struct ldp_packet *pkts, int num)
 {
   return inq->nextpkts(inq, pkts, num);
+}
+
+static inline int ldp_in_nextpkts_ts(struct ldp_in_queue *inq,
+                                     struct ldp_packet *pkts, int num,
+                                     uint64_t *ts)
+{
+  int ret;
+  if (inq->nextpkts_ts)
+  {
+    return inq->nextpkts_ts(inq, pkts, num, ts);
+  }
+  ret = inq->nextpkts(inq, pkts, num);
+  if (ts)
+  {
+    *ts = gettime64();
+  }
+  return ret;
 }
 
 static inline int ldp_in_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)

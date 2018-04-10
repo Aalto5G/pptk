@@ -376,6 +376,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     innmq->minptr = 0;
     innmq->qid = i;
     innmq->q.nextpkts = ldp_in_queue_nextpkts_dpdk;
+    innmq->q.nextpkts_ts = NULL;
     innmq->q.poll = ldp_in_queue_poll;
     innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_dpdk;

@@ -49,6 +49,7 @@ struct ldp_capture_shared_in_pcap {
   size_t len;
   size_t snap;
   const char *bufifname;
+  uint64_t time64;
   int eof;
   struct linked_list_node node;
   struct pcap_joker_ctx ctx;
@@ -76,6 +77,7 @@ static struct ldp_capture_shared_in_pcap *create_in(const char *fname,
   pcap->bufcapacity = 0;
   pcap->len = 0;
   pcap->snap = 0;
+  pcap->time64 = 0;
   pcap->bufifname = NULL;
   pcap->eof = 0;
   if (pcap_joker_ctx_init(&pcap->ctx, fname2, 1, jokerifname) != 0)
@@ -216,16 +218,26 @@ static int ldp_in_queue_eof_pcap(struct ldp_in_queue *inq)
   return 0;
 }
 
-static int ldp_in_queue_nextpkts_pcap(struct ldp_in_queue *inq,
-                                      struct ldp_packet *pkts, int num)
+static int ldp_in_queue_nextpkts_ts_pcap(struct ldp_in_queue *inq,
+                                         struct ldp_packet *pkts, int num,
+                                         uint64_t *ts)
 {
   struct ldp_in_queue_pcap *inpcapq;
   int ret;
 
   inpcapq = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
 
-  if (num == 0 || inpcapq->regular == NULL)
+  if (inpcapq->regular == NULL)
   {
+    return 0;
+  }
+
+  if (num == 0)
+  {
+    if (ts)
+    {
+      *ts = inpcapq->regular->time64;
+    }
     return 0;
   }
 
@@ -239,6 +251,10 @@ static int ldp_in_queue_nextpkts_pcap(struct ldp_in_queue *inq,
       ldp_in_queue_intern(inpcapq, pkts, inpcapq->regular->buf,
                           inpcapq->regular->len,
                           inpcapq->regular->snap);
+      if (ts)
+      {
+        *ts = inpcapq->regular->time64;
+      }
       inpcapq->regular->buf_valid = 0;
       pthread_mutex_unlock(&inpcapq->regular->mtx);
       return 1;
@@ -248,16 +264,25 @@ static int ldp_in_queue_nextpkts_pcap(struct ldp_in_queue *inq,
                             &inpcapq->regular->buf,
                             &inpcapq->regular->bufcapacity,
                             &inpcapq->regular->len, &inpcapq->regular->snap,
-                            NULL, &inpcapq->regular->bufifname);
+                            &inpcapq->regular->time64,
+                            &inpcapq->regular->bufifname);
   if (ret < 0)
   {
     inpcapq->regular->eof = 1;
+    if (ts)
+    {
+      *ts = inpcapq->regular->time64;
+    }
     pthread_mutex_unlock(&inpcapq->regular->mtx);
     return -1;
   }
   if (ret == 0)
   {
     inpcapq->regular->eof = 1;
+    if (ts)
+    {
+      *ts = inpcapq->regular->time64;
+    }
     pthread_mutex_unlock(&inpcapq->regular->mtx);
     return 0;
   }
@@ -267,13 +292,27 @@ static int ldp_in_queue_nextpkts_pcap(struct ldp_in_queue *inq,
     ldp_in_queue_intern(inpcapq, pkts, inpcapq->regular->buf,
                         inpcapq->regular->len,
                         inpcapq->regular->snap);
+    if (ts)
+    {
+      *ts = inpcapq->regular->time64;
+    }
     inpcapq->regular->buf_valid = 0;
     pthread_mutex_unlock(&inpcapq->regular->mtx);
     return 1;
   }
   inpcapq->regular->buf_valid = 1;
+  if (ts)
+  {
+    *ts = inpcapq->regular->time64;
+  }
   pthread_mutex_unlock(&inpcapq->regular->mtx);
   return 0;
+}
+
+static int ldp_in_queue_nextpkts_pcap(struct ldp_in_queue *inq,
+                                      struct ldp_packet *pkts, int num)
+{
+  return ldp_in_queue_nextpkts_ts_pcap(inq, pkts, num, NULL);
 }
 
 static int ldp_out_queue_inject_pcap(struct ldp_out_queue *outq,
@@ -451,6 +490,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     inqs[i] = &inpcapq->q;
     inpcapq->q.fd = -1;
     inpcapq->q.nextpkts = ldp_in_queue_nextpkts_pcap;
+    inpcapq->q.nextpkts_ts = ldp_in_queue_nextpkts_ts_pcap;
     inpcapq->q.poll = ldp_in_queue_poll;
     inpcapq->q.eof = ldp_in_queue_eof_pcap;
     inpcapq->q.close = ldp_in_queue_close_pcap;

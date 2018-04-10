@@ -287,6 +287,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   }
 
   insock->q.nextpkts = ldp_in_queue_nextpkts_socket;
+  insock->q.nextpkts_ts = NULL;
   insock->q.poll = ldp_in_queue_poll;
   insock->q.eof = NULL;
   insock->q.close = ldp_in_queue_close_socket;
