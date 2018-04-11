@@ -42,6 +42,28 @@ static void ldp_out_queue_close_netmap(struct ldp_out_queue *outq)
   free(outnmq);
 }
 
+static inline int nm_ldp_inject1(struct nm_desc *d, const void *buf, size_t sz)
+{
+  uint32_t ri = d->cur_tx_ring;
+  struct netmap_ring *ring;
+  uint32_t slotidx, bufidx;
+
+  ring = NETMAP_TXRING(d->nifp, ri);
+  if (nm_ring_empty(ring))
+  {
+    return 0;
+  }
+  slotidx = ring->cur;
+  bufidx = ring->slot[slotidx].buf_idx;
+  ring->slot[slotidx].len = sz;
+  memcpy(NETMAP_BUF(ring, bufidx), buf, sz);
+  slotidx = nm_ring_next(ring, slotidx);
+  ring->head = slotidx;
+  ring->cur = slotidx;
+  return sz;
+}
+
+
 
 static inline void nm_ldp_inject(struct nm_desc *nmd, void *data, size_t sz)
 {
@@ -50,7 +72,7 @@ static inline void nm_ldp_inject(struct nm_desc *nmd, void *data, size_t sz)
   {
     for (j = 0; j < 3; j++)
     {
-      if (nm_inject(nmd, data, sz) == 0)
+      if (nm_ldp_inject1(nmd, data, sz) == 0)
       {
         struct pollfd pollfd;
         pollfd.fd = nmd->fd;
