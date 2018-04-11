@@ -66,24 +66,52 @@ static inline void nm_ldp_inject(struct nm_desc *nmd, void *data, size_t sz)
   }
 }
 
+static void ldp_in_queue_deallocate_all_netmap(struct ldp_in_queue *inq)
+{
+  struct ldp_in_queue_netmap *innmq;
+  innmq = CONTAINER_OF(inq, struct ldp_in_queue_netmap, q);
+  struct netmap_ring *rxring;
+  rxring = NETMAP_RXRING(innmq->nmd->nifp, innmq->nmd->first_rx_ring);
+  rxring->head = rxring->cur;
+}
+
+static void ldp_in_queue_deallocate_some_netmap(struct ldp_in_queue *inq,
+                                                struct ldp_packet *pkts,
+                                                int num)
+{
+  struct ldp_in_queue_netmap *innmq;
+  innmq = CONTAINER_OF(inq, struct ldp_in_queue_netmap, q);
+  struct netmap_ring *rxring;
+  rxring = NETMAP_RXRING(innmq->nmd->nifp, innmq->nmd->first_rx_ring);
+  if (num <= 0)
+  {
+    return;
+  }
+  uint32_t cur = pkts[num-1].ancillary;
+  rxring->head = nm_ring_next(rxring, cur);
+}
+
 static int ldp_in_queue_nextpkts_netmap(struct ldp_in_queue *inq,
                                         struct ldp_packet *pkts, int num)
 {
   int i;
   struct ldp_in_queue_netmap *innmq;
   innmq = CONTAINER_OF(inq, struct ldp_in_queue_netmap, q);
-  for (i = 0; i < num; i++)
+  struct netmap_ring *rxring;
+  uint32_t cur, tail;
+  rxring = NETMAP_RXRING(innmq->nmd->nifp, innmq->nmd->first_rx_ring);
+  cur = rxring->cur;
+  tail = rxring->tail;
+  for (i = 0; cur != tail && i < num; cur = nm_ring_next(rxring, cur))
   {
-    unsigned char *pkt;
-    struct nm_pkthdr hdr;
-    pkt = nm_nextpkt(innmq->nmd, &hdr);
-    if (pkt == NULL)
-    {
-      break;
-    }
-    pkts[i].data = pkt;
-    pkts[i].sz = hdr.len;
+    struct netmap_slot *slot = rxring->slot + cur;
+    char *buf = NETMAP_BUF(rxring, slot->buf_idx);
+    pkts[i].data = buf;
+    pkts[i].sz = slot->len;
+    pkts[i].ancillary = cur;
+    i++;
   }
+  rxring->cur = cur;
   return i;
 }
 
@@ -260,8 +288,8 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     innmq->q.poll = ldp_in_queue_poll;
     innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_netmap;
-    innmq->q.deallocate_all = NULL;
-    innmq->q.deallocate_some = NULL;
+    innmq->q.deallocate_all = ldp_in_queue_deallocate_all_netmap;
+    innmq->q.deallocate_some = ldp_in_queue_deallocate_some_netmap;
     if (innmq->nmd == NULL)
     {
       while (--i >= 0)
