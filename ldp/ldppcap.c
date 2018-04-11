@@ -12,15 +12,18 @@
 
 struct ldp_in_queue_pcap {
   struct ldp_in_queue q;
-  const char *ifname;
-  void *buf;
-  size_t bufcapacity;
+  char *ifname;
+  void **bufs;
+  size_t *bufcapacities;
+  int num_bufs;
+  int buf_start;
+  int buf_end;
   struct ldp_capture_shared_in_pcap *regular;
 };
 
 struct ldp_out_queue_pcap {
   struct ldp_out_queue q;
-  const char *ifname;
+  char *ifname;
   struct ldp_capture_shared_out_pcap *regular;
   struct ldp_capture_shared_out_pcapng *ng;
 };
@@ -42,7 +45,7 @@ struct ldp_capture_ctx ctx = {
 
 struct ldp_capture_shared_in_pcap {
   pthread_mutex_t mtx;
-  const char *fname;
+  char *fname;
   int buf_valid;
   void *buf;
   size_t bufcapacity;
@@ -51,6 +54,7 @@ struct ldp_capture_shared_in_pcap {
   const char *bufifname;
   uint64_t time64;
   int eof;
+  int refc;
   struct linked_list_node node;
   struct pcap_joker_ctx ctx;
 };
@@ -67,6 +71,8 @@ static struct ldp_capture_shared_in_pcap *create_in(const char *fname,
     pcap = CONTAINER_OF(it, struct ldp_capture_shared_in_pcap, node);
     if (strcmp(pcap->fname, fname2) == 0)
     {
+      pcap->refc++;
+      free(fname2);
       return pcap;
     }
   }
@@ -83,10 +89,12 @@ static struct ldp_capture_shared_in_pcap *create_in(const char *fname,
   if (pcap_joker_ctx_init(&pcap->ctx, fname2, 1, jokerifname) != 0)
   {
     free(pcap);
+    free(fname2);
     return NULL;
   }
   pthread_mutex_init(&pcap->mtx, NULL);
   linked_list_add_tail(&pcap->node, &ctx.shared_in_pcaps);
+  pcap->refc = 1;
   return pcap;
 }
 
@@ -95,6 +103,7 @@ struct ldp_capture_shared_out_pcap {
   const char *fname;
   struct linked_list_node node;
   struct pcap_out_ctx ctx;
+  int refc;
 };
 
 static struct ldp_capture_shared_out_pcap *create_out(const char *fname)
@@ -108,6 +117,7 @@ static struct ldp_capture_shared_out_pcap *create_out(const char *fname)
     pcap = CONTAINER_OF(it, struct ldp_capture_shared_out_pcap, node);
     if (strcmp(pcap->fname, fname2) == 0)
     {
+      pcap->refc++;
       return pcap;
     }
   }
@@ -120,6 +130,7 @@ static struct ldp_capture_shared_out_pcap *create_out(const char *fname)
   }
   pthread_mutex_init(&pcap->mtx, NULL);
   linked_list_add_tail(&pcap->node, &ctx.shared_out_pcaps);
+  pcap->refc = 1;
   return pcap;
 }
 
@@ -128,6 +139,7 @@ struct ldp_capture_shared_out_pcapng {
   const char *fname;
   struct linked_list_node node;
   struct pcapng_out_ctx ctx;
+  int refc;
 };
 
 static struct ldp_capture_shared_out_pcapng *create_out_ng(const char *fname)
@@ -141,6 +153,7 @@ static struct ldp_capture_shared_out_pcapng *create_out_ng(const char *fname)
     pcap = CONTAINER_OF(it, struct ldp_capture_shared_out_pcapng, node);
     if (strcmp(pcap->fname, fname2) == 0)
     {
+      pcap->refc++;
       return pcap;
     }
   }
@@ -153,13 +166,44 @@ static struct ldp_capture_shared_out_pcapng *create_out_ng(const char *fname)
   }
   pthread_mutex_init(&pcap->mtx, NULL);
   linked_list_add_tail(&pcap->node, &ctx.shared_out_pcapngs);
+  pcap->refc = 1;
   return pcap;
 }
 
 static void ldp_in_queue_close_pcap(struct ldp_in_queue *inq)
 {
   struct ldp_in_queue_pcap *inpcapq;
+  int j;
   inpcapq = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
+  for (j = 0; j < inpcapq->num_bufs; j++)
+  {
+    free(inpcapq->bufs[j]);
+  }
+  free(inpcapq->bufs);
+  free(inpcapq->ifname);
+  free(inpcapq->bufcapacities);
+  if (inpcapq->regular != NULL)
+  {
+    inpcapq->regular->refc--;
+    if (inpcapq->regular->refc == 0)
+    {
+      struct linked_list_node *it;
+      LINKED_LIST_FOR_EACH(it, &ctx.shared_in_pcaps)
+      {
+        struct ldp_capture_shared_in_pcap *pcap =
+          CONTAINER_OF(it, struct ldp_capture_shared_in_pcap, node);
+        if (pcap == inpcapq->regular)
+        {
+          linked_list_delete(it);
+          pcap_joker_ctx_free(&pcap->ctx);
+          free(pcap->buf);
+          free(pcap->fname);
+          free(pcap);
+          break;
+        }
+      }
+    }
+  }
   free(inpcapq);
 }
 
@@ -167,7 +211,35 @@ static void ldp_out_queue_close_pcap(struct ldp_out_queue *outq)
 {
   struct ldp_out_queue_pcap *outpcapq;
   outpcapq = CONTAINER_OF(outq, struct ldp_out_queue_pcap, q);
+  free(outpcapq->ifname);
   free(outpcapq);
+}
+
+static void ldp_in_queue_deallocate_all_pcap(struct ldp_in_queue *inq)
+{
+  struct ldp_in_queue_pcap *inpcap;
+  inpcap = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
+  inpcap->buf_start = 0;
+  inpcap->buf_end = 0;
+}
+
+static void
+ldp_in_queue_deallocate_some_pcap(struct ldp_in_queue *inq,
+                                  struct ldp_packet *pkts, int num)
+{
+  struct ldp_in_queue_pcap *inpcap;
+  inpcap = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
+  if (num <= 0)
+  {
+    return;
+  }
+  int new_end;
+  new_end = pkts[num-1].ancillary + 1;
+  if (new_end >= inpcap->num_bufs)
+  {
+    new_end = 0;
+  }
+  inpcap->buf_end = new_end;
 }
 
 static void ldp_in_queue_intern(struct ldp_in_queue_pcap *inq,
@@ -179,25 +251,39 @@ static void ldp_in_queue_intern(struct ldp_in_queue_pcap *inq,
   {
     min = snap;
   }
-  if (inq->bufcapacity < min)
+  int amnt_free = inq->buf_end - inq->buf_start - 1;
+  if (amnt_free < 0)
+  {
+    amnt_free = inq->num_bufs;
+  }
+  if (amnt_free == 0)
+  {
+    abort();
+  }
+  if (inq->bufcapacities[inq->buf_start] < min)
   {
     void *buf2;
-    size_t newcapacity = inq->bufcapacity*2;
+    size_t newcapacity = inq->bufcapacities[inq->buf_start]*2;
     if (newcapacity < min)
     {
       newcapacity = min;
     }
-    buf2 = realloc(inq->buf, newcapacity);
+    buf2 = realloc(inq->bufs[inq->buf_start], newcapacity);
     if (buf2 == NULL)
     {
       abort(); // FIXME better error handling
     }
-    inq->buf = buf2;
-    inq->bufcapacity = newcapacity;
+    inq->bufs[inq->buf_start] = buf2;
+    inq->bufcapacities[inq->buf_start] = newcapacity;
   }
-  memcpy(inq->buf, buf, min);
-  pkt->data = inq->buf;
+  memcpy(inq->bufs[inq->buf_start], buf, min);
+  pkt->data = inq->bufs[inq->buf_start];
   pkt->sz = min;
+  pkt->ancillary = inq->buf_start++;
+  if (inq->buf_start >= inq->num_bufs)
+  {
+    inq->buf_start = 0;
+  }
 }
 
 static int ldp_in_queue_eof_pcap(struct ldp_in_queue *inq)
@@ -375,12 +461,13 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   struct ldp_interface *intf;
   struct ldp_in_queue **inqs;
   struct ldp_out_queue **outqs;
+  int j;
   char *name2;
   char *tok, *end, *tok2, *end2;
   char *inname = NULL;
   char *inifname = NULL;
   char *outname = NULL;
-  char *outifname = "pcap";
+  char *outifname = strdup("pcap");
   char *outngname = NULL;
   const char *jokerifname = "pcap";
   int i;
@@ -424,11 +511,13 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     }
     else if (strcmp(tok2, "inifname") == 0)
     {
-      inifname = end2;
+      free(inifname);
+      inifname = strdup(end2);
     }
     else if (strcmp(tok2, "outifname") == 0)
     {
-      outifname = end2;
+      free(outifname);
+      outifname = strdup(end2);
     }
 #if 0
     else if (strcmp(tok2, "jokerifname") == 0)
@@ -470,8 +559,16 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       abort(); // FIXME better error handling
     }
     inpcapq->ifname = NULL;
-    inpcapq->buf = NULL;
-    inpcapq->bufcapacity = 0;
+    inpcapq->num_bufs = 128;
+    inpcapq->bufs = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufs));
+    inpcapq->bufcapacities = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufcapacities));
+    for (j = 0; j < inpcapq->num_bufs; j++)
+    {
+      inpcapq->bufs[j] = NULL;
+      inpcapq->bufcapacities[j] = 0;
+    }
+    inpcapq->buf_start = 0;
+    inpcapq->buf_end = 0;
     inpcapq->regular = NULL;
     if (inname)
     {
@@ -494,6 +591,8 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     inpcapq->q.poll = ldp_in_queue_poll;
     inpcapq->q.eof = ldp_in_queue_eof_pcap;
     inpcapq->q.close = ldp_in_queue_close_pcap;
+    inpcapq->q.deallocate_some = ldp_in_queue_deallocate_some_pcap;
+    inpcapq->q.deallocate_all = ldp_in_queue_deallocate_all_pcap;
   }
   for (i = 0; i < numoutq; i++)
   {
@@ -545,5 +644,6 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   intf->inq = inqs;
   intf->outq = outqs;
   snprintf(intf->name, sizeof(intf->name), "%s", name);
+  free(name2);
   return intf;
 }

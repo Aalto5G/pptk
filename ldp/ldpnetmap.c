@@ -260,6 +260,8 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     innmq->q.poll = ldp_in_queue_poll;
     innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_netmap;
+    innmq->q.deallocate_all = NULL;
+    innmq->q.deallocate_some = NULL;
     if (innmq->nmd == NULL)
     {
       while (--i >= 0)

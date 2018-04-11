@@ -14,7 +14,9 @@ int main(int argc, char **argv)
   uint64_t last_time64 = gettime64();
   uint64_t ulpkts = 0, ulbytes = 0, dlpkts = 0, dlbytes = 0;
   uint64_t last_ulpkts = 0, last_ulbytes = 0, last_dlpkts = 0, last_dlbytes = 0;
-  struct ldp_packet pkts[1000];
+  const int iters = 1;
+  int iter;
+  struct ldp_packet pkts[1024];
   int num, i;
 
   setlinebuf(stdout);
@@ -81,29 +83,39 @@ int main(int argc, char **argv)
       last_dlbytes = dlbytes;
     }
 
-    num = ldp_in_nextpkts(dlintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
-    if (num < 0)
+    for (iter = 0; iter < iters; iter++)
     {
-      num = 0;
+      num = ldp_in_nextpkts(dlintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
+      if (num < 0)
+      {
+        num = 0;
+        break;
+      }
+      for (i = 0; i < num; i++)
+      {
+        ulpkts++;
+        ulbytes += pkts[i].sz;
+      }
+      ldp_out_inject(ulintf->outq[0], pkts, num);
+      ldp_in_deallocate_some(dlintf->inq[0], pkts, num);
     }
-    for (i = 0; i < num; i++)
-    {
-      ulpkts++;
-      ulbytes += pkts[i].sz;
-    }
-    ldp_out_inject(ulintf->outq[0], pkts, num);
 
-    num = ldp_in_nextpkts(ulintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
-    if (num < 0)
+    for (iter = 0; iter < iters; iter++)
     {
-      num = 0;
+      num = ldp_in_nextpkts(ulintf->inq[0], pkts, sizeof(pkts)/sizeof(*pkts));
+      if (num < 0)
+      {
+        num = 0;
+        break;
+      }
+      for (i = 0; i < num; i++)
+      {
+        dlpkts++;
+        dlbytes += pkts[i].sz;
+      }
+      ldp_out_inject(dlintf->outq[0], pkts, num);
+      ldp_in_deallocate_some(ulintf->inq[0], pkts, num);
     }
-    for (i = 0; i < num; i++)
-    {
-      dlpkts++;
-      dlbytes += pkts[i].sz;
-    }
-    ldp_out_inject(dlintf->outq[0], pkts, num);
 
   }
   return 0;

@@ -33,7 +33,8 @@ struct ldp_interface {
 
 struct ldp_packet {
   void *data;
-  size_t sz;
+  uint32_t sz;
+  uint32_t ancillary;
 };
 
 struct ldp_in_queue {
@@ -45,6 +46,9 @@ struct ldp_in_queue {
   int (*poll)(struct ldp_in_queue *inq, uint64_t timeout_usec);
   int (*eof)(struct ldp_in_queue *inq);
   void (*close)(struct ldp_in_queue *inq);
+  void (*deallocate_all)(struct ldp_in_queue *inq);
+  void (*deallocate_some)(struct ldp_in_queue *inq,
+                          struct ldp_packet *pkts, int num);
 };
 
 struct ldp_out_queue {
@@ -80,7 +84,36 @@ static inline int ldp_in_nextpkts_ts(struct ldp_in_queue *inq,
 
 static inline int ldp_in_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
 {
-  return inq->poll(inq, timeout_usec);
+  int result;
+  if (inq->deallocate_all)
+  {
+    inq->deallocate_all(inq);
+  }
+  result = inq->poll(inq, timeout_usec);
+  return result;
+}
+
+// All packets must be deallocated before polling for new packets to arrive
+static inline void ldp_in_deallocate_all(struct ldp_in_queue *inq)
+{
+  if (inq->deallocate_all)
+  {
+    inq->deallocate_all(inq);
+  }
+}
+
+// Packets must be deallocated in the same order they were allocated
+static inline void ldp_in_deallocate_some(struct ldp_in_queue *inq,
+                                          struct ldp_packet *pkts, int num)
+{
+  if (num <= 0)
+  {
+    return;
+  }
+  if (inq->deallocate_some)
+  {
+    inq->deallocate_some(inq, pkts, num);
+  }
 }
 
 static inline int ldp_in_eof(struct ldp_in_queue *inq)

@@ -106,6 +106,8 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     innullq->q.poll = ldp_in_queue_poll;
     innullq->q.eof = NULL;
     innullq->q.close = ldp_in_queue_close_null;
+    innullq->q.deallocate_all = NULL;
+    innullq->q.deallocate_some = NULL;
   }
   for (i = 0; i < numoutq; i++)
   {

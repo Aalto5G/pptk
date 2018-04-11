@@ -33,7 +33,9 @@ struct ldp_in_queue_socket {
   struct ldp_in_queue q;
   int max_sz;
   int num_bufs;
-  char **bufs;
+  int buf_start;
+  int buf_end;
+  char **bufs; // always at least 1 slot free
 };
 
 struct ldp_out_queue_socket {
@@ -87,18 +89,62 @@ int ldp_in_queue_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
   return select(nfds, &set, NULL, NULL, &timeout);
 }
 
+static void ldp_in_queue_deallocate_all_socket(struct ldp_in_queue *inq)
+{
+  struct ldp_in_queue_socket *insock;
+  insock = CONTAINER_OF(inq, struct ldp_in_queue_socket, q);
+  insock->buf_start = 0;
+  insock->buf_end = 0;
+}
+
+static void
+ldp_in_queue_deallocate_some_socket(struct ldp_in_queue *inq,
+                                    struct ldp_packet *pkts, int num)
+{
+  struct ldp_in_queue_socket *insock;
+  insock = CONTAINER_OF(inq, struct ldp_in_queue_socket, q);
+  if (num <= 0)
+  {
+    return;
+  }
+  insock->buf_end = pkts[num-1].ancillary + 1;
+  if (insock->buf_end >= insock->num_bufs)
+  {
+    insock->buf_end = 0;
+  }
+}
+
 static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
                                         struct ldp_packet *pkts, int num)
 {
-  int i, j;
+  int i, j, k;
+  int last_k;
   int fd = inq->fd;
   int ret;
+  int amnt_free;
   struct ldp_in_queue_socket *insock;
   insock = CONTAINER_OF(inq, struct ldp_in_queue_socket, q);
 
-  if (num > insock->num_bufs)
+  // sz = 4
+  //       X
+  // 0 1 2 3
+  // ^     ^
+
+
+  // FIXME this calculation needs to be checked
+  amnt_free = insock->buf_end - insock->buf_start - 1;
+  if (amnt_free < 0)
   {
-    num = insock->num_bufs;
+    amnt_free += insock->num_bufs;
+  }
+  if (amnt_free == 0)
+  {
+    return 0;
+  }
+
+  if (num > amnt_free)
+  {
+    num = amnt_free;
   }
 
   struct sockaddr_ll names[num];
@@ -108,27 +154,47 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
   memset(msgs, 0, sizeof(msgs));
   memset(iovecs, 0, sizeof(iovecs));
 
+  j = insock->buf_start;
   for (i = 0; i < num; i++)
   {
     msgs[i].msg_hdr.msg_iovlen = 1;
     msgs[i].msg_hdr.msg_iov = iovecs[i];
     msgs[i].msg_hdr.msg_namelen = sizeof(names[i]);
     msgs[i].msg_hdr.msg_name = &names[i];
-    iovecs[i][0].iov_base = insock->bufs[i];
+    if (j >= insock->num_bufs)
+    {
+      j = 0;
+    }
+    iovecs[i][0].iov_base = insock->bufs[j++];
     iovecs[i][0].iov_len = insock->max_sz;
   }
   ret = recvmmsg(fd, msgs, num, MSG_DONTWAIT, NULL);
   j = 0;
+  k = insock->buf_start;
+  last_k = insock->buf_start;
+  // FIXME what if all packets are outgoing?
   for (i = 0; i < ret; i++)
   {
     if (names[i].sll_pkttype == PACKET_OUTGOING)
     {
+      k++;
+      if (k >= insock->num_bufs)
+      {
+        k = 0;
+      }
       continue;
     }
-    pkts[j].data = insock->bufs[i];
+    pkts[j].data = iovecs[i][0].iov_base;
     pkts[j].sz = msgs[i].msg_len;
+    pkts[j].ancillary = k++;
+    if (k >= insock->num_bufs)
+    {
+      k = 0;
+    }
+    last_k = k;
     j++;
   }
+  insock->buf_start = last_k;
   return j;
 }
 
@@ -308,6 +374,8 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock->q.poll = ldp_in_queue_poll;
   insock->q.eof = NULL;
   insock->q.close = ldp_in_queue_close_socket;
+  insock->q.deallocate_all = ldp_in_queue_deallocate_all_socket;
+  insock->q.deallocate_some = ldp_in_queue_deallocate_some_socket;
 
   outsock->q.inject = ldp_out_queue_inject_socket;
   outsock->q.txsync = ldp_out_queue_txsync_socket;
@@ -324,6 +392,8 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
 
   insock->max_sz = mtu + 14;
   insock->num_bufs = 128;
+  insock->buf_start = 0;
+  insock->buf_end = 0;
   insock->bufs = malloc(insock->num_bufs*sizeof(*insock->bufs));
   if (insock->bufs == NULL)
   {

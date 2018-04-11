@@ -28,9 +28,11 @@ struct ldp_port_odp {
 struct ldp_in_queue_odp {
   struct ldp_in_queue q;
   struct ldp_port_odp *port;
-  int num;
   odp_pktin_queue_t odpq;
-  odp_packet_t pkts_burst[128];
+  int buf_end;
+  int buf_start;
+  int num_bufs;
+  odp_packet_t *pkts_all; // FIXME leaks
 };
 
 struct ldp_out_queue_odp {
@@ -212,6 +214,54 @@ static void ldp_out_queue_close_odp(struct ldp_out_queue *outq)
   free(outnmq);
 }
 
+static void ldp_in_queue_deallocate_all_odp(struct ldp_in_queue *inq)
+{
+  struct ldp_in_queue_odp *inodp;
+  int i; 
+  inodp = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
+  i = inodp->buf_end;
+  while (i != inodp->buf_start)
+  { 
+    odp_packet_free(inodp->pkts_all[i]);
+    i++;
+    if (i >= inodp->num_bufs)
+    { 
+      i = 0;
+    }
+  }
+  inodp->buf_end = inodp->buf_start;
+}
+
+static void
+ldp_in_queue_deallocate_some_odp(struct ldp_in_queue *inq,
+                                  struct ldp_packet *pkts, int num)
+{
+  struct ldp_in_queue_odp *inodp;
+  int i;
+  inodp = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
+  if (num <= 0)
+  {
+    return;
+  }
+  int new_end;
+  new_end = pkts[num-1].ancillary + 1;
+  if (new_end >= inodp->num_bufs)
+  {
+    new_end = 0;
+  }
+  i = inodp->buf_end;
+  while (i != new_end)
+  {
+    odp_packet_free(inodp->pkts_all[i]);
+    i++;
+    if (i >= inodp->num_bufs)
+    {
+      i = 0;
+    }
+  }
+  inodp->buf_end = new_end;
+}
+
 
 static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
                                      struct ldp_packet *pkts, int num)
@@ -219,36 +269,45 @@ static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
   int nb_rx;
   int max_num;
   int i;
+  int amnt_free;
   struct ldp_in_queue_odp *inodpq;
 
   odp_check_thread_init();
 
   inodpq = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
 
-  for (i = 0; i < inodpq->num; i++)
+  amnt_free = inodpq->buf_end - inodpq->buf_start - 1;
+  if (amnt_free < 0)
   {
-    odp_packet_t mbuf = inodpq->pkts_burst[i];
-    odp_packet_free(mbuf);
-    inodpq->pkts_burst[i] = NULL;
+    amnt_free += inodpq->num_bufs;
   }
-  inodpq->num = 0;
+  if (amnt_free == 0)
+  {
+    return 0;
+  }
 
   max_num = num;
-  if (max_num > (int)(sizeof(inodpq->pkts_burst)/sizeof(*inodpq->pkts_burst)))
+  if (max_num > amnt_free)
   {
-    max_num = sizeof(inodpq->pkts_burst)/sizeof(*inodpq->pkts_burst);
+    max_num = amnt_free;
   }
-  nb_rx = odp_pktin_recv(inodpq->odpq, inodpq->pkts_burst, max_num);
+  odp_packet_t local_pkts[max_num];
+  nb_rx = odp_pktin_recv(inodpq->odpq, local_pkts, max_num);
   if (nb_rx <= 0)
   {
     return nb_rx;
   }
-  inodpq->num = nb_rx;
   for (i = 0; i < nb_rx; i++)
   {
-    odp_packet_t mbuf = inodpq->pkts_burst[i];
+    odp_packet_t mbuf = local_pkts[i];
     pkts[i].data = odp_packet_data(mbuf);
     pkts[i].sz = odp_packet_len(mbuf);
+    inodpq->pkts_all[inodpq->buf_start] = mbuf;
+    pkts[i].ancillary = inodpq->buf_start++;
+    if (inodpq->buf_start >= inodpq->num_bufs)
+    {
+      inodpq->buf_start = 0;
+    }
     //printf("packet received by DPDK, len %zu\n", pkts[i].sz);
   }
   return nb_rx;
@@ -365,13 +424,18 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     struct ldp_in_queue_odp *innmq;
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_odp, q);
     innmq->port = port;
-    innmq->num = 0;
+    innmq->num_bufs = 128;
+    innmq->pkts_all = malloc(innmq->num_bufs*sizeof(*innmq->pkts_all));
+    innmq->buf_start = 0;
+    innmq->buf_end = 0;
     innmq->odpq = odpinqs[i];
     innmq->q.nextpkts = ldp_in_queue_nextpkts_odp;
     innmq->q.nextpkts_ts = NULL;
     innmq->q.poll = ldp_in_queue_poll;
     innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_odp;
+    innmq->q.deallocate_all = ldp_in_queue_deallocate_all_odp;
+    innmq->q.deallocate_some = ldp_in_queue_deallocate_some_odp;
     innmq->q.fd = -1;
   }
   for (i = 0; i < numoutq; i++)
