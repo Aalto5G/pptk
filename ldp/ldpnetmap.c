@@ -283,6 +283,10 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
     innmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
+    if (innmq->nmd->first_rx_ring != innmq->nmd->last_rx_ring)
+    {
+      abort();
+    }
     innmq->q.nextpkts = ldp_in_queue_nextpkts_netmap;
     innmq->q.nextpkts_ts = NULL;
     innmq->q.poll = ldp_in_queue_poll;
