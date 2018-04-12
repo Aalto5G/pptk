@@ -49,6 +49,7 @@ struct ldp_in_queue {
   void (*deallocate_all)(struct ldp_in_queue *inq);
   void (*deallocate_some)(struct ldp_in_queue *inq,
                           struct ldp_packet *pkts, int num);
+  uint32_t (*ring_size)(struct ldp_in_queue *inq);
 };
 
 struct ldp_out_queue {
@@ -58,6 +59,11 @@ struct ldp_out_queue {
   int (*txsync)(struct ldp_out_queue *outq);
   void (*close)(struct ldp_out_queue *outq);
 };
+
+static inline uint32_t ldp_in_ring_size(struct ldp_in_queue *inq)
+{
+  return inq->ring_size(inq);
+}
 
 static inline int ldp_in_nextpkts(struct ldp_in_queue *inq,
                                   struct ldp_packet *pkts, int num)

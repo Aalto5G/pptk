@@ -38,6 +38,13 @@ struct ldp_in_queue_socket {
   char **bufs; // always at least 1 slot free
 };
 
+static uint32_t ldp_in_queue_ring_size_socket(struct ldp_in_queue *inq)
+{
+  struct ldp_in_queue_socket *insock;
+  insock = CONTAINER_OF(inq, struct ldp_in_queue_socket, q);
+  return insock->num_bufs;
+}
+
 struct ldp_out_queue_socket {
   struct ldp_out_queue q;
 };
@@ -376,6 +383,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock->q.close = ldp_in_queue_close_socket;
   insock->q.deallocate_all = ldp_in_queue_deallocate_all_socket;
   insock->q.deallocate_some = ldp_in_queue_deallocate_some_socket;
+  insock->q.ring_size = ldp_in_queue_ring_size_socket;
 
   outsock->q.inject = ldp_out_queue_inject_socket;
   outsock->q.txsync = ldp_out_queue_txsync_socket;

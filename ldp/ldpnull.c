@@ -16,6 +16,11 @@ struct ldp_out_queue_null {
   int pipe2;
 };
 
+static uint32_t ldp_in_queue_ring_size_null(struct ldp_in_queue *inq)
+{
+  return 1024; // XXX dummy
+}
+
 static void ldp_in_queue_close_null(struct ldp_in_queue *inq)
 {
   struct ldp_in_queue_null *innullq;
@@ -108,6 +113,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     innullq->q.close = ldp_in_queue_close_null;
     innullq->q.deallocate_all = NULL;
     innullq->q.deallocate_some = NULL;
+    innullq->q.ring_size = ldp_in_queue_ring_size_null;
   }
   for (i = 0; i < numoutq; i++)
   {
