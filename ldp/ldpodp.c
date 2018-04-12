@@ -431,7 +431,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     struct ldp_in_queue_odp *innmq;
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_odp, q);
     innmq->port = port;
-    innmq->num_bufs = 128;
+    innmq->num_bufs = 1024;
     innmq->pkts_all = malloc(innmq->num_bufs*sizeof(*innmq->pkts_all));
     innmq->buf_start = 0;
     innmq->buf_end = 0;

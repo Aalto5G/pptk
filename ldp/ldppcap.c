@@ -566,7 +566,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       abort(); // FIXME better error handling
     }
     inpcapq->ifname = NULL;
-    inpcapq->num_bufs = 128;
+    inpcapq->num_bufs = 1024;
     inpcapq->bufs = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufs));
     inpcapq->bufcapacities = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufcapacities));
     for (j = 0; j < inpcapq->num_bufs; j++)

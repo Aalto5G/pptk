@@ -461,7 +461,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     innmq->buf_start = 0;
     innmq->cache_start = 0;
     innmq->buf_end = 0;
-    innmq->num_bufs = 128;
+    innmq->num_bufs = 1024;
     innmq->pkts_all = malloc(innmq->num_bufs*sizeof(*innmq->pkts_all));
     if (innmq->pkts_all == NULL)
     {
