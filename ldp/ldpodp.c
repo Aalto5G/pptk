@@ -437,6 +437,10 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   odp_check_thread_init();
 
   pktio = ldp_create_pktio_multiqueue(name, odpinqs, odpoutqs, numinq, numoutq);
+  if (pktio == NULL)
+  {
+    abort(); // FIXME better error handling
+  }
   
   port = malloc(sizeof(*port));
   if (port == NULL)
