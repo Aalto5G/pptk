@@ -47,11 +47,10 @@ any other platform. It can also mean lightweight, as LDP is much lighterweight
 than other data plane wrappers like OpenDataPlane (ODP).
 
 LDP aims to mainly offer a lighterweight alternative to ODP. Packet reception
-does not require allocating memory in LDP, which is the main benefit of LDP
-over ODP. Instead, packets are invalidated the next time a packet burst is
-received or the next time information is synchronized with the kernel by
-polling on the file descriptor. This means the packet input areas belonging to
-the network interface card in netmap can be used.
+does not require allocating memory in LDP when used with netmap, because
+packets point to the NIC ring memory. Packet memory however must be explicitly
+released after packets are no longer needed, and this release of packet memory
+must happen in exactly the same order in which packets were obtained.
 
 # Prerequisites
 
