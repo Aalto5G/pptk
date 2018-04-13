@@ -170,7 +170,7 @@ int ldp_set_allmulti(int sockfd, const char *ifname, int on)
     {
       return -1;
     }
-    ifr.ifr_flags |= IFF_PROMISC;
+    ifr.ifr_flags |= IFF_ALLMULTI;
     if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0)
     {
       return -1;
@@ -193,7 +193,7 @@ int ldp_set_allmulti(int sockfd, const char *ifname, int on)
     {
       return -1;
     }
-    ifr.ifr_flags &= ~IFF_PROMISC;
+    ifr.ifr_flags &= ~IFF_ALLMULTI;
     if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0)
     {
       return -1;
