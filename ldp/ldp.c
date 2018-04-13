@@ -386,6 +386,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock->q.ring_size = ldp_in_queue_ring_size_socket;
 
   outsock->q.inject = ldp_out_queue_inject_socket;
+  outsock->q.inject_dealloc = NULL;
   outsock->q.txsync = ldp_out_queue_txsync_socket;
   outsock->q.close = ldp_out_queue_close_socket;
 

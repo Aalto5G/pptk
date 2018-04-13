@@ -56,9 +56,34 @@ struct ldp_out_queue {
   int fd;
   int (*inject)(struct ldp_out_queue *outq, struct ldp_packet *packets,
                 int num);
+  int (*inject_dealloc)(struct ldp_in_queue *inq, struct ldp_out_queue *outq,
+                        struct ldp_packet *packets, int num);
   int (*txsync)(struct ldp_out_queue *outq);
   void (*close)(struct ldp_out_queue *outq);
 };
+
+static inline int ldp_inout_inject_dealloc(struct ldp_in_queue *inq,
+                                           struct ldp_out_queue *outq,
+                                           struct ldp_packet *packets, int num)
+{
+  int result;
+  int num_sent;
+  if (outq->inject_dealloc)
+  {
+    return outq->inject_dealloc(inq, outq, packets, num);
+  }
+  result = outq->inject(outq, packets, num);
+  num_sent = result;
+  if (num_sent < 0)
+  {
+    num_sent = 0;
+  }
+  if (num_sent > 0 && inq->deallocate_some)
+  {
+    inq->deallocate_some(inq, packets, num_sent);
+  }
+  return result;
+}
 
 static inline uint32_t ldp_in_ring_size(struct ldp_in_queue *inq)
 {

@@ -644,6 +644,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     outqs[i] = &outpcapq->q;
     outpcapq->q.fd = -1;
     outpcapq->q.inject = ldp_out_queue_inject_pcap;
+    outpcapq->q.inject_dealloc = NULL;
     outpcapq->q.txsync = ldp_out_queue_txsync_pcap;
     outpcapq->q.close = ldp_out_queue_close_pcap;
   }

@@ -351,6 +351,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
     outnmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
     outnmq->q.inject = ldp_out_queue_inject_netmap;
+    outnmq->q.inject_dealloc = NULL;
     outnmq->q.txsync = ldp_out_queue_txsync_netmap;
     outnmq->q.close = ldp_out_queue_close_netmap;
     if (outnmq->nmd == NULL)

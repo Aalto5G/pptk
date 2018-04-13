@@ -96,8 +96,13 @@ int main(int argc, char **argv)
         ulpkts++;
         ulbytes += pkts[i].sz;
       }
-      ldp_out_inject(ulintf->outq[0], pkts, num);
-      ldp_in_deallocate_some(dlintf->inq[0], pkts, num);
+      int c;
+      c = ldp_inout_inject_dealloc(dlintf->inq[0], ulintf->outq[0], pkts, num);
+      if (c < 0)
+      {
+        c = 0;
+      }
+      ldp_in_deallocate_some(dlintf->inq[0], pkts+c, num-c);
     }
 
     for (iter = 0; iter < iters; iter++)
@@ -113,8 +118,13 @@ int main(int argc, char **argv)
         dlpkts++;
         dlbytes += pkts[i].sz;
       }
-      ldp_out_inject(dlintf->outq[0], pkts, num);
-      ldp_in_deallocate_some(ulintf->inq[0], pkts, num);
+      int c;
+      c = ldp_inout_inject_dealloc(ulintf->inq[0], dlintf->outq[0], pkts, num);
+      if (c < 0)
+      {
+        c = 0;
+      }
+      ldp_in_deallocate_some(ulintf->inq[0], pkts+c, num-c);
     }
 
   }

@@ -131,6 +131,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     outnullq->q.fd = pipefd[1];
     outqs[i] = &outnullq->q;
     outnullq->q.inject = ldp_out_queue_inject_null;
+    outnullq->q.inject_dealloc = NULL;
     outnullq->q.txsync = ldp_out_queue_txsync_null;
     outnullq->q.close = ldp_out_queue_close_null;
   }

@@ -313,6 +313,64 @@ static int ldp_out_queue_inject_dpdk(struct ldp_out_queue *outq,
   return ret;
 }
 
+static int ldp_out_queue_inject_dealloc_dpdk(struct ldp_in_queue *inq,
+                                             struct ldp_out_queue *outq,
+                                             struct ldp_packet *packets,
+                                             int num)
+{
+  struct rte_mbuf *tx_mbufs[num];
+  int ret;
+  int i;
+  struct ldp_in_queue_dpdk *indpdkq;
+  struct ldp_out_queue_dpdk *outdpdkq;
+
+  indpdkq = CONTAINER_OF(inq, struct ldp_in_queue_dpdk, q);
+  outdpdkq = CONTAINER_OF(outq, struct ldp_out_queue_dpdk, q);
+
+  if (num <= 0)
+  {
+    return 0;
+  }
+
+  int new_end;
+  new_end = packets[num-1].ancillary + 1;
+  if (new_end >= indpdkq->num_bufs)
+  {
+    new_end = 0;
+  }
+  i = indpdkq->buf_end;
+  int j = 0;
+  while (i != new_end)
+  {
+    if (packets[j].ancillary != (uint32_t)i)
+    {
+      abort();
+    }
+    tx_mbufs[j++] = indpdkq->pkts_all[i];
+    i++;
+    if (i >= indpdkq->num_bufs)
+    {
+      i = 0;
+    }
+  }
+  if (j != num)
+  {
+    abort();
+  }
+
+  ret = rte_eth_tx_burst(outdpdkq->port->portid, outdpdkq->qid,
+                         tx_mbufs, num);
+  if (ret > 0)
+  {
+    indpdkq->buf_end += ret;
+    if (indpdkq->buf_end >= indpdkq->num_bufs)
+    {
+      indpdkq->buf_end -= indpdkq->num_bufs;
+    }
+  }
+  return ret;
+}
+
 static int ldp_out_queue_txsync_dpdk(struct ldp_out_queue *outq)
 {
   return 0;
@@ -485,6 +543,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     outnmq->port = port;
     outnmq->qid = i;
     outnmq->q.inject = ldp_out_queue_inject_dpdk;
+    outnmq->q.inject_dealloc = ldp_out_queue_inject_dealloc_dpdk;
     outnmq->q.txsync = ldp_out_queue_txsync_dpdk;
     outnmq->q.close = ldp_out_queue_close_dpdk;
     outnmq->q.fd = -1;
