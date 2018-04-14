@@ -2,6 +2,7 @@
 #define _LDP_H_
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <net/if.h>
 #include "time64.h"
@@ -34,7 +35,13 @@ struct ldp_interface {
 struct ldp_packet {
   void *data;
   uint32_t sz;
-  uint32_t ancillary;
+  union {
+    uint32_t ancillary;
+    uint64_t ancillary64;
+    size_t ancillarysz;
+    void *ancillaryptr;
+    char ancillarydata[sizeof(void*)];
+  };
 };
 
 struct ldp_in_queue {
@@ -124,16 +131,17 @@ static inline int ldp_in_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
   return result;
 }
 
-// All packets must be deallocated before polling for new packets to arrive
 static inline void ldp_in_deallocate_all(struct ldp_in_queue *inq)
 {
+  abort(); // Not supported anymore
+#if 0
   if (inq->deallocate_all)
   {
     inq->deallocate_all(inq);
   }
+#endif
 }
 
-// Packets must be deallocated in the same order they were allocated
 static inline void ldp_in_deallocate_some(struct ldp_in_queue *inq,
                                           struct ldp_packet *pkts, int num)
 {

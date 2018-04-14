@@ -29,17 +29,11 @@ struct ldp_in_queue_odp {
   struct ldp_in_queue q;
   struct ldp_port_odp *port;
   odp_pktin_queue_t odpq;
-  int buf_end;
-  int buf_start;
-  int num_bufs;
-  odp_packet_t *pkts_all; // FIXME leaks
 };
 
 static uint32_t ldp_in_queue_ring_size_odp(struct ldp_in_queue *inq)
 {
-  struct ldp_in_queue_odp *inodp;
-  inodp = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
-  return inodp->num_bufs;
+  return POOL_NUM_PKT;
 }
 
 struct ldp_out_queue_odp {
@@ -221,52 +215,17 @@ static void ldp_out_queue_close_odp(struct ldp_out_queue *outq)
   free(outnmq);
 }
 
-static void ldp_in_queue_deallocate_all_odp(struct ldp_in_queue *inq)
-{
-  struct ldp_in_queue_odp *inodp;
-  int i; 
-  inodp = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
-  i = inodp->buf_end;
-  while (i != inodp->buf_start)
-  { 
-    odp_packet_free(inodp->pkts_all[i]);
-    i++;
-    if (i >= inodp->num_bufs)
-    { 
-      i = 0;
-    }
-  }
-  inodp->buf_end = inodp->buf_start;
-}
-
 static void
 ldp_in_queue_deallocate_some_odp(struct ldp_in_queue *inq,
                                   struct ldp_packet *pkts, int num)
 {
-  struct ldp_in_queue_odp *inodp;
   int i;
-  inodp = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
-  if (num <= 0)
+  for (i = 0; i < num; i++)
   {
-    return;
+    odp_packet_t pkt;
+    memcpy(&pkt, pkts[i].ancillarydata, sizeof(pkt));
+    odp_packet_free(pkt);
   }
-  int new_end;
-  new_end = pkts[num-1].ancillary + 1;
-  if (new_end >= inodp->num_bufs)
-  {
-    new_end = 0;
-  }
-  i = inodp->buf_end;
-  while (i != new_end)
-  {
-    odp_packet_free(inodp->pkts_all[i]);
-    i++;
-    if (i >= inodp->num_bufs)
-    {
-      i = 0;
-    }
-  }
-  inodp->buf_end = new_end;
 }
 
 
@@ -274,30 +233,14 @@ static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
                                      struct ldp_packet *pkts, int num)
 {
   int nb_rx;
-  int max_num;
+  int max_num = num;
   int i;
-  int amnt_free;
   struct ldp_in_queue_odp *inodpq;
 
   odp_check_thread_init();
 
   inodpq = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
 
-  amnt_free = inodpq->buf_end - inodpq->buf_start - 1;
-  if (amnt_free < 0)
-  {
-    amnt_free += inodpq->num_bufs;
-  }
-  if (amnt_free == 0)
-  {
-    return 0;
-  }
-
-  max_num = num;
-  if (max_num > amnt_free)
-  {
-    max_num = amnt_free;
-  }
   odp_packet_t local_pkts[max_num];
   nb_rx = odp_pktin_recv(inodpq->odpq, local_pkts, max_num);
   if (nb_rx <= 0)
@@ -309,12 +252,7 @@ static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
     odp_packet_t mbuf = local_pkts[i];
     pkts[i].data = odp_packet_data(mbuf);
     pkts[i].sz = odp_packet_len(mbuf);
-    inodpq->pkts_all[inodpq->buf_start] = mbuf;
-    pkts[i].ancillary = inodpq->buf_start++;
-    if (inodpq->buf_start >= inodpq->num_bufs)
-    {
-      inodpq->buf_start = 0;
-    }
+    memcpy(pkts[i].ancillarydata, &mbuf, sizeof(mbuf));
     //printf("packet received by DPDK, len %zu\n", pkts[i].sz);
   }
   return nb_rx;
@@ -356,13 +294,9 @@ static int ldp_out_queue_inject_dealloc_odp(struct ldp_in_queue *inq,
                                             struct ldp_out_queue *outq,
                                             struct ldp_packet *packets, int num)
 {
-  odp_packet_t tx_mbufs[num];
-  int ret;
   int i;
-  struct ldp_in_queue_odp *inodpq;
   struct ldp_out_queue_odp *outodpq;
 
-  inodpq = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
   outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
 
   odp_check_thread_init();
@@ -372,42 +306,14 @@ static int ldp_out_queue_inject_dealloc_odp(struct ldp_in_queue *inq,
     return 0;
   }
 
-  int new_end;
-  new_end = packets[num-1].ancillary + 1;
-  if (new_end >= inodpq->num_bufs)
+  odp_packet_t tx_mbufs[num];
+
+  for (i = 0; i < num; i++)
   {
-    new_end = 0;
-  }
-  i = inodpq->buf_end;
-  int j = 0;
-  while (i != new_end)
-  {
-    if (packets[j].ancillary != (uint32_t)i)
-    {
-      abort();
-    }
-    tx_mbufs[j++] = inodpq->pkts_all[i];
-    i++;
-    if (i >= inodpq->num_bufs)
-    {
-      i = 0;
-    }
-  }
-  if (j != num)
-  {
-    abort();
+    memcpy(&tx_mbufs[i], packets[i].ancillarydata, sizeof(tx_mbufs[i]));
   }
 
-  ret = odp_pktout_send(outodpq->odpq, tx_mbufs, num);
-  if (ret > 0)
-  {
-    inodpq->buf_end += ret;
-    if (inodpq->buf_end >= inodpq->num_bufs)
-    {
-      inodpq->buf_end -= inodpq->num_bufs;
-    }
-  }
-  return ret;
+  return odp_pktout_send(outodpq->odpq, tx_mbufs, num);
 }
 
 static int ldp_out_queue_txsync_odp(struct ldp_out_queue *outq)
@@ -493,17 +399,13 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     struct ldp_in_queue_odp *innmq;
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_odp, q);
     innmq->port = port;
-    innmq->num_bufs = 1024;
-    innmq->pkts_all = malloc(innmq->num_bufs*sizeof(*innmq->pkts_all));
-    innmq->buf_start = 0;
-    innmq->buf_end = 0;
     innmq->odpq = odpinqs[i];
     innmq->q.nextpkts = ldp_in_queue_nextpkts_odp;
     innmq->q.nextpkts_ts = NULL;
     innmq->q.poll = ldp_in_queue_poll;
     innmq->q.eof = NULL;
     innmq->q.close = ldp_in_queue_close_odp;
-    innmq->q.deallocate_all = ldp_in_queue_deallocate_all_odp;
+    innmq->q.deallocate_all = NULL;
     innmq->q.deallocate_some = ldp_in_queue_deallocate_some_odp;
     innmq->q.ring_size = ldp_in_queue_ring_size_odp;
     innmq->q.fd = -1;

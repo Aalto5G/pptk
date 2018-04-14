@@ -222,32 +222,32 @@ static void ldp_out_queue_close_pcap(struct ldp_out_queue *outq)
   free(outpcapq);
 }
 
-static void ldp_in_queue_deallocate_all_pcap(struct ldp_in_queue *inq)
-{
-  struct ldp_in_queue_pcap *inpcap;
-  inpcap = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
-  inpcap->buf_start = 0;
-  inpcap->buf_end = 0;
-}
-
 static void
 ldp_in_queue_deallocate_some_pcap(struct ldp_in_queue *inq,
-                                  struct ldp_packet *pkts, int num)
+                                    struct ldp_packet *pkts, int num)
 {
+  int i;
+  int new_end;
   struct ldp_in_queue_pcap *inpcap;
   inpcap = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
   if (num <= 0)
   {
     return;
   }
-  int new_end;
-  new_end = pkts[num-1].ancillary + 1;
-  if (new_end >= inpcap->num_bufs)
+  new_end = inpcap->buf_end;
+  for (i = 0; i < num; i++)
   {
-    new_end = 0;
+    inpcap->bufs[new_end] = pkts[i].data;
+    inpcap->bufcapacities[new_end] = pkts[i].ancillarysz;
+    new_end++;
+    if (new_end >= inpcap->num_bufs)
+    {
+      new_end = 0;
+    }
   }
   inpcap->buf_end = new_end;
 }
+
 
 static void ldp_in_queue_intern(struct ldp_in_queue_pcap *inq,
                                 struct ldp_packet *pkt,
@@ -286,7 +286,8 @@ static void ldp_in_queue_intern(struct ldp_in_queue_pcap *inq,
   memcpy(inq->bufs[inq->buf_start], buf, min);
   pkt->data = inq->bufs[inq->buf_start];
   pkt->sz = min;
-  pkt->ancillary = inq->buf_start++;
+  pkt->ancillarysz = inq->bufcapacities[inq->buf_start];
+  inq->buf_start++;
   if (inq->buf_start >= inq->num_bufs)
   {
     inq->buf_start = 0;
@@ -599,7 +600,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     inpcapq->q.eof = ldp_in_queue_eof_pcap;
     inpcapq->q.close = ldp_in_queue_close_pcap;
     inpcapq->q.deallocate_some = ldp_in_queue_deallocate_some_pcap;
-    inpcapq->q.deallocate_all = ldp_in_queue_deallocate_all_pcap;
+    inpcapq->q.deallocate_all = NULL;
     inpcapq->q.ring_size = ldp_in_queue_ring_size_pcap;
   }
   for (i = 0; i < numoutq; i++)
