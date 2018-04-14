@@ -111,6 +111,8 @@ static void ldp_in_queue_deallocate_some_netmap(struct ldp_in_queue *inq,
                                                 int num)
 {
   struct ldp_in_queue_netmap *innmq;
+  int i;
+  uint32_t next_head;
   innmq = CONTAINER_OF(inq, struct ldp_in_queue_netmap, q);
   struct netmap_ring *rxring;
   rxring = NETMAP_RXRING(innmq->nmd->nifp, innmq->nmd->first_rx_ring);
@@ -118,8 +120,18 @@ static void ldp_in_queue_deallocate_some_netmap(struct ldp_in_queue *inq,
   {
     return;
   }
-  uint32_t cur = pkts[num-1].ancillary;
-  rxring->head = nm_ring_next(rxring, cur);
+  next_head = rxring->head;
+  for (i = 0; i < num; i++)
+  {
+    struct netmap_slot *slot = rxring->slot + next_head;
+    if (slot->buf_idx != pkts[i].ancillary)
+    {
+      slot->buf_idx = pkts[i].ancillary;
+      slot->flags |= NS_BUF_CHANGED;
+    }
+    next_head = nm_ring_next(rxring, next_head);
+  }
+  rxring->head = next_head;
 }
 
 static int ldp_in_queue_nextpkts_netmap(struct ldp_in_queue *inq,
@@ -139,7 +151,7 @@ static int ldp_in_queue_nextpkts_netmap(struct ldp_in_queue *inq,
     char *buf = NETMAP_BUF(rxring, slot->buf_idx);
     pkts[i].data = buf;
     pkts[i].sz = slot->len;
-    pkts[i].ancillary = cur;
+    pkts[i].ancillary = slot->buf_idx;
     i++;
   }
   rxring->cur = cur;
