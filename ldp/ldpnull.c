@@ -52,6 +52,13 @@ static int ldp_out_queue_inject_null(struct ldp_out_queue *outq,
   return num;
 }
 
+static int ldp_out_queue_inject_chunk_null(struct ldp_out_queue *outq,
+                                           struct ldp_chunkpacket *packets,
+                                           int num)
+{
+  return num;
+}
+
 static int ldp_out_queue_txsync_null(struct ldp_out_queue *outq)
 {
   return 0;
@@ -131,6 +138,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     outnullq->q.fd = pipefd[1];
     outqs[i] = &outnullq->q;
     outnullq->q.inject = ldp_out_queue_inject_null;
+    outnullq->q.inject_chunk = ldp_out_queue_inject_chunk_null;
     outnullq->q.inject_dealloc = NULL;
     outnullq->q.txsync = ldp_out_queue_txsync_null;
     outnullq->q.close = ldp_out_queue_close_null;
