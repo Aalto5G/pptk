@@ -44,13 +44,8 @@ struct ldp_packet {
   };
 };
 
-struct ldp_iov {
-  void *base;
-  size_t len;
-};
-
 struct ldp_chunkpacket {
-  struct ldp_iov *iov;
+  struct iovec *iov;
   size_t iovlen;
 };
 

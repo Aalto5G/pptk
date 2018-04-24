@@ -92,9 +92,9 @@ static inline int nm_ldp_inject_chunk1(struct nm_desc *d,
   bufbase = NETMAP_BUF(ring, bufidx);
   for (i = 0; i < pkt->iovlen; i++)
   {
-    struct ldp_iov *iov = &pkt->iov[i];
-    memcpy(bufbase + sz, iov->base, iov->len);
-    sz += iov->len;
+    struct iovec *iov = &pkt->iov[i];
+    memcpy(bufbase + sz, iov->iov_base, iov->iov_len);
+    sz += iov->iov_len;
   }
   ring->slot[slotidx].len = sz;
   slotidx = nm_ring_next(ring, slotidx);
