@@ -44,6 +44,16 @@ struct ldp_packet {
   };
 };
 
+struct ldp_iov {
+  void *base;
+  size_t len;
+};
+
+struct ldp_chunkpacket {
+  struct ldp_iov *iov;
+  size_t iovlen;
+};
+
 struct ldp_in_queue {
   int fd;
   int (*nextpkts)(struct ldp_in_queue *inq,
@@ -63,6 +73,8 @@ struct ldp_out_queue {
   int fd;
   int (*inject)(struct ldp_out_queue *outq, struct ldp_packet *packets,
                 int num);
+  int (*inject_chunk)(struct ldp_out_queue *outq, struct ldp_chunkpacket *pkts,
+                      int num);
   int (*inject_dealloc)(struct ldp_in_queue *inq, struct ldp_out_queue *outq,
                         struct ldp_packet *packets, int num);
   int (*txsync)(struct ldp_out_queue *outq);
@@ -168,6 +180,12 @@ static inline int ldp_out_inject(struct ldp_out_queue *outq,
                                  struct ldp_packet *pkts, int num)
 {
   return outq->inject(outq, pkts, num);
+}
+
+static inline int ldp_out_inject_chunk(struct ldp_out_queue *outq,
+                                       struct ldp_chunkpacket *pkts, int num)
+{
+  return outq->inject_chunk(outq, pkts, num);
 }
 
 static inline int ldp_out_txsync(struct ldp_out_queue *outq)

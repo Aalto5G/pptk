@@ -72,6 +72,37 @@ static inline int nm_ldp_inject1(struct nm_desc *d, const void *buf, size_t sz)
   return sz;
 }
 
+static inline int nm_ldp_inject_chunk1(struct nm_desc *d,
+                                       struct ldp_chunkpacket *pkt)
+{
+  uint32_t ri = d->cur_tx_ring;
+  struct netmap_ring *ring;
+  uint32_t slotidx, bufidx;
+  char *bufbase;
+  size_t sz = 0;
+  size_t i;
+
+  ring = NETMAP_TXRING(d->nifp, ri);
+  if (nm_ring_empty(ring))
+  {
+    return 0;
+  }
+  slotidx = ring->cur;
+  bufidx = ring->slot[slotidx].buf_idx;
+  bufbase = NETMAP_BUF(ring, bufidx);
+  for (i = 0; i < pkt->iovlen; i++)
+  {
+    struct ldp_iov *iov = &pkt->iov[i];
+    memcpy(bufbase + sz, iov->base, iov->len);
+    sz += iov->len;
+  }
+  ring->slot[slotidx].len = sz;
+  slotidx = nm_ring_next(ring, slotidx);
+  ring->head = slotidx;
+  ring->cur = slotidx;
+  return sz;
+}
+
 
 
 static inline void nm_ldp_inject(struct nm_desc *nmd, void *data, size_t sz)
@@ -82,6 +113,30 @@ static inline void nm_ldp_inject(struct nm_desc *nmd, void *data, size_t sz)
     for (j = 0; j < 3; j++)
     {
       if (nm_ldp_inject1(nmd, data, sz) == 0)
+      {
+        struct pollfd pollfd;
+        pollfd.fd = nmd->fd;
+        pollfd.events = POLLOUT;
+        poll(&pollfd, 1, 0);
+      }
+      else
+      {
+        return;
+      }
+    }
+    ioctl(nmd->fd, NIOCTXSYNC, NULL);
+  }
+}
+
+static inline void nm_ldp_inject_chunk(struct nm_desc *nmd,
+                                       struct ldp_chunkpacket *pkt)
+{
+  int i, j;
+  for (i = 0; i < 3; i++)
+  {
+    for (j = 0; j < 3; j++)
+    {
+      if (nm_ldp_inject_chunk1(nmd, pkt) == 0)
       {
         struct pollfd pollfd;
         pollfd.fd = nmd->fd;
@@ -158,6 +213,20 @@ static int ldp_out_queue_inject_netmap(struct ldp_out_queue *outq,
   for (i = 0; i < num; i++)
   {
     nm_ldp_inject(outnmq->nmd, packets[i].data, packets[i].sz);
+  }
+  return num;
+}
+
+static int ldp_out_queue_inject_chunk_netmap(struct ldp_out_queue *outq,
+                                             struct ldp_chunkpacket *packets,
+                                             int num)
+{
+  int i;
+  struct ldp_out_queue_netmap *outnmq;
+  outnmq = CONTAINER_OF(outq, struct ldp_out_queue_netmap, q);
+  for (i = 0; i < num; i++)
+  {
+    nm_ldp_inject_chunk(outnmq->nmd, &packets[i]);
   }
   return num;
 }
@@ -355,6 +424,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     outnmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
     outnmq->q.inject = ldp_out_queue_inject_netmap;
     outnmq->q.inject_dealloc = NULL;
+    outnmq->q.inject_chunk = ldp_out_queue_inject_chunk_netmap;
     outnmq->q.txsync = ldp_out_queue_txsync_netmap;
     outnmq->q.close = ldp_out_queue_close_netmap;
     if (outnmq->nmd == NULL)
