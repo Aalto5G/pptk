@@ -237,6 +237,32 @@ static int ldp_out_queue_inject_socket(struct ldp_out_queue *outq,
   return ret;
 }
 
+static int ldp_out_queue_inject_chunk_socket(struct ldp_out_queue *outq,
+                                             struct ldp_chunkpacket *pkts,
+                                             int num)
+{
+  int i;
+  int fd = outq->fd;
+  int ret;
+
+  if (num <= 0)
+  {
+    return 0;
+  }
+
+  struct mmsghdr msgs[num];
+
+  memset(msgs, 0, sizeof(msgs));
+
+  for (i = 0; i < num; i++)
+  {
+    msgs[i].msg_hdr.msg_iovlen = pkts[i].iovlen;
+    msgs[i].msg_hdr.msg_iov = pkts[i].iov;
+  }
+  ret = sendmmsg(fd, msgs, num, 0);
+  return ret;
+}
+
 static struct ldp_interface *
 ldp_interface_open_socket(const char *name, int numinq, int numoutq,
                           const struct ldp_interface_settings *settings)
@@ -390,6 +416,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
 
   outsock->q.inject = ldp_out_queue_inject_socket;
   outsock->q.inject_dealloc = NULL;
+  outsock->q.inject_chunk = ldp_out_queue_inject_chunk_socket;
   outsock->q.txsync = ldp_out_queue_txsync_socket;
   outsock->q.close = ldp_out_queue_close_socket;
 

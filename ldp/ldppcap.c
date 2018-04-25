@@ -457,6 +457,79 @@ static int ldp_out_queue_inject_pcap(struct ldp_out_queue *outq,
   return num;
 }
 
+static int ldp_out_queue_inject_chunk_pcap(struct ldp_out_queue *outq,
+                                           struct ldp_chunkpacket *packets,
+                                           int num)
+{
+  struct ldp_out_queue_pcap *outpcapq;
+  int ret;
+  int err = 0;
+  int i;
+  size_t j;
+  size_t maxlen = 0;
+
+  for (i = 0; i < num; i++)
+  {
+    struct ldp_chunkpacket *pkt = &packets[i];
+    size_t curlen = 0;
+    for (j = 0; j < pkt->iovlen; j++)
+    {
+      struct iovec *iov = &pkt->iov[j];
+      curlen += iov->iov_len;
+    }
+    if (curlen > maxlen)
+    {
+      maxlen = curlen;
+    }
+  }
+
+  char buf[maxlen];
+
+  outpcapq = CONTAINER_OF(outq, struct ldp_out_queue_pcap, q);
+
+  if (num == 0 || (outpcapq->regular == NULL && outpcapq->ng == NULL))
+  {
+    return 0;
+  }
+  for (i = 0; i < num; i++)
+  {
+    struct ldp_chunkpacket *pkt = &packets[i];
+    size_t cur = 0;
+    for (j = 0; j < pkt->iovlen; j++)
+    {
+      struct iovec *iov = &pkt->iov[j];
+      memcpy(buf + cur, iov->iov_base, iov->iov_len);
+      cur += iov->iov_len;
+    }
+    if (outpcapq->regular != NULL)
+    {
+      pthread_mutex_lock(&outpcapq->regular->mtx);
+      ret = pcap_out_ctx_write(&outpcapq->regular->ctx, buf, cur, 0);
+      if (ret != 1)
+      {
+        err = -1;
+      }
+      pthread_mutex_unlock(&outpcapq->regular->mtx);
+    }
+    if (outpcapq->ng != NULL)
+    {
+      pthread_mutex_lock(&outpcapq->ng->mtx);
+      ret = pcapng_out_ctx_write(&outpcapq->ng->ctx, buf, cur, 0,
+                                 outpcapq->ifname);
+      if (ret != 1)
+      {
+        err = -1;
+      }
+      pthread_mutex_unlock(&outpcapq->ng->mtx);
+    }
+    if (err)
+    {
+      return (i == 0) ? err : i;
+    }
+  }
+  return num;
+}
+
 static int ldp_out_queue_txsync_pcap(struct ldp_out_queue *outq)
 {
   return 0;
@@ -646,6 +719,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     outpcapq->q.fd = -1;
     outpcapq->q.inject = ldp_out_queue_inject_pcap;
     outpcapq->q.inject_dealloc = NULL;
+    outpcapq->q.inject_chunk = ldp_out_queue_inject_chunk_pcap;
     outpcapq->q.txsync = ldp_out_queue_txsync_pcap;
     outpcapq->q.close = ldp_out_queue_close_pcap;
   }

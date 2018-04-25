@@ -240,6 +240,55 @@ static int ldp_out_queue_inject_dpdk(struct ldp_out_queue *outq,
   return ret;
 }
 
+static int ldp_out_queue_inject_chunk_dpdk(struct ldp_out_queue *outq,
+                                           struct ldp_chunkpacket *packets,
+                                           int num)
+{
+  struct rte_mbuf *tx_mbufs[num];
+  int ret;
+  int num2;
+  int i;
+  struct ldp_out_queue_dpdk *outdpdkq;
+
+  outdpdkq = CONTAINER_OF(outq, struct ldp_out_queue_dpdk, q);
+
+  if (rte_pktmbuf_alloc_bulk(dpdk_ctx.rte_mp, tx_mbufs, num))
+  {
+    //printf("No mbufs alloced\n"); // FIXME rm
+    return 0;
+  }
+  for (i = 0; i < num; i++)
+  {
+    struct ldp_chunkpacket *pkt = &packets[i];
+    size_t sz = 0, cur = 0, j;
+    for (j = 0; j < pkt->iovlen; j++)
+    {
+      struct iovec *iov = &pkt->iov[j];
+      sz += iov->iov_len;
+    }
+    char *data = rte_pktmbuf_append(tx_mbufs[i], sz);
+    for (j = 0; j < pkt->iovlen; j++)
+    {
+      struct iovec *iov = &pkt->iov[j];
+      memcpy(data + cur, iov->iov_base, iov->iov_len);
+      cur += iov->iov_len;
+    }
+  }
+
+  ret = rte_eth_tx_burst(outdpdkq->port->portid, outdpdkq->qid,
+                         tx_mbufs, num);
+  num2 = ret;
+  if (num2 < 0)
+  {
+    num2 = 0;
+  }
+  for (i = num2; i < num; i++)
+  {
+    rte_pktmbuf_free(tx_mbufs[i]);
+  }
+  return ret;
+}
+
 static int ldp_out_queue_inject_dealloc_dpdk(struct ldp_in_queue *inq,
                                              struct ldp_out_queue *outq,
                                              struct ldp_packet *packets,
@@ -429,6 +478,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     outnmq->qid = i;
     outnmq->q.inject = ldp_out_queue_inject_dpdk;
     outnmq->q.inject_dealloc = ldp_out_queue_inject_dealloc_dpdk;
+    outnmq->q.inject_chunk = ldp_out_queue_inject_chunk_dpdk;
     outnmq->q.txsync = ldp_out_queue_txsync_dpdk;
     outnmq->q.close = ldp_out_queue_close_dpdk;
     outnmq->q.fd = -1;

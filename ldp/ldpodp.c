@@ -290,6 +290,52 @@ static int ldp_out_queue_inject_odp(struct ldp_out_queue *outq,
   return ret;
 }
 
+static int ldp_out_queue_inject_chunk_odp(struct ldp_out_queue *outq,
+                                          struct ldp_chunkpacket *packets,
+                                          int num)
+{
+  odp_packet_t tx_mbufs[num];
+  int ret;
+  int num2;
+  int i;
+  struct ldp_out_queue_odp *outodpq;
+
+  odp_check_thread_init();
+
+  outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
+
+  for (i = 0; i < num; i++)
+  {
+    struct ldp_chunkpacket *pkt = &packets[i];
+    size_t sz = 0, cur = 0, j;
+    for (j = 0; j < pkt->iovlen; j++)
+    {
+      struct iovec *iov = &pkt->iov[j];
+      sz += iov->iov_len;
+    }
+    tx_mbufs[i] = odp_packet_alloc(odp_ctx.pool, sz);
+    char *data = odp_packet_data(tx_mbufs[i]);
+    for (j = 0; j < pkt->iovlen; j++)
+    {
+      struct iovec *iov = &pkt->iov[j];
+      memcpy(data + cur, iov->iov_base, iov->iov_len);
+      cur += iov->iov_len;
+    }
+  }
+
+  ret = odp_pktout_send(outodpq->odpq, tx_mbufs, num);
+  num2 = ret;
+  if (num2 < 0)
+  {
+    num2 = 0;
+  }
+  for (i = num2; i < num; i++)
+  {
+    odp_packet_free(tx_mbufs[i]);
+  }
+  return ret;
+}
+
 static int ldp_out_queue_inject_dealloc_odp(struct ldp_in_queue *inq,
                                             struct ldp_out_queue *outq,
                                             struct ldp_packet *packets, int num)
@@ -418,6 +464,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     outnmq->odpq = odpoutqs[i];
     outnmq->q.inject = ldp_out_queue_inject_odp;
     outnmq->q.inject_dealloc = ldp_out_queue_inject_dealloc_odp;
+    outnmq->q.inject_chunk = ldp_out_queue_inject_chunk_odp;
     outnmq->q.txsync = ldp_out_queue_txsync_odp;
     outnmq->q.close = ldp_out_queue_close_odp;
     outnmq->q.fd = -1;
