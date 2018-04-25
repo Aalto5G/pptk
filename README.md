@@ -49,8 +49,13 @@ than other data plane wrappers like OpenDataPlane (ODP).
 LDP aims to mainly offer a lighterweight alternative to ODP. Packet reception
 does not require allocating memory in LDP when used with netmap, because
 packets point to the NIC ring memory. Packet memory however must be explicitly
-released after packets are no longer needed, and this release of packet memory
-must happen in exactly the same order in which packets were obtained.
+released after packets are no longer needed.
+
+LDP supports scatter/gather output. This means that e.g. tunneling can be done
+by having the packet scattered into two blocks: tunneling header and original
+packet. The output memory copy then gathers the full packet. Standard iovec
+structures are used for scatter/gather, meaning they are fully compatible with
+writev, sendmsg and sendmmsg (the socket functionality of LDP uses sendmmsg).
 
 # Prerequisites
 
