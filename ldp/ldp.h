@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <net/if.h>
+#include <sys/uio.h>
 #include "time64.h"
 
 struct ldp_interface_settings {
