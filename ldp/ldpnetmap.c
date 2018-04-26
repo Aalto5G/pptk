@@ -107,49 +107,29 @@ static inline int nm_ldp_inject_chunk1(struct nm_desc *d,
 
 static inline void nm_ldp_inject(struct nm_desc *nmd, void *data, size_t sz)
 {
-  int i, j;
-  for (i = 0; i < 3; i++)
+  if (likely(nm_ldp_inject1(nmd, data, sz) != 0))
   {
-    for (j = 0; j < 3; j++)
-    {
-      if (nm_ldp_inject1(nmd, data, sz) == 0)
-      {
-        struct pollfd pollfd;
-        pollfd.fd = nmd->fd;
-        pollfd.events = POLLOUT;
-        poll(&pollfd, 1, 0);
-      }
-      else
-      {
-        return;
-      }
-    }
-    ioctl(nmd->fd, NIOCTXSYNC, NULL);
+    return;
   }
+  struct pollfd pollfd;
+  pollfd.fd = nmd->fd;
+  pollfd.events = POLLOUT;
+  poll(&pollfd, 1, -1);
+  nm_ldp_inject1(nmd, data, sz);
 }
 
 static inline void nm_ldp_inject_chunk(struct nm_desc *nmd,
                                        struct ldp_chunkpacket *pkt)
 {
-  int i, j;
-  for (i = 0; i < 3; i++)
+  if (likely(nm_ldp_inject_chunk1(nmd, pkt) != 0))
   {
-    for (j = 0; j < 3; j++)
-    {
-      if (nm_ldp_inject_chunk1(nmd, pkt) == 0)
-      {
-        struct pollfd pollfd;
-        pollfd.fd = nmd->fd;
-        pollfd.events = POLLOUT;
-        poll(&pollfd, 1, 0);
-      }
-      else
-      {
-        return;
-      }
-    }
-    ioctl(nmd->fd, NIOCTXSYNC, NULL);
+    return;
   }
+  struct pollfd pollfd;
+  pollfd.fd = nmd->fd;
+  pollfd.events = POLLOUT;
+  poll(&pollfd, 1, -1);
+  nm_ldp_inject_chunk1(nmd, pkt);
 }
 
 static void ldp_in_queue_deallocate_some_netmap(struct ldp_in_queue *inq,
