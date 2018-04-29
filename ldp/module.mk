@@ -40,8 +40,7 @@ endif
 ifeq ($(WITH_ODP),yes)
 CFLAGS_LDP += -I$(ODP_DIR)/include -DWITH_ODP
 LDFLAGS_LDP += $(ODP_DIR)/lib/libodp-linux.a
-LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libcrypto.a
-LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libconfig.a
+LDFLAGS_LDP += $(LIBS_ODPDEP)
 LDFLAGS_LDP += -lrt -ldl
 endif
 ifeq ($(WITH_DPDK),yes)
