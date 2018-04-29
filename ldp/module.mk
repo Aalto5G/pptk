@@ -47,17 +47,11 @@ endif
 ifeq ($(WITH_DPDK),yes)
 CFLAGS_LDP += -I$(DPDK_INCDIR) -DWITH_DPDK
 CFLAGS_LDP += -msse4.2
-#CFLAGS_LDP += -L$(DPDK_LIBDIR)
+LDFLAGS_LDP += -L$(DPDK_LIBDIR)
 LDFLAGS_LDP += -Wl,--whole-archive
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_ethdev.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_pmd_pcap.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_mbuf.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_mempool.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_mempool_ring.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_ring.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_kvargs.a
-LDFLAGS_LDP += $(DPDK_LIBDIR)/librte_eal.a
+LDFLAGS_LDP += $(DPDK_LIBDIR)/libdpdk.a
 LDFLAGS_LDP += -Wl,--no-whole-archive
+LDFLAGS_LDP += -lm
 LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libnuma.a
 LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libpcap.a
 endif
