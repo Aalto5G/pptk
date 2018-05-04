@@ -539,11 +539,11 @@ struct ldp_interface *
 ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
                         const struct ldp_interface_settings *settings)
 {
-  struct ldp_interface *intf;
-  struct ldp_in_queue **inqs;
-  struct ldp_out_queue **outqs;
+  struct ldp_interface *intf = NULL;
+  struct ldp_in_queue **inqs = NULL;
+  struct ldp_out_queue **outqs = NULL;
   int j;
-  char *name2;
+  char *name2 = NULL;
   char *tok, *end, *tok2, *end2;
   char *inname = NULL;
   char *inifname = NULL;
@@ -567,7 +567,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   name2 = strdup(name + 5);
   if (name2 == NULL)
   {
-    abort();
+    return NULL;
   }
   tok = name2;
   end = name2;
@@ -612,7 +612,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   intf->promisc_mode_set = NULL;
   intf->allmulti_set = NULL;
@@ -623,13 +623,15 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
+  inqs[0] = NULL;
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
+  outqs[0] = NULL;
 
   struct ldp_in_queue_pcap *inpcapq;
   for (i = 0; i < numinq; i++)
@@ -637,8 +639,9 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     inpcapq = malloc(sizeof(*inpcapq));
     if (inpcapq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
+    inqs[i] = &inpcapq->q;
     inpcapq->ifname = NULL;
     inpcapq->num_bufs = 1024;
     inpcapq->bufs = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufs));
@@ -656,16 +659,10 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       inpcapq->regular = create_in(inname, jokerifname);
       if (inpcapq->regular == NULL)
       {
-        free(inpcapq);
-        free(outqs);
-        free(inqs);
-        free(intf);
-        free(name2);
-        return NULL;
+        goto err;
       }
     }
     inpcapq->ifname = inifname;
-    inqs[i] = &inpcapq->q;
     inpcapq->q.fd = -1;
     inpcapq->q.nextpkts = ldp_in_queue_nextpkts_pcap;
     inpcapq->q.nextpkts_ts = ldp_in_queue_nextpkts_ts_pcap;
@@ -682,21 +679,16 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     outpcapq = malloc(sizeof(*outpcapq));
     if (outpcapq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
+    outqs[i] = &outpcapq->q;
     outpcapq->regular = NULL;
     if (outname)
     {
       outpcapq->regular = create_out(outname);
       if (outpcapq->regular == NULL)
       {
-        free(outpcapq);
-        free(inpcapq);
-        free(outqs);
-        free(inqs);
-        free(intf);
-        free(name2);
-        return NULL;
+        goto err;
       }
     }
     outpcapq->ng = NULL;
@@ -705,17 +697,10 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       outpcapq->ng = create_out_ng(outngname);
       if (outpcapq->ng == NULL)
       {
-        free(outpcapq);
-        free(inpcapq);
-        free(outqs);
-        free(inqs);
-        free(intf);
-        free(name2);
-        return NULL;
+        goto err;
       }
     }
     outpcapq->ifname = outifname;
-    outqs[i] = &outpcapq->q;
     outpcapq->q.fd = -1;
     outpcapq->q.inject = ldp_out_queue_inject_pcap;
     outpcapq->q.inject_dealloc = NULL;
@@ -730,4 +715,19 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   snprintf(intf->name, sizeof(intf->name), "%s", name);
   free(name2);
   return intf;
+
+err:
+  if (inqs != NULL && inqs[0] != NULL)
+  {
+    free(CONTAINER_OF(inqs[0], struct ldp_in_queue_pcap, q));
+  }
+  if (outqs != NULL && outqs[0] != NULL)
+  {
+    free(CONTAINER_OF(outqs[0], struct ldp_out_queue_pcap, q));
+  }
+  free(intf);
+  free(inqs);
+  free(outqs);
+  free(name2);
+  return NULL;
 }
