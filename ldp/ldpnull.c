@@ -68,9 +68,9 @@ struct ldp_interface *
 ldp_interface_open_null(const char *name, int numinq, int numoutq,
                         const struct ldp_interface_settings *settings)
 {
-  struct ldp_interface *intf;
-  struct ldp_in_queue **inqs;
-  struct ldp_out_queue **outqs;
+  struct ldp_interface *intf = NULL;
+  struct ldp_in_queue **inqs = NULL;
+  struct ldp_out_queue **outqs = NULL;
   int i;
   int pipefd[2];
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
@@ -80,7 +80,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   intf->promisc_mode_set = NULL;
   intf->allmulti_set = NULL;
@@ -91,12 +91,20 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numinq; i++)
+  {
+    inqs[i] = NULL;
   }
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numoutq; i++)
+  {
+    outqs[i] = NULL;
   }
   for (i = 0; i < numinq; i++)
   {
@@ -104,15 +112,15 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     innullq = malloc(sizeof(*innullq));
     if (innullq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
+    inqs[i] = &innullq->q;
     if (pipe(pipefd) != 0)
     {
-      abort();
+      goto err;
     }
     innullq->q.fd = pipefd[0];
     innullq->pipe2 = pipefd[1];
-    inqs[i] = &innullq->q;
     innullq->q.nextpkts = ldp_in_queue_nextpkts_null;
     innullq->q.nextpkts_ts = NULL;
     innullq->q.poll = ldp_in_queue_poll;
@@ -128,15 +136,15 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     outnullq = malloc(sizeof(*outnullq));
     if (outnullq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
+    outqs[i] = &outnullq->q;
     if (pipe(pipefd) != 0)
     {
-      abort();
+      goto err;
     }
     outnullq->pipe2 = pipefd[0];
     outnullq->q.fd = pipefd[1];
-    outqs[i] = &outnullq->q;
     outnullq->q.inject = ldp_out_queue_inject_null;
     outnullq->q.inject_chunk = ldp_out_queue_inject_chunk_null;
     outnullq->q.inject_dealloc = NULL;
@@ -149,4 +157,34 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   intf->outq = outqs;
   snprintf(intf->name, sizeof(intf->name), "%s", name);
   return intf;
+
+err:
+  if (inqs)
+  {
+    for (i = 0; i < numinq; i++)
+    {
+      if (inqs[i] != NULL)
+      {
+        struct ldp_in_queue_null *innmq;
+        innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_null, q);
+        free(innmq);
+      }
+    }
+  }
+  if (outqs)
+  {
+    for (i = 0; i < numoutq; i++)
+    {
+      if (outqs[i] != NULL)
+      {
+        struct ldp_out_queue_null *outnmq;
+        outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_null, q);
+        free(outnmq);
+      }
+    }
+  }
+  free(inqs);
+  free(outqs);
+  free(intf);
+  return NULL;
 }
