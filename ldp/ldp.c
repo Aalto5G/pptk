@@ -267,11 +267,11 @@ static struct ldp_interface *
 ldp_interface_open_socket(const char *name, int numinq, int numoutq,
                           const struct ldp_interface_settings *settings)
 {
-  struct ldp_interface *intf;
-  struct ldp_in_queue **inqs;
-  struct ldp_out_queue **outqs;
-  struct ldp_in_queue_socket *insock;
-  struct ldp_out_queue_socket *outsock;
+  struct ldp_interface *intf = NULL;
+  struct ldp_in_queue **inqs = NULL;
+  struct ldp_out_queue **outqs = NULL;
+  struct ldp_in_queue_socket *insock = NULL;
+  struct ldp_out_queue_socket *outsock = NULL;
   struct sockaddr_ll sockaddr_ll;
   int i;
   struct ifreq ifr;
@@ -280,12 +280,12 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
 
   if (numinq != 1 || numoutq != 1)
   {
-    return NULL;
+    goto err;
   }
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   intf->promisc_mode_set = NULL;
   intf->allmulti_set = NULL;
@@ -296,24 +296,25 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
 
 
   insock = malloc(sizeof(*insock));
   if (insock == NULL)
   {
-    abort();
+    goto err;
   }
+  insock->bufs = NULL;
   insock->q.fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (insock->q.fd < 0)
   {
-    abort();
+    goto err;
   }
 
   memset(&ifr, 0, sizeof(ifr));
@@ -323,12 +324,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
     if (ioctl(insock->q.fd, SIOCSIFMTU, &ifr) != 0)
     {
-      close(insock->q.fd);
-      free(insock);
-      free(inqs);
-      free(outqs);
-      free(intf);
-      return NULL;
+      goto err;
     }
   }
 
@@ -336,24 +332,14 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
   if (ioctl(insock->q.fd, SIOCGIFMTU, &ifr) != 0)
   {
-    close(insock->q.fd);
-    free(insock);
-    free(inqs);
-    free(outqs);
-    free(intf);
-    return NULL;
+    goto err;
   }
   mtu = ifr.ifr_mtu;
   memset(&ifr, 0, sizeof(ifr));
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
   if (ioctl(insock->q.fd, SIOCGIFINDEX, &ifr) != 0)
   {
-    close(insock->q.fd);
-    free(insock);
-    free(inqs);
-    free(outqs);
-    free(intf);
-    return NULL;
+    goto err;
   }
   ifindex = ifr.ifr_ifindex;
   memset(&sockaddr_ll, 0, sizeof(sockaddr_ll));
@@ -363,23 +349,18 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   if (bind(insock->q.fd,
            (struct sockaddr*)&sockaddr_ll, sizeof(sockaddr_ll)) < 0)
   {
-    close(insock->q.fd);
-    free(insock);
-    free(inqs);
-    free(outqs);
-    free(intf);
-    return NULL;
+    goto err;
   }
 
   outsock = malloc(sizeof(*outsock));
   if (outsock == NULL)
   {
-    abort();
+    goto err;
   }
   outsock->q.fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (outsock->q.fd < 0)
   {
-    abort();
+    goto err;
   }
 
 #ifdef PACKET_QDISC_BYPASS
@@ -395,14 +376,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   if (bind(outsock->q.fd,
            (struct sockaddr*)&sockaddr_ll, sizeof(sockaddr_ll)) < 0)
   {
-    close(outsock->q.fd);
-    free(outsock);
-    close(insock->q.fd);
-    free(insock);
-    free(inqs);
-    free(outqs);
-    free(intf);
-    return NULL;
+    goto err;
   }
 
   insock->q.nextpkts = ldp_in_queue_nextpkts_socket;
@@ -436,14 +410,18 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock->bufs = malloc(insock->num_bufs*sizeof(*insock->bufs));
   if (insock->bufs == NULL)
   {
-    abort();
+    goto err;
+  }
+  for (i = 0; i < insock->num_bufs; i++)
+  {
+    insock->bufs[i] = NULL;
   }
   for (i = 0; i < insock->num_bufs; i++)
   {
     insock->bufs[i] = malloc(insock->max_sz);
     if (insock->bufs[i] == NULL)
     {
-      abort();
+      goto err;
     }
   }
 
@@ -461,6 +439,33 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   }
 
   return intf;
+
+err:
+  if (insock)
+  {
+    if (insock->bufs)
+    {
+      for (i = 0; i < insock->num_bufs; i++)
+      {
+        free(insock->bufs[i]);
+      }
+    }
+    free(insock->bufs);
+  }
+  if (outsock && outsock->q.fd >= 0)
+  {
+    close(outsock->q.fd);
+  }
+  free(outsock);
+  if (insock && insock->q.fd >= 0)
+  {
+    close(insock->q.fd);
+  }
+  free(insock);
+  free(inqs);
+  free(outqs);
+  free(intf);
+  return NULL;
 }
 
 void ldp_interface_close(struct ldp_interface *intf)
