@@ -131,10 +131,12 @@ static inline int ldp_in_nextpkts_ts(struct ldp_in_queue *inq,
 static inline int ldp_in_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
 {
   int result;
+#if 0 // Not done anymore
   if (inq->deallocate_all)
   {
     inq->deallocate_all(inq);
   }
+#endif
   result = inq->poll(inq, timeout_usec);
   return result;
 }
