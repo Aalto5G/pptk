@@ -266,9 +266,9 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
                           const struct ldp_interface_settings *settings)
 {
   char nmifnamebuf[1024] = {0};
-  struct ldp_interface *intf;
-  struct ldp_in_queue **inqs;
-  struct ldp_out_queue **outqs;
+  struct ldp_interface *intf = NULL;
+  struct ldp_in_queue **inqs = NULL;
+  struct ldp_out_queue **outqs = NULL;
   struct nmreq nmr;
   int i;
   int max;
@@ -301,7 +301,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
-    abort(); // FIXME better error handling
+    return NULL;
   }
   intf->promisc_mode_set = NULL;
   intf->allmulti_set = NULL;
@@ -312,12 +312,20 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numinq; i++)
+  {
+    inqs[i] = NULL;
   }
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numoutq; i++)
+  {
+    outqs[i] = NULL;
   }
   for (i = 0; i < numinq; i++)
   {
@@ -325,7 +333,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     innmq = malloc(sizeof(*innmq));
     if (innmq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     inqs[i] = &innmq->q;
   }
@@ -335,11 +343,12 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     if (ldp_set_mtu(sockfd, devname, settings->mtu) != 0)
     {
-      abort(); // FIXME better error handling
+      close(sockfd);
+      goto err;
     }
     close(sockfd);
   }
@@ -349,7 +358,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     outnmq = malloc(sizeof(*outnmq));
     if (outnmq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     outqs[i] = &outnmq->q;
   }
@@ -402,6 +411,10 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
     outnmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
+    if (outnmq->nmd->first_tx_ring != outnmq->nmd->last_tx_ring)
+    {
+      abort();
+    }
     outnmq->q.inject = ldp_out_queue_inject_netmap;
     outnmq->q.inject_dealloc = NULL;
     outnmq->q.inject_chunk = ldp_out_queue_inject_chunk_netmap;
@@ -444,17 +457,29 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
-  for (i = 0; i < numinq; i++)
+  if (inqs)
   {
-    struct ldp_in_queue_netmap *innmq;
-    innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
-    free(innmq);
+    for (i = 0; i < numinq; i++)
+    {
+      if (inqs[i] != NULL)
+      {
+        struct ldp_in_queue_netmap *innmq;
+        innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
+        free(innmq);
+      }
+    }
   }
-  for (i = 0; i < numoutq; i++)
+  if (outqs)
   {
-    struct ldp_out_queue_netmap *outnmq;
-    outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
-    free(outnmq);
+    for (i = 0; i < numoutq; i++)
+    {
+      if (outqs[i] != NULL)
+      {
+        struct ldp_out_queue_netmap *outnmq;
+        outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
+        free(outnmq);
+      }
+    }
   }
   free(inqs);
   free(outqs);
