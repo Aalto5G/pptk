@@ -109,7 +109,10 @@ ldp_create_pktio_multiqueue(const char *name,
   odp_pktio_t pktio;
   odp_pktio_config_t config;
 
-  odp_check_thread_init();
+  if (odp_check_thread_init() != 0)
+  {
+    return ODP_PKTIO_INVALID;
+  }
 
   odp_pktio_param_init(&pktio_param);
   pktio = odp_pktio_open(name, odp_ctx.pool, &pktio_param);
@@ -173,7 +176,10 @@ static int init_odp_ctx(void)
     return -1;
   }
 
-  odp_check_thread_init();
+  if (odp_check_thread_init() != 0)
+  {
+    return -1;
+  }
 
   odp_pool_param_init(&params);
   params.pkt.seg_len = POOL_SEG_LEN;
@@ -237,7 +243,10 @@ static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
   int i;
   struct ldp_in_queue_odp *inodpq;
 
-  odp_check_thread_init();
+  if (odp_check_thread_init() != 0)
+  {
+    abort(); // FIXME better error handling
+  }
 
   inodpq = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
 
@@ -267,7 +276,10 @@ static int ldp_out_queue_inject_odp(struct ldp_out_queue *outq,
   int i;
   struct ldp_out_queue_odp *outodpq;
 
-  odp_check_thread_init();
+  if (odp_check_thread_init() != 0)
+  {
+    abort(); // FIXME better error handling
+  }
 
   outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
 
@@ -300,7 +312,10 @@ static int ldp_out_queue_inject_chunk_odp(struct ldp_out_queue *outq,
   int i;
   struct ldp_out_queue_odp *outodpq;
 
-  odp_check_thread_init();
+  if (odp_check_thread_init() != 0)
+  {
+    abort(); // FIXME better error handling
+  }
 
   outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
 
@@ -345,7 +360,10 @@ static int ldp_out_queue_inject_dealloc_odp(struct ldp_in_queue *inq,
 
   outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
 
-  odp_check_thread_init();
+  if (odp_check_thread_init() != 0)
+  {
+    abort(); // FIXME better error handling
+  }
 
   if (num <= 0)
   {
@@ -385,8 +403,14 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     abort();
   }
 
-  init_odp_ctx();
-  odp_check_thread_init();
+  if (init_odp_ctx() != 0)
+  {
+    abort(); // FIXME better error handling
+  }
+  if (odp_check_thread_init() != 0)
+  {
+    abort(); // FIXME better error handling
+  }
 
   pktio = ldp_create_pktio_multiqueue(name, odpinqs, odpoutqs, numinq, numoutq);
   if (pktio == ODP_PKTIO_INVALID)
