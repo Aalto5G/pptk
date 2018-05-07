@@ -261,7 +261,7 @@ static void ldp_in_queue_intern(struct ldp_in_queue_pcap *inq,
   int amnt_free = inq->buf_end - inq->buf_start - 1;
   if (amnt_free < 0)
   {
-    amnt_free = inq->num_bufs;
+    amnt_free += inq->num_bufs;
   }
   if (amnt_free == 0)
   {
