@@ -318,11 +318,26 @@ static int ldp_in_queue_nextpkts_ts_pcap(struct ldp_in_queue *inq,
 {
   struct ldp_in_queue_pcap *inpcapq;
   int ret;
+  int amnt_free;
 
   inpcapq = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
 
   if (inpcapq->regular == NULL)
   {
+    return 0;
+  }
+
+  amnt_free = inpcapq->buf_end - inpcapq->buf_start - 1;
+  if (amnt_free < 0)
+  {
+    amnt_free += inpcapq->num_bufs;
+  }
+  if (amnt_free == 0)
+  {
+    if (ts)
+    {
+      *ts = inpcapq->regular->time64;
+    }
     return 0;
   }
 
