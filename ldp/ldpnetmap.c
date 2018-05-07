@@ -415,6 +415,10 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     {
       abort();
     }
+    if (outnmq->nmd->first_tx_ring != outnmq->nmd->cur_tx_ring)
+    {
+      abort();
+    }
     outnmq->q.inject = ldp_out_queue_inject_netmap;
     outnmq->q.inject_dealloc = NULL;
     outnmq->q.inject_chunk = ldp_out_queue_inject_chunk_netmap;
