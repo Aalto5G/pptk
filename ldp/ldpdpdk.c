@@ -26,7 +26,7 @@ struct ldp_in_queue_dpdk {
   struct ldp_port_dpdk *port;
   int qid;
   int num_cache;
-  struct rte_mbuf *cache[4]; // FIXME leaks
+  struct rte_mbuf *cache[4];
 };
 
 static uint32_t ldp_in_queue_ring_size_dpdk(struct ldp_in_queue *inq)
@@ -47,7 +47,7 @@ struct dpdk_ctx {
 
 struct dpdk_ctx dpdk_ctx;
 
-static void init_dpdk_ctx(void)
+static int init_dpdk_ctx(void)
 {
   int ret;
   const char *cmdline1 = getenv("LDP_DPDK_ARGV");
@@ -69,7 +69,7 @@ static void init_dpdk_ctx(void)
 
   if (dpdk_ctx.inited)
   {
-    return;
+    return 0;
   }
   if (cmdline1 == NULL)
   {
@@ -94,27 +94,41 @@ static void init_dpdk_ctx(void)
   ret = rte_eal_init(argc, argv);
   if (ret < 0)
   {
-    printf("err\n");
-    exit(1);
+    return -1;
   }
   dpdk_ctx.rte_mp = rte_pktmbuf_pool_create("mbuf_pool", 8192, 256, 0, 2176, 0 /* socket id */);
   if (dpdk_ctx.rte_mp == NULL)
   {
-    printf("err2\n");
-    exit(1);
+    return -1;
   }
   dpdk_ctx.inited = 1;
+  return 0;
 }
 
 static void ldp_in_queue_close_dpdk(struct ldp_in_queue *inq)
 {
   struct ldp_in_queue_dpdk *innmq;
+  int amnt_cache, i;
+
   innmq = CONTAINER_OF(inq, struct ldp_in_queue_dpdk, q);
+
+  amnt_cache = innmq->num_cache;
+
+  if (amnt_cache > 0)
+  {
+    for (i = 0; i < amnt_cache; i++)
+    {
+      struct rte_mbuf *mbuf = innmq->cache[i];
+      rte_pktmbuf_free(mbuf);
+    }
+  }
+
   if (--innmq->port->refc == 0)
   {
     rte_eth_dev_stop(innmq->port->portid);
     free(innmq->port);
   }
+
   free(innmq);
 }
 
@@ -322,17 +336,18 @@ struct ldp_interface *
 ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
                         const struct ldp_interface_settings *settings)
 {
-  struct ldp_interface *intf;
-  struct ldp_in_queue **inqs;
-  struct ldp_out_queue **outqs;
+  struct ldp_interface *intf = NULL;
+  struct ldp_in_queue **inqs = NULL;
+  struct ldp_out_queue **outqs = NULL;
   int i;
   int ret;
-  struct ldp_port_dpdk *port;
+  struct ldp_port_dpdk *port = NULL;
   long int portid;
   char *endptr;
   struct rte_eth_conf port_conf = {};
   uint16_t nb_rxd = 128;
   uint16_t nb_txd = 512;
+  int started = 0;
 
 
   port_conf.rxmode.hw_strip_crc = 1;
@@ -345,27 +360,26 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   portid = strtol(name, &endptr, 10);
   if (*name == '\0' || *endptr != '\0' || portid < 0 || portid > INT_MAX)
   {
-    printf("1\n");
     return NULL;
   }
 
-  init_dpdk_ctx();
+  if (init_dpdk_ctx() != 0)
+  {
+    return NULL;
+  }
   
   if (!rte_eth_dev_is_valid_port(portid))
   {
-    printf("invalid port\n");
     return NULL;
   }
   ret = rte_eth_dev_configure(portid, numinq, numoutq, &port_conf);
   if (ret < 0)
   {
-    printf("2: %d\n", ret);
     return NULL;
   }
   ret = rte_eth_dev_adjust_nb_rx_tx_desc(portid, &nb_rxd, &nb_txd);
   if (ret < 0)
   {
-    printf("3\n");
     return NULL;
   }
   for (i = 0; i < numinq; i++)
@@ -375,7 +389,6 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
                                  NULL, dpdk_ctx.rte_mp);
     if (ret < 0)
     {
-      printf("4\n");
       return NULL;
     }
   }
@@ -385,7 +398,6 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
                                  rte_eth_dev_socket_id(portid), NULL);
     if (ret < 0)
     {
-      printf("5\n");
       return NULL;
     }
   }
@@ -393,29 +405,28 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   {
     if (rte_eth_dev_set_mtu(portid, settings->mtu) != 0)
     {
-      printf("5.5\n");
       return NULL;
     }
   }
   ret = rte_eth_dev_start(portid);
   if (ret < 0)
   {
-    printf("6\n");
     return NULL;
   }
+  started = 1;
 
 
   port = malloc(sizeof(*port));
   if (port == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   port->refc = numinq + numoutq;
   port->portid = portid;
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   intf->promisc_mode_set = NULL;
   intf->allmulti_set = NULL;
@@ -426,12 +437,20 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numinq; i++)
+  {
+    inqs[i] = NULL;
   }
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numoutq; i++)
+  {
+    outqs[i] = NULL;
   }
   for (i = 0; i < numinq; i++)
   {
@@ -439,7 +458,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     innmq = malloc(sizeof(*innmq));
     if (innmq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     inqs[i] = &innmq->q;
   }
@@ -449,7 +468,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     outnmq = malloc(sizeof(*outnmq));
     if (outnmq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     outqs[i] = &outnmq->q;
   }
@@ -501,6 +520,41 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     ldp_interface_set_mac_addr(intf, settings->mac);
   }
   return intf;
+
+err:
+  if (started)
+  {
+    rte_eth_dev_stop(portid);
+  }
+  if (inqs)
+  {
+    for (i = 0; i < numinq; i++)
+    {
+      if (inqs[i])
+      {
+        struct ldp_in_queue_dpdk *innmq;
+        innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_dpdk, q);
+        free(innmq);
+      }
+    }
+  }
+  if (outqs)
+  {
+    for (i = 0; i < numoutq; i++)
+    {
+      if (outqs[i])
+      {
+        struct ldp_out_queue_dpdk *outnmq;
+        outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_dpdk, q);
+        free(outnmq);
+      }
+    }
+  }
+  free(port);
+  free(intf);
+  free(inqs);
+  free(outqs);
+  return NULL;
 }
 
 int ldp_dpdk_mac_addr(int portid, void *mac)
