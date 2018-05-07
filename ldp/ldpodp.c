@@ -245,7 +245,7 @@ static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
 
   if (odp_check_thread_init() != 0)
   {
-    abort(); // FIXME better error handling
+    return -1;
   }
 
   inodpq = CONTAINER_OF(inq, struct ldp_in_queue_odp, q);
@@ -278,7 +278,7 @@ static int ldp_out_queue_inject_odp(struct ldp_out_queue *outq,
 
   if (odp_check_thread_init() != 0)
   {
-    abort(); // FIXME better error handling
+    return -1;
   }
 
   outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
@@ -314,7 +314,7 @@ static int ldp_out_queue_inject_chunk_odp(struct ldp_out_queue *outq,
 
   if (odp_check_thread_init() != 0)
   {
-    abort(); // FIXME better error handling
+    return -1;
   }
 
   outodpq = CONTAINER_OF(outq, struct ldp_out_queue_odp, q);
@@ -362,7 +362,7 @@ static int ldp_out_queue_inject_dealloc_odp(struct ldp_in_queue *inq,
 
   if (odp_check_thread_init() != 0)
   {
-    abort(); // FIXME better error handling
+    return -1;
   }
 
   if (num <= 0)
@@ -389,14 +389,14 @@ struct ldp_interface *
 ldp_interface_open_odp(const char *name, int numinq, int numoutq,
                        const struct ldp_interface_settings *settings)
 {
-  struct ldp_interface *intf;
-  struct ldp_in_queue **inqs;
-  struct ldp_out_queue **outqs;
+  struct ldp_interface *intf = NULL;
+  struct ldp_in_queue **inqs = NULL;
+  struct ldp_out_queue **outqs = NULL;
   odp_pktin_queue_t odpinqs[numinq];
   odp_pktout_queue_t odpoutqs[numoutq];
-  odp_pktio_t pktio;
+  odp_pktio_t pktio = ODP_PKTIO_INVALID;
   int i;
-  struct ldp_port_odp *port;
+  struct ldp_port_odp *port = NULL;
 
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
@@ -405,30 +405,30 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
 
   if (init_odp_ctx() != 0)
   {
-    abort(); // FIXME better error handling
+    return NULL;
   }
   if (odp_check_thread_init() != 0)
   {
-    abort(); // FIXME better error handling
+    return NULL;
   }
 
   pktio = ldp_create_pktio_multiqueue(name, odpinqs, odpoutqs, numinq, numoutq);
   if (pktio == ODP_PKTIO_INVALID)
   {
-    abort(); // FIXME better error handling
+    return NULL;
   }
   
   port = malloc(sizeof(*port));
   if (port == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   port->refc = numinq + numoutq;
   port->pktio = pktio;
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
   }
   intf->mac_addr = ldp_odp_mac_addr_2;
   intf->promisc_mode_set = ldp_odp_promisc_mode_set_2;
@@ -437,12 +437,20 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numinq; i++)
+  {
+    inqs[i] = NULL;
   }
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
-    abort(); // FIXME better error handling
+    goto err;
+  }
+  for (i = 0; i < numoutq; i++)
+  {
+    outqs[i] = NULL;
   }
   for (i = 0; i < numinq; i++)
   {
@@ -450,7 +458,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     innmq = malloc(sizeof(*innmq));
     if (innmq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     inqs[i] = &innmq->q;
   }
@@ -460,7 +468,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     outnmq = malloc(sizeof(*outnmq));
     if (outnmq == NULL)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
     outqs[i] = &outnmq->q;
   }
@@ -503,12 +511,12 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
 #if ODP_VERSION_API_MAJOR >= 17
     if (odp_pktin_maxlen(pktio) != settings->mtu)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
 #else
     if (odp_pktio_mtu(pktio) != settings->mtu)
     {
-      abort(); // FIXME better error handling
+      goto err;
     }
 #endif
   }
@@ -525,5 +533,40 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     ldp_interface_set_mac_addr(intf, settings->mac);
   }
   return intf;
+
+err:
+  if (pktio != ODP_PKTIO_INVALID)
+  {
+    odp_pktio_close(pktio);
+  }
+  if (inqs)
+  {
+    for (i = 0; i < numinq; i++)
+    {
+      if (inqs[i])
+      {
+        struct ldp_in_queue_odp *innmq;
+        innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_odp, q);
+        free(innmq);
+      }
+    }
+  }
+  if (outqs)
+  {
+    for (i = 0; i < numoutq; i++)
+    {
+      if (outqs[i])
+      {
+        struct ldp_out_queue_odp *outnmq;
+        outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_odp, q);
+        free(outnmq);
+      }
+    }
+  }
+  free(port);
+  free(intf);
+  free(inqs);
+  free(outqs);
+  return NULL;
 }
 
