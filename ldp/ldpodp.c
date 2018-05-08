@@ -57,7 +57,7 @@ static inline int odp_check_thread_init(void)
   {
     return 0;
   }
-  printf("initing ODP thread\n");
+  //printf("initing ODP thread\n");
   if (odp_init_local(odp_ctx.instance, ODP_THREAD_WORKER))
   {
     return -1;
