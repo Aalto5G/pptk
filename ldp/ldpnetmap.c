@@ -222,9 +222,9 @@ static int ldp_out_queue_txsync_netmap(struct ldp_out_queue *outq)
   return 0;
 }
 
-static int check_channels(const char *name, int numinq)
+static int check_channels(const char *name, int numinq, int numoutq)
 {
-  int rx;
+  int rx, tx;
   struct ethtool_channels echannels = {};
   struct ifreq ifr = {};
   int fd;
@@ -258,6 +258,15 @@ static int check_channels(const char *name, int numinq)
   {
     return 0;
   }
+  tx = echannels.tx_count;
+  if (tx <= 0)
+  {
+    tx = echannels.combined_count;
+  }
+  if (tx < numoutq)
+  {
+    return 0;
+  }
   return 1;
 }
 
@@ -272,6 +281,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   struct nmreq nmr;
   int i;
   int max;
+  int errnosave;
   const char *devname = NULL;
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
@@ -280,8 +290,9 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   if (strncmp(name, "netmap:", 7) == 0)
   {
     devname = name + 7;
-    if (!check_channels(devname, numinq))
+    if (!check_channels(devname, numinq, numoutq))
     {
+      errno = ECHRNG;
       return NULL;
     }
   }
@@ -291,6 +302,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   }
   else
   {
+    errno = EINVAL;
     return NULL;
   }
   max = numinq;
@@ -301,6 +313,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
+    errno = ENOMEM;
     return NULL;
   }
   intf->promisc_mode_set = NULL;
@@ -312,6 +325,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numinq; i++)
@@ -321,6 +335,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numoutq; i++)
@@ -333,6 +348,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     innmq = malloc(sizeof(*innmq));
     if (innmq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     inqs[i] = &innmq->q;
@@ -343,11 +359,15 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
     {
+      // errno set already
       goto err;
     }
     if (ldp_set_mtu(sockfd, devname, settings->mtu) != 0)
     {
+      // errno set already
+      errnosave = errno;
       close(sockfd);
+      errno = errnosave;
       goto err;
     }
     close(sockfd);
@@ -358,6 +378,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     outnmq = malloc(sizeof(*outnmq));
     if (outnmq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     outqs[i] = &outnmq->q;
@@ -461,6 +482,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
+  errnosave = errno;
   if (inqs)
   {
     for (i = 0; i < numinq; i++)
@@ -488,5 +510,6 @@ err:
   free(inqs);
   free(outqs);
   free(intf);
+  errno = errnosave;
   return NULL;
 }

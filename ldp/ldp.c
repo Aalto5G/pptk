@@ -316,14 +316,17 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   struct ifreq ifr;
   int ifindex;
   int mtu;
+  int errnosave;
 
   if (numinq != 1 || numoutq != 1)
   {
+    errno = ECHRNG;
     goto err;
   }
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   intf->promisc_mode_set = NULL;
@@ -335,11 +338,13 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
 
@@ -347,12 +352,14 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock = malloc(sizeof(*insock));
   if (insock == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   insock->bufs = NULL;
   insock->q.fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (insock->q.fd < 0)
   {
+    // errno alread yset
     goto err;
   }
 
@@ -363,6 +370,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
     if (ioctl(insock->q.fd, SIOCSIFMTU, &ifr) != 0)
     {
+      // errno already set
       goto err;
     }
   }
@@ -371,6 +379,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
   if (ioctl(insock->q.fd, SIOCGIFMTU, &ifr) != 0)
   {
+    // errno already set
     goto err;
   }
   mtu = ifr.ifr_mtu;
@@ -378,6 +387,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
   if (ioctl(insock->q.fd, SIOCGIFINDEX, &ifr) != 0)
   {
+    // errno already set
     goto err;
   }
   ifindex = ifr.ifr_ifindex;
@@ -388,17 +398,20 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   if (bind(insock->q.fd,
            (struct sockaddr*)&sockaddr_ll, sizeof(sockaddr_ll)) < 0)
   {
+    // errno already set
     goto err;
   }
 
   outsock = malloc(sizeof(*outsock));
   if (outsock == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   outsock->q.fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (outsock->q.fd < 0)
   {
+    // errno already set
     goto err;
   }
 
@@ -415,6 +428,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   if (bind(outsock->q.fd,
            (struct sockaddr*)&sockaddr_ll, sizeof(sockaddr_ll)) < 0)
   {
+    // errno already set
     goto err;
   }
 
@@ -449,6 +463,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock->bufs = malloc(insock->num_bufs*sizeof(*insock->bufs));
   if (insock->bufs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < insock->num_bufs; i++)
@@ -460,6 +475,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
     insock->bufs[i] = malloc(insock->max_sz);
     if (insock->bufs[i] == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
   }
@@ -480,6 +496,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
+  errnosave = errno;
   if (insock)
   {
     if (insock->bufs)
@@ -504,6 +521,7 @@ err:
   free(inqs);
   free(outqs);
   free(intf);
+  errno = errnosave;
   return NULL;
 }
 
