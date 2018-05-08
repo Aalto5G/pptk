@@ -39,6 +39,32 @@ Please note that some code is under a peculiar license. So, for example the
 skip list based timer code taken from DPDK is under BSD license and the Linux
 IP fragment reassembly code is under GPLv2.
 
+# Data plane wrappers
+
+One might ask whether data plane wrappers are needed at all. After all, isn't
+it possible to use either netmap or DPDK directly?
+
+However, there are multiple packet I/O technologies. They have differing
+network interface card support. Building an entire application on one means
+one cannot use another.
+
+Also, raw netmap has a poor multithreaded interface. For example, if three
+threads are used on an 8-core machine, it isn't possible to simply open three
+input queues with netmap. If only three input queues are opened on an 8-core
+machine, the packets going to the non-opened five will be lost.
+
+To solve this issue, there are data plane wrappers like OpenDataPlane (ODP).
+However, ODP has suboptimal performance due to its interface that requires the
+packet memory to be managed by ODP. This means additional memory copies are
+required with technologies like netmap that want to manage the memory
+internally. Such additional memory copies result in suboptimal performance.
+
+In order to remedy the poor performance of ODP, PPTK has a data plane wrapper
+called LDP. LDP supports packet I/O via sockets, netmap, DPDK, and also via
+ODP. In order to improve the poor multithreaded interface of netmap, LDP
+automatically checks that the number of queues in an interface is properly
+configured before starting the LDP application.
+
 # LDP
 
 LDP is L Data Plane. What does the L mean, then? Well, everyone can interpret
