@@ -29,6 +29,45 @@
 #include "ldpodp.h"
 #endif
 
+static int ldp_config_global_isset = 0;
+static struct ldp_config ldp_config_global = {};
+
+void ldp_config_init(struct ldp_config *config)
+{
+  memset(config, 0, sizeof(*config));
+  config->netmap_nr_rx_slots = 256;
+  config->netmap_nr_tx_slots = 64;
+  config->dpdk_pool_num = 8192;
+  config->dpdk_pool_cache_num = 256;
+  config->dpdk_pool_data_room = 2176;
+  config->socket_num_bufs = 1024;
+  config->odp_num_pkt = 8192;
+  config->odp_pkt_len = 1856;
+  config->pcap_num_bufs = 1024;
+}
+
+struct ldp_config *ldp_config_get_global(void)
+{
+  if (!ldp_config_global_isset)
+  {
+    struct ldp_config ldp_config_local = {};
+    ldp_config_init(&ldp_config_local);
+    ldp_config_set(&ldp_config_local);
+  }
+  if (!ldp_config_global_isset)
+  {
+    abort();
+  }
+  return &ldp_config_global;
+}
+
+// Must be called before calling any other LDP function, if default is not ok
+void ldp_config_set(struct ldp_config *config)
+{
+  ldp_config_global = *config; // struct assignment
+  ldp_config_global_isset = 1;
+}
+
 struct ldp_in_queue_socket {
   struct ldp_in_queue q;
   int max_sz;
@@ -404,7 +443,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   snprintf(intf->name, sizeof(intf->name), "%s", name);
 
   insock->max_sz = mtu + 14;
-  insock->num_bufs = 1024;
+  insock->num_bufs = ldp_config_get_global()->socket_num_bufs;
   insock->buf_start = 0;
   insock->buf_end = 0;
   insock->bufs = malloc(insock->num_bufs*sizeof(*insock->bufs));

@@ -16,6 +16,8 @@
 #include "linkcommon.h"
 #include "containerof.h"
 
+static int ldp_dpdk_interface_count = 0;
+
 struct ldp_port_dpdk {
   int portid;
   int refc;
@@ -31,7 +33,7 @@ struct ldp_in_queue_dpdk {
 
 static uint32_t ldp_in_queue_ring_size_dpdk(struct ldp_in_queue *inq)
 {
-  return 8192;
+  return ldp_config_get_global()->dpdk_pool_num / (2*ldp_dpdk_interface_count);
 }
 
 struct ldp_out_queue_dpdk {
@@ -96,7 +98,7 @@ static int init_dpdk_ctx(void)
   {
     return -1;
   }
-  dpdk_ctx.rte_mp = rte_pktmbuf_pool_create("mbuf_pool", 8192, 256, 0, 2176, 0 /* socket id */);
+  dpdk_ctx.rte_mp = rte_pktmbuf_pool_create("mbuf_pool", ldp_config_get_global()->dpdk_pool_num, ldp_config_get_global()->dpdk_pool_cache_num, 0, ldp_config_get_global()->dpdk_pool_data_room, 0 /* socket id */);
   if (dpdk_ctx.rte_mp == NULL)
   {
     return -1;
@@ -519,6 +521,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   {
     ldp_interface_set_mac_addr(intf, settings->mac);
   }
+  ldp_dpdk_interface_count++;
   return intf;
 
 err:

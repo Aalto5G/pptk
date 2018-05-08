@@ -8,6 +8,36 @@
 #include <sys/uio.h>
 #include "time64.h"
 
+struct ldp_config {
+  int netmap_nr_rx_slots; // 0: netmap default (our default may be different)
+  int netmap_nr_tx_slots; // 0: netmap default (our default may be different)
+  int dpdk_pool_num;
+  int dpdk_pool_cache_num;
+  int dpdk_pool_data_room;
+  int socket_num_bufs;
+  int odp_num_pkt;
+  int odp_pkt_len;
+  int pcap_num_bufs;
+};
+
+struct ldp_config *ldp_config_get_global(void);
+
+// Initialize config object
+void ldp_config_init(struct ldp_config *config);
+
+/*
+ * Must be called before calling any other LDP function, if default is not ok
+ *
+ * Usage:
+ *   struct ldp_config conf = {};
+ *   ldp_config_init(&conf);
+ *   conf.foo = bar;
+ *   ...
+ *   ldp_config_set(&conf);
+ *
+ */
+void ldp_config_set(struct ldp_config *config);
+
 struct ldp_interface_settings {
   int mtu_set;
   uint16_t mtu;

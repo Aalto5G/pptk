@@ -658,7 +658,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     }
     inqs[i] = &inpcapq->q;
     inpcapq->ifname = NULL;
-    inpcapq->num_bufs = 1024;
+    inpcapq->num_bufs = ldp_config_get_global()->pcap_num_bufs;
     inpcapq->bufs = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufs));
     inpcapq->bufcapacities = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufcapacities));
     for (j = 0; j < inpcapq->num_bufs; j++)

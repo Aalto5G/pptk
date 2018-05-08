@@ -370,8 +370,8 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     nmr.nr_rx_rings = max;
     nmr.nr_flags = NR_REG_ONE_NIC;
     nmr.nr_ringid = i | NETMAP_NO_TX_POLL;
-    nmr.nr_rx_slots = 256;
-    nmr.nr_tx_slots = 64;
+    nmr.nr_rx_slots = ldp_config_get_global()->netmap_nr_rx_slots;
+    nmr.nr_tx_slots = ldp_config_get_global()->netmap_nr_tx_slots;
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
     innmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
@@ -406,8 +406,8 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     nmr.nr_rx_rings = max;
     nmr.nr_flags = NR_REG_ONE_NIC;
     nmr.nr_ringid = i | NETMAP_NO_TX_POLL;
-    nmr.nr_rx_slots = 256;
-    nmr.nr_tx_slots = 64;
+    nmr.nr_rx_slots = ldp_config_get_global()->netmap_nr_rx_slots;
+    nmr.nr_tx_slots = ldp_config_get_global()->netmap_nr_tx_slots;
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
     outnmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
