@@ -17,8 +17,7 @@
 #include "linkcommon.h"
 #include "containerof.h"
 
-#define POOL_NUM_PKT 1024
-#define POOL_SEG_LEN 1856
+static int ldp_odp_interface_count = 0;
 
 struct ldp_port_odp {
   odp_pktio_t pktio;
@@ -33,7 +32,7 @@ struct ldp_in_queue_odp {
 
 static uint32_t ldp_in_queue_ring_size_odp(struct ldp_in_queue *inq)
 {
-  return POOL_NUM_PKT;
+  return ldp_config_get_global()->odp_num_pkt / (2*ldp_odp_interface_count);
 }
 
 struct ldp_out_queue_odp {
@@ -182,9 +181,9 @@ static int init_odp_ctx(void)
   }
 
   odp_pool_param_init(&params);
-  params.pkt.seg_len = POOL_SEG_LEN;
-  params.pkt.len = POOL_SEG_LEN;
-  params.pkt.num = POOL_NUM_PKT;
+  params.pkt.seg_len = ldp_config_get_global()->odp_pkt_len;
+  params.pkt.len = ldp_config_get_global()->odp_pkt_len;
+  params.pkt.num = ldp_config_get_global()->odp_num_pkt;
   params.type = ODP_POOL_PACKET;
   odp_ctx.pool = odp_pool_create("packet pool", &params);
   if (odp_ctx.pool == ODP_POOL_INVALID)
@@ -532,6 +531,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   {
     ldp_interface_set_mac_addr(intf, settings->mac);
   }
+  ldp_odp_interface_count++;
   return intf;
 
 err:
