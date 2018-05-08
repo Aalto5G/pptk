@@ -221,6 +221,10 @@ int ldp_link_status(int sockfd, const char *ifname)
   {
     return 1;
   }
+  if (strncmp(ifname, "odp:", 4) == 0)
+  {
+    return 1;
+  }
   if (strncmp(ifname, "pcap:", 5) == 0)
   {
     return 1;
