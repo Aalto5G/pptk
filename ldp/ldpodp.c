@@ -202,6 +202,7 @@ static void ldp_in_queue_close_odp(struct ldp_in_queue *inq)
   {
     odp_pktio_stop(innmq->port->pktio);
     odp_pktio_close(innmq->port->pktio);
+    ldp_odp_interface_count--;
     free(innmq->port);
   }
   free(innmq);
@@ -215,6 +216,7 @@ static void ldp_out_queue_close_odp(struct ldp_out_queue *outq)
   {
     odp_pktio_stop(outnmq->port->pktio);
     odp_pktio_close(outnmq->port->pktio);
+    ldp_odp_interface_count--;
     free(outnmq->port);
   }
   free(outnmq);

@@ -128,6 +128,7 @@ static void ldp_in_queue_close_dpdk(struct ldp_in_queue *inq)
   if (--innmq->port->refc == 0)
   {
     rte_eth_dev_stop(innmq->port->portid);
+    ldp_dpdk_interface_count--;
     free(innmq->port);
   }
 
@@ -141,6 +142,7 @@ static void ldp_out_queue_close_dpdk(struct ldp_out_queue *outq)
   if (--outnmq->port->refc == 0)
   {
     rte_eth_dev_stop(outnmq->port->portid);
+    ldp_dpdk_interface_count--;
     free(outnmq->port);
   }
   free(outnmq);
