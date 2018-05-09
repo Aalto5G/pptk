@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   intf = ldp_interface_open(argv[1], 1, 1);
   if (intf == NULL)
   {
-    printf("Can't open interface\n");
+    perror("Can't open interface");
     return 1;
   }
   ldp_interface_close(intf);
