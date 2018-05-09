@@ -215,6 +215,10 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
     iovecs[i][0].iov_len = insock->max_sz;
   }
   ret = recvmmsg(fd, msgs, num, MSG_DONTWAIT, NULL);
+  if (ret < 0)
+  {
+    return ret;
+  }
   j = 0;
   k = insock->buf_start;
   l = 0;

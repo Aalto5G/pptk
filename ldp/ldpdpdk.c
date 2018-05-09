@@ -219,6 +219,10 @@ static int ldp_in_queue_nextpkts_dpdk(struct ldp_in_queue *inq,
     indpdkq->cache[i-nb_rx2] = local_pkts[i];
   }
   indpdkq->num_cache = nb_rx - nb_rx2;
+  if (nb_rx2 < 0)
+  {
+    errno = -nb_rx2;
+  }
   return nb_rx2;
 }
 
@@ -230,17 +234,25 @@ static int ldp_out_queue_inject_dpdk(struct ldp_out_queue *outq,
   int num2;
   int i;
   struct ldp_out_queue_dpdk *outdpdkq;
+  int errnosave;
 
   outdpdkq = CONTAINER_OF(outq, struct ldp_out_queue_dpdk, q);
 
   if (rte_pktmbuf_alloc_bulk(dpdk_ctx.rte_mp, tx_mbufs, num))
   {
-    //printf("No mbufs alloced\n"); // FIXME rm
-    return 0;
+    errno = ENOMEM;
+    return -1;
   }
   for (i = 0; i < num; i++)
   {
     char *data = rte_pktmbuf_append(tx_mbufs[i], packets[i].sz);
+    if (data == NULL)
+    {
+      errno = EMSGSIZE;
+      ret = -1;
+      num2 = 0;
+      goto out;
+    }
     memcpy(data, packets[i].data, packets[i].sz);
   }
 
@@ -249,12 +261,17 @@ static int ldp_out_queue_inject_dpdk(struct ldp_out_queue *outq,
   num2 = ret;
   if (num2 < 0)
   {
+    errno = -ret;
     num2 = 0;
   }
+
+out:
+  errnosave = errno;
   for (i = num2; i < num; i++)
   {
     rte_pktmbuf_free(tx_mbufs[i]);
   }
+  errno = errnosave;
   return ret;
 }
 
@@ -263,17 +280,18 @@ static int ldp_out_queue_inject_chunk_dpdk(struct ldp_out_queue *outq,
                                            int num)
 {
   struct rte_mbuf *tx_mbufs[num];
-  int ret;
-  int num2;
+  int ret = -1;
+  int num2 = 0;
   int i;
   struct ldp_out_queue_dpdk *outdpdkq;
+  int errnosave;
 
   outdpdkq = CONTAINER_OF(outq, struct ldp_out_queue_dpdk, q);
 
   if (rte_pktmbuf_alloc_bulk(dpdk_ctx.rte_mp, tx_mbufs, num))
   {
-    //printf("No mbufs alloced\n"); // FIXME rm
-    return 0;
+    errno = ENOMEM;
+    return -1;
   }
   for (i = 0; i < num; i++)
   {
@@ -285,6 +303,13 @@ static int ldp_out_queue_inject_chunk_dpdk(struct ldp_out_queue *outq,
       sz += iov->iov_len;
     }
     char *data = rte_pktmbuf_append(tx_mbufs[i], sz);
+    if (data == NULL)
+    {
+      errno = EMSGSIZE;
+      ret = -1;
+      num2 = 0;
+      goto out;
+    }
     for (j = 0; j < pkt->iovlen; j++)
     {
       struct iovec *iov = &pkt->iov[j];
@@ -298,12 +323,17 @@ static int ldp_out_queue_inject_chunk_dpdk(struct ldp_out_queue *outq,
   num2 = ret;
   if (num2 < 0)
   {
+    errno = -ret;
     num2 = 0;
   }
+
+out:
+  errnosave = errno;
   for (i = num2; i < num; i++)
   {
     rte_pktmbuf_free(tx_mbufs[i]);
   }
+  errno = errnosave;
   return ret;
 }
 
@@ -313,6 +343,7 @@ static int ldp_out_queue_inject_dealloc_dpdk(struct ldp_in_queue *inq,
                                              int num)
 {
   int i;
+  int reT;
   struct ldp_out_queue_dpdk *outdpdkq;
 
   outdpdkq = CONTAINER_OF(outq, struct ldp_out_queue_dpdk, q);
@@ -327,8 +358,13 @@ static int ldp_out_queue_inject_dealloc_dpdk(struct ldp_in_queue *inq,
     tx_mbufs[i] = packets[i].ancillaryptr;
   }
 
-  return rte_eth_tx_burst(outdpdkq->port->portid, outdpdkq->qid,
-                          tx_mbufs, num);
+  ret = rte_eth_tx_burst(outdpdkq->port->portid, outdpdkq->qid,
+                         tx_mbufs, num);
+  if (ret < 0)
+  {
+    errno = -ret;
+  }
+  return ret;
 }
 
 static int ldp_out_queue_txsync_dpdk(struct ldp_out_queue *outq)
