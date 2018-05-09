@@ -343,7 +343,7 @@ static int ldp_out_queue_inject_dealloc_dpdk(struct ldp_in_queue *inq,
                                              int num)
 {
   int i;
-  int reT;
+  int ret;
   struct ldp_out_queue_dpdk *outdpdkq;
 
   outdpdkq = CONTAINER_OF(outq, struct ldp_out_queue_dpdk, q);

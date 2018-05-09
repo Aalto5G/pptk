@@ -298,7 +298,8 @@ static int ldp_out_queue_inject_odp(struct ldp_out_queue *outq,
       {
         odp_packet_free(tx_mbufs[j]);
       }
-      if (packets[i].sz > ldp_config_get_global()->odp_pkt_len)
+      if (ldp_config_get_global()->odp_pkt_len < 0 ||
+          packets[i].sz > (size_t)ldp_config_get_global()->odp_pkt_len)
       {
         errno = EMSGSIZE;
       }
@@ -357,12 +358,13 @@ static int ldp_out_queue_inject_chunk_odp(struct ldp_out_queue *outq,
     tx_mbufs[i] = odp_packet_alloc(odp_ctx.pool, sz);
     if (tx_mbufs[i] == ODP_PACKET_INVALID)
     {
-      int j;
-      for (j = i - 1; j >= 0; j--)
+      int k;
+      for (k = i - 1; k >= 0; k--)
       {
-        odp_packet_free(tx_mbufs[j]);
+        odp_packet_free(tx_mbufs[k]);
       }
-      if (packets[i].sz > ldp_config_get_global()->odp_pkt_len)
+      if (ldp_config_get_global()->odp_pkt_len < 0 ||
+          sz > (size_t)ldp_config_get_global()->odp_pkt_len)
       {
         errno = EMSGSIZE;
       }
