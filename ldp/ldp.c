@@ -359,7 +359,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   insock->q.fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (insock->q.fd < 0)
   {
-    // errno alread yset
+    // errno already set
     goto err;
   }
 

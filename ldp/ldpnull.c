@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include "ldp.h"
 #include "ldpnull.h"
 #include "containerof.h"
@@ -73,6 +74,8 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   struct ldp_out_queue **outqs = NULL;
   int i;
   int pipefd[2];
+  int errnosave;
+
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
     abort();
@@ -80,6 +83,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   intf->promisc_mode_set = NULL;
@@ -91,6 +95,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numinq; i++)
@@ -100,6 +105,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numoutq; i++)
@@ -112,6 +118,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     innullq = malloc(sizeof(*innullq));
     if (innullq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     inqs[i] = &innullq->q;
@@ -136,6 +143,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     outnullq = malloc(sizeof(*outnullq));
     if (outnullq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     outqs[i] = &outnullq->q;
@@ -159,6 +167,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
+  errnosave = errno;
   if (inqs)
   {
     for (i = 0; i < numinq; i++)
@@ -186,5 +195,6 @@ err:
   free(inqs);
   free(outqs);
   free(intf);
+  errno = errnosave;
   return NULL;
 }

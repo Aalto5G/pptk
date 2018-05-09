@@ -352,6 +352,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   uint16_t nb_rxd = 128;
   uint16_t nb_txd = 512;
   int started = 0;
+  int errnosave;
 
 
   port_conf.rxmode.hw_strip_crc = 1;
@@ -364,26 +365,31 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   portid = strtol(name, &endptr, 10);
   if (*name == '\0' || *endptr != '\0' || portid < 0 || portid > INT_MAX)
   {
+    errno = EINVAL;
     return NULL;
   }
 
   if (init_dpdk_ctx() != 0)
   {
+    errno = ENOMEM;
     return NULL;
   }
   
   if (!rte_eth_dev_is_valid_port(portid))
   {
+    errno = ENODEV;
     return NULL;
   }
   ret = rte_eth_dev_configure(portid, numinq, numoutq, &port_conf);
   if (ret < 0)
   {
+    errno = ECHRNG;
     return NULL;
   }
   ret = rte_eth_dev_adjust_nb_rx_tx_desc(portid, &nb_rxd, &nb_txd);
   if (ret < 0)
   {
+    errno = -ret;
     return NULL;
   }
   for (i = 0; i < numinq; i++)
@@ -393,6 +399,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
                                  NULL, dpdk_ctx.rte_mp);
     if (ret < 0)
     {
+      errno = -ret;
       return NULL;
     }
   }
@@ -402,6 +409,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
                                  rte_eth_dev_socket_id(portid), NULL);
     if (ret < 0)
     {
+      errno = -ret;
       return NULL;
     }
   }
@@ -409,12 +417,14 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   {
     if (rte_eth_dev_set_mtu(portid, settings->mtu) != 0)
     {
+      errno = -ret;
       return NULL;
     }
   }
   ret = rte_eth_dev_start(portid);
   if (ret < 0)
   {
+    errno = EIO;
     return NULL;
   }
   started = 1;
@@ -423,6 +433,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   port = malloc(sizeof(*port));
   if (port == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   port->refc = numinq + numoutq;
@@ -430,6 +441,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   intf->promisc_mode_set = NULL;
@@ -441,6 +453,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numinq; i++)
@@ -450,6 +463,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numoutq; i++)
@@ -462,6 +476,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     innmq = malloc(sizeof(*innmq));
     if (innmq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     inqs[i] = &innmq->q;
@@ -472,6 +487,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
     outnmq = malloc(sizeof(*outnmq));
     if (outnmq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     outqs[i] = &outnmq->q;
@@ -527,6 +543,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
+  errnosave = errno;
   if (started)
   {
     rte_eth_dev_stop(portid);
@@ -559,6 +576,7 @@ err:
   free(intf);
   free(inqs);
   free(outqs);
+  errno = errnosave;
   return NULL;
 }
 

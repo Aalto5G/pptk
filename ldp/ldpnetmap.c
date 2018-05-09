@@ -239,12 +239,15 @@ static int check_channels(const char *name, int numinq, int numoutq)
   ifr.ifr_data = (void*)&echannels; // cmd
   if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
   {
+    int errnosave;
     if (errno == ENOTSUP && numinq == 1)
     {
       close(fd);
       return 1;
     }
+    errnosave = errno;
     close(fd);
+    errno = errnosave;
     return 0;
   }
   close(fd);
@@ -256,6 +259,7 @@ static int check_channels(const char *name, int numinq, int numoutq)
   }
   if (rx != numinq)
   {
+    errno = ECHRNG;
     return 0;
   }
   tx = echannels.tx_count;
@@ -265,6 +269,7 @@ static int check_channels(const char *name, int numinq, int numoutq)
   }
   if (tx < numoutq)
   {
+    errno = ECHRNG;
     return 0;
   }
   return 1;
@@ -292,7 +297,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     devname = name + 7;
     if (!check_channels(devname, numinq, numoutq))
     {
-      errno = ECHRNG;
+      // errno already set
       return NULL;
     }
   }
@@ -396,10 +401,6 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
     innmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
-    if (innmq->nmd->first_rx_ring != innmq->nmd->last_rx_ring)
-    {
-      abort();
-    }
     innmq->q.nextpkts = ldp_in_queue_nextpkts_netmap;
     innmq->q.nextpkts_ts = NULL;
     innmq->q.poll = ldp_in_queue_poll;
@@ -417,6 +418,10 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
       }
       goto err;
     }
+    if (innmq->nmd->first_rx_ring != innmq->nmd->last_rx_ring)
+    {
+      abort();
+    }
     innmq->q.fd = innmq->nmd->fd;
   }
   for (i = 0; i < numoutq; i++)
@@ -432,14 +437,6 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
     outnmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
-    if (outnmq->nmd->first_tx_ring != outnmq->nmd->last_tx_ring)
-    {
-      abort();
-    }
-    if (outnmq->nmd->first_tx_ring != outnmq->nmd->cur_tx_ring)
-    {
-      abort();
-    }
     outnmq->q.inject = ldp_out_queue_inject_netmap;
     outnmq->q.inject_dealloc = NULL;
     outnmq->q.inject_chunk = ldp_out_queue_inject_chunk_netmap;
@@ -459,6 +456,14 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
         nm_close(innmq->nmd);
       }
       goto err;
+    }
+    if (outnmq->nmd->first_tx_ring != outnmq->nmd->last_tx_ring)
+    {
+      abort();
+    }
+    if (outnmq->nmd->first_tx_ring != outnmq->nmd->cur_tx_ring)
+    {
+      abort();
     }
     outnmq->q.fd = outnmq->nmd->fd;
   }

@@ -398,6 +398,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   odp_pktio_t pktio = ODP_PKTIO_INVALID;
   int i;
   struct ldp_port_odp *port = NULL;
+  int errnosave;
 
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
@@ -406,22 +407,26 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
 
   if (init_odp_ctx() != 0)
   {
+    errno = ENOMEM;
     return NULL;
   }
   if (odp_check_thread_init() != 0)
   {
+    errno = ENOMEM;
     return NULL;
   }
 
   pktio = ldp_create_pktio_multiqueue(name, odpinqs, odpoutqs, numinq, numoutq);
   if (pktio == ODP_PKTIO_INVALID)
   {
+    errno = ENODEV;
     return NULL;
   }
   
   port = malloc(sizeof(*port));
   if (port == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   port->refc = numinq + numoutq;
@@ -429,6 +434,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   intf->mac_addr = ldp_odp_mac_addr_2;
@@ -438,6 +444,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numinq; i++)
@@ -447,6 +454,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   for (i = 0; i < numoutq; i++)
@@ -459,6 +467,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     innmq = malloc(sizeof(*innmq));
     if (innmq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     inqs[i] = &innmq->q;
@@ -469,6 +478,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     outnmq = malloc(sizeof(*outnmq));
     if (outnmq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     outqs[i] = &outnmq->q;
@@ -512,11 +522,13 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
 #if ODP_VERSION_API_MAJOR >= 17
     if (odp_pktin_maxlen(pktio) != settings->mtu)
     {
+      errno = ERANGE;
       goto err;
     }
 #else
     if (odp_pktio_mtu(pktio) != settings->mtu)
     {
+      errno = ERANGE;
       goto err;
     }
 #endif
@@ -537,6 +549,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
+  errnosave = errno;
   if (pktio != ODP_PKTIO_INVALID)
   {
     odp_pktio_close(pktio);
@@ -569,6 +582,7 @@ err:
   free(intf);
   free(inqs);
   free(outqs);
+  errno = errnosave;
   return NULL;
 }
 

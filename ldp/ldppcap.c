@@ -567,21 +567,26 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   char *outngname = NULL;
   const char *jokerifname = "pcap";
   int i;
+  int errnosave;
+
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
     abort();
   }
   if (numinq <= 0 || numoutq <= 0 || numinq > 1 || numoutq > 1)
   {
+    errno = ECHRNG;
     return NULL;
   }
   if (strncmp(name, "pcap:", 5) != 0)
   {
+    errno = EINVAL;
     return NULL;
   }
   name2 = strdup(name + 5);
   if (name2 == NULL)
   {
+    errno = ENOMEM;
     return NULL;
   }
   tok = name2;
@@ -627,6 +632,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   intf = malloc(sizeof(*intf));
   if (intf == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   intf->promisc_mode_set = NULL;
@@ -638,12 +644,14 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   inqs = malloc(numinq*sizeof(*inqs));
   if (inqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   inqs[0] = NULL;
   outqs = malloc(numoutq*sizeof(*outqs));
   if (outqs == NULL)
   {
+    errno = ENOMEM;
     goto err;
   }
   outqs[0] = NULL;
@@ -654,6 +662,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     inpcapq = malloc(sizeof(*inpcapq));
     if (inpcapq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     inqs[i] = &inpcapq->q;
@@ -674,6 +683,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       inpcapq->regular = create_in(inname, jokerifname);
       if (inpcapq->regular == NULL)
       {
+        errno = ENOENT;
         goto err;
       }
     }
@@ -694,6 +704,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     outpcapq = malloc(sizeof(*outpcapq));
     if (outpcapq == NULL)
     {
+      errno = ENOMEM;
       goto err;
     }
     outqs[i] = &outpcapq->q;
@@ -703,6 +714,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       outpcapq->regular = create_out(outname);
       if (outpcapq->regular == NULL)
       {
+        errno = EPERM;
         goto err;
       }
     }
@@ -712,6 +724,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
       outpcapq->ng = create_out_ng(outngname);
       if (outpcapq->ng == NULL)
       {
+        errno = EPERM;
         goto err;
       }
     }
@@ -732,6 +745,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   return intf;
 
 err:
+  errnosave = errno;
   if (inqs != NULL && inqs[0] != NULL)
   {
     free(CONTAINER_OF(inqs[0], struct ldp_in_queue_pcap, q));
@@ -744,5 +758,6 @@ err:
   free(inqs);
   free(outqs);
   free(name2);
+  errno = errnosave;
   return NULL;
 }
