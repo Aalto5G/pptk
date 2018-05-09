@@ -338,7 +338,8 @@ static int ldp_in_queue_nextpkts_ts_pcap(struct ldp_in_queue *inq,
     {
       *ts = inpcapq->regular->time64;
     }
-    return 0;
+    errno = ENOMEM;
+    return -1;
   }
 
   if (num == 0)
@@ -383,6 +384,7 @@ static int ldp_in_queue_nextpkts_ts_pcap(struct ldp_in_queue *inq,
       *ts = inpcapq->regular->time64;
     }
     pthread_mutex_unlock(&inpcapq->regular->mtx);
+    errno = EIO;
     return -1;
   }
   if (ret == 0)
@@ -448,6 +450,7 @@ static int ldp_out_queue_inject_pcap(struct ldp_out_queue *outq,
                                packets[i].sz, 0);
       if (ret != 1)
       {
+        errno = EIO;
         err = -1;
       }
       pthread_mutex_unlock(&outpcapq->regular->mtx);
@@ -460,6 +463,7 @@ static int ldp_out_queue_inject_pcap(struct ldp_out_queue *outq,
                                  packets[i].sz, 0, outpcapq->ifname);
       if (ret != 1)
       {
+        errno = EIO;
         err = -1;
       }
       pthread_mutex_unlock(&outpcapq->ng->mtx);
@@ -522,6 +526,7 @@ static int ldp_out_queue_inject_chunk_pcap(struct ldp_out_queue *outq,
       ret = pcap_out_ctx_write(&outpcapq->regular->ctx, buf, cur, 0);
       if (ret != 1)
       {
+        errno = EIO;
         err = -1;
       }
       pthread_mutex_unlock(&outpcapq->regular->mtx);
@@ -533,6 +538,7 @@ static int ldp_out_queue_inject_chunk_pcap(struct ldp_out_queue *outq,
                                  outpcapq->ifname);
       if (ret != 1)
       {
+        errno = EIO;
         err = -1;
       }
       pthread_mutex_unlock(&outpcapq->ng->mtx);

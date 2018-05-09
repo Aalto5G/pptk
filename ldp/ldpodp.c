@@ -255,6 +255,10 @@ static int ldp_in_queue_nextpkts_odp(struct ldp_in_queue *inq,
   nb_rx = odp_pktin_recv(inodpq->odpq, local_pkts, max_num);
   if (nb_rx <= 0)
   {
+    if (nb_rx < 0)
+    {
+      errno = EIO;
+    }
     return nb_rx;
   }
   for (i = 0; i < nb_rx; i++)
@@ -287,6 +291,23 @@ static int ldp_out_queue_inject_odp(struct ldp_out_queue *outq,
   for (i = 0; i < num; i++)
   {
     tx_mbufs[i] = odp_packet_alloc(odp_ctx.pool, packets[i].sz);
+    if (tx_mbufs[i] == ODP_PACKET_INVALID)
+    {
+      int j;
+      for (j = i - 1; j >= 0; j--)
+      {
+        odp_packet_free(tx_mbufs[j]);
+      }
+      if (packets[i].sz > ldp_config_get_global()->odp_pkt_len)
+      {
+        errno = EMSGSIZE;
+      }
+      else
+      {
+        errno = ENOMEM;
+      }
+      return -1;
+    }
     memcpy(odp_packet_data(tx_mbufs[i]), packets[i].data, packets[i].sz);
   }
 
@@ -299,6 +320,10 @@ static int ldp_out_queue_inject_odp(struct ldp_out_queue *outq,
   for (i = num2; i < num; i++)
   {
     odp_packet_free(tx_mbufs[i]);
+  }
+  if (ret < 0)
+  {
+    errno = EIO;
   }
   return ret;
 }
@@ -330,6 +355,23 @@ static int ldp_out_queue_inject_chunk_odp(struct ldp_out_queue *outq,
       sz += iov->iov_len;
     }
     tx_mbufs[i] = odp_packet_alloc(odp_ctx.pool, sz);
+    if (tx_mbufs[i] == ODP_PACKET_INVALID)
+    {
+      int j;
+      for (j = i - 1; j >= 0; j--)
+      {
+        odp_packet_free(tx_mbufs[j]);
+      }
+      if (packets[i].sz > ldp_config_get_global()->odp_pkt_len)
+      {
+        errno = EMSGSIZE;
+      }
+      else
+      {
+        errno = ENOMEM;
+      }
+      return -1;
+    }
     char *data = odp_packet_data(tx_mbufs[i]);
     for (j = 0; j < pkt->iovlen; j++)
     {
@@ -348,6 +390,10 @@ static int ldp_out_queue_inject_chunk_odp(struct ldp_out_queue *outq,
   for (i = num2; i < num; i++)
   {
     odp_packet_free(tx_mbufs[i]);
+  }
+  if (ret < 0)
+  {
+    errno = EIO;
   }
   return ret;
 }
