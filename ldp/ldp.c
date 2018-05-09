@@ -40,6 +40,8 @@ void ldp_config_init(struct ldp_config *config)
   config->dpdk_pool_num = 8192;
   config->dpdk_pool_cache_num = 256;
   config->dpdk_pool_data_room = 2176;
+  config->dpdk_nb_rxd = 128;
+  config->dpdk_nb_txd = 512;
   config->socket_num_bufs = 1024;
   config->odp_num_pkt = 8192;
   config->odp_pkt_len = 1856;

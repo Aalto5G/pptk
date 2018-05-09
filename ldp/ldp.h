@@ -14,6 +14,8 @@ struct ldp_config {
   int dpdk_pool_num;
   int dpdk_pool_cache_num;
   int dpdk_pool_data_room;
+  uint16_t dpdk_nb_rxd;
+  uint16_t dpdk_nb_txd;
   int socket_num_bufs;
   int odp_num_pkt;
   int odp_pkt_len;

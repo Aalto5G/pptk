@@ -385,8 +385,8 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   long int portid;
   char *endptr;
   struct rte_eth_conf port_conf = {};
-  uint16_t nb_rxd = 128;
-  uint16_t nb_txd = 512;
+  uint16_t nb_rxd = ldp_config_get_global()->dpdk_nb_rxd;
+  uint16_t nb_txd = ldp_config_get_global()->dpdk_nb_txd;
   int started = 0;
   int errnosave;
 
