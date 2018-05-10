@@ -46,7 +46,16 @@ void ip_hash_init(struct ip_hash *hash, struct timer_linkheap *heap,
     timer_linkheap_add(heap, &hash->timers[i]);
   }
   
-  if (use_small(hash))
+  if (use_tiny(hash))
+  {
+    hash->u.entries_tiny = malloc(hash->hash_size*sizeof(*hash->u.entries_tiny));
+    for (i = 0; i < hash->hash_size; i++)
+    {
+      struct ip_hash_entry_tiny *e = &hash->u.entries_tiny[i];
+      e->tokens = hash->initial_tokens;
+    }
+  }
+  else if (use_small(hash))
   {
     hash->u.entries_small = malloc(hash->hash_size*sizeof(*hash->u.entries_small));
     for (i = 0; i < hash->hash_size; i++)
@@ -82,7 +91,11 @@ void ip_hash_free(struct ip_hash *hash, struct timer_linkheap *heap)
   free(hash->timerud);
   free(hash->timers);
   
-  if (use_small(hash))
+  if (use_tiny(hash))
+  {
+    free(hash->u.entries_tiny);
+  }
+  else if (use_small(hash))
   {
     free(hash->u.entries_small);
   }
@@ -105,7 +118,18 @@ int ipv6_permitted(
   src_net[16-toset-1] &= ~((1<<tomask) - 1);
   hashval = siphash_buf(hash_seed_get(), src_net, 16)&(hash->hash_size - 1);
 
-  if (use_small(hash))
+  if (use_tiny(hash))
+  {
+    struct ip_hash_entry_tiny *e = NULL;
+    e = &hash->u.entries_tiny[hashval];
+    if (e->tokens == 0)
+    {
+      return 0;
+    }
+    e->tokens--;
+    return 1;
+  }
+  else if (use_small(hash))
   {
     struct ip_hash_entry_small *e = NULL;
     e = &hash->u.entries_small[hashval];
@@ -135,7 +159,19 @@ int ip_permitted(
   uint32_t bitmask = (~((1U<<(32-bits))-1U)) & 0xFFFFFFFFU;
   uint32_t network = src_ip & bitmask;
   uint32_t hashval = siphash64(hash_seed_get(), network)&(hash->hash_size - 1);
-  if (use_small(hash))
+
+  if (use_tiny(hash))
+  {
+    struct ip_hash_entry_tiny *e = NULL;
+    e = &hash->u.entries_tiny[hashval];
+    if (e->tokens == 0)
+    {
+      return 0;
+    }
+    e->tokens--;
+    return 1;
+  }
+  else if (use_small(hash))
   {
     struct ip_hash_entry_small *e = NULL;
     e = &hash->u.entries_small[hashval];
@@ -172,7 +208,18 @@ void ipv6_increment_one(
   src_net[16-toset-1] &= ~((1<<tomask) - 1);
   hashval = siphash_buf(hash_seed_get(), src_net, 16)&(hash->hash_size - 1);
 
-  if (use_small(hash))
+  if (use_tiny(hash))
+  {
+    struct ip_hash_entry_tiny *e = NULL;
+    e = &hash->u.entries_tiny[hashval];
+    if (e->tokens >= hash->initial_tokens)
+    {
+      return;
+    }
+    e->tokens++;
+    return;
+  }
+  else if (use_small(hash))
   {
     struct ip_hash_entry_small *e = NULL;
     e = &hash->u.entries_small[hashval];
@@ -202,7 +249,19 @@ void ip_increment_one(
   uint32_t bitmask = (~((1U<<(32-bits))-1U)) & 0xFFFFFFFFU;
   uint32_t network = src_ip & bitmask;
   uint32_t hashval = siphash64(hash_seed_get(), network)&(hash->hash_size - 1);
-  if (use_small(hash))
+
+  if (use_tiny(hash))
+  {
+    struct ip_hash_entry_tiny *e = NULL;
+    e = &hash->u.entries_tiny[hashval];
+    if (e->tokens >= hash->initial_tokens)
+    {
+      return;
+    }
+    e->tokens++;
+    return;
+  }
+  else if (use_small(hash))
   {
     struct ip_hash_entry_small *e = NULL;
     e = &hash->u.entries_small[hashval];
@@ -238,7 +297,21 @@ static void batch_timer_fn(
   {
     pthread_rwlock_wrlock(args->lock);
   }
-  if (use_small(args->hash))
+  if (use_tiny(args->hash))
+  {
+    struct ip_hash_entry_tiny *e;
+    for (i = args->start; i < args->end; i++)
+    {
+      e = &args->hash->u.entries_tiny[i];
+      tokens = e->tokens + timer_add;
+      if (tokens >= initial_tokens)
+      {
+        tokens = initial_tokens;
+      }
+      e->tokens = tokens;
+    }
+  }
+  else if (use_small(args->hash))
   {
     struct ip_hash_entry_small *e;
     for (i = args->start; i < args->end; i++)
