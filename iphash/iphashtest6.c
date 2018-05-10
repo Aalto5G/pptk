@@ -2,10 +2,10 @@
 #include "hashseed.h"
 #include "time64.h"
 
-const uint32_t default_initial_tokens = 2000;
+const uint32_t default_initial_tokens = 200;
 const uint32_t default_timer_period = (1000*1000);
-const uint32_t default_timer_add = 400;
-const uint32_t default_hash_size = 0x20000;
+const uint32_t default_timer_add = 40;
+const uint32_t default_hash_size = (0x20000*16);
 const uint32_t default_batch_size = 16384;
 
 int main(int argc, char **argv)
@@ -60,7 +60,21 @@ int main(int argc, char **argv)
     timer_linkheap_remove(&heap, timer);
   }
   gettimeofday(&tv1, NULL);
-  if (use_small(&hash))
+  if (use_tiny(&hash))
+  {
+    for (iter = 0; iter < hash.hash_size; iter++)
+    {
+      struct ip_hash_entry_tiny *e;
+      e = &hash.u.entries_tiny[iter];
+      tokens = e->tokens + hash.timer_add;
+      if (tokens >= hash.initial_tokens)
+      {
+        tokens = hash.initial_tokens;
+      }
+      e->tokens = tokens;
+    }
+  }
+  else if (use_small(&hash))
   {
     for (iter = 0; iter < hash.hash_size; iter++)
     {
@@ -91,7 +105,21 @@ int main(int argc, char **argv)
   gettimeofday(&tv2, NULL);
   printf("%lu us\n", (long)((tv2.tv_sec - tv1.tv_sec)*1000*1000 + tv2.tv_usec - tv1.tv_usec));
   gettimeofday(&tv1, NULL);
-  if (use_small(&hash))
+  if (use_tiny(&hash))
+  {
+    for (iter = 0; iter < hash.batch_size; iter++)
+    {
+      struct ip_hash_entry_tiny *e;
+      e = &hash.u.entries_tiny[iter];
+      tokens = e->tokens + hash.timer_add;
+      if (tokens >= hash.initial_tokens)
+      {
+        tokens = hash.initial_tokens;
+      }
+      e->tokens = tokens;
+    }
+  }
+  else if (use_small(&hash))
   {
     for (iter = 0; iter < hash.batch_size; iter++)
     {
@@ -121,7 +149,11 @@ int main(int argc, char **argv)
   }
   gettimeofday(&tv2, NULL);
   printf("%lu us\n", (long)((tv2.tv_sec - tv1.tv_sec)*1000*1000 + tv2.tv_usec - tv1.tv_usec));
-  if (use_small(&hash))
+  if (use_tiny(&hash))
+  {
+    free(hash.u.entries_tiny);
+  }
+  else if (use_small(&hash))
   {
     free(hash.u.entries_small);
   }
