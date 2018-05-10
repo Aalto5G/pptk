@@ -123,7 +123,11 @@ static int check_offloads(const char *name)
   {
     char *offload = (char*)&names->data[i*ETH_GSTRING_LEN];
     int x;
-    x = !!(state->features.features[i/32].active & (1U<<(i%32U)));
+    int fixed;
+    fixed =
+        !(state->features.features[i/32].available & (1U<<(i%32U))) ||
+        (state->features.features[i/32].never_changed & (1U<<(i%32U)));
+    x = !!(state->features.features[i/32].active & (1U<<(i%32U))) && !fixed;
     if (strcmp(offload, "rx-checksum") == 0 && x)
     {
       errno = EMEDIUMTYPE;
