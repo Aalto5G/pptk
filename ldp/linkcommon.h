@@ -54,9 +54,9 @@ static inline int
 ldp_interface_get_promisc_mode(struct ldp_interface *intf)
 {
   int ret, sockfd;
-  if (intf->promisc_mode_set)
+  if (intf->promisc_mode_get)
   {
-    return intf->promisc_mode_set(intf);
+    return intf->promisc_mode_get(intf);
   }
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0)
