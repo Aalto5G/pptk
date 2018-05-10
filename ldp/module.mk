@@ -42,6 +42,7 @@ LDFLAGS_LDP += $(ODP_DIR)/lib/libodp-linux.a
 LDFLAGS_LDP += $(LIBS_ODPDEP)
 LDFLAGS_LDP += -lrt -ldl
 LDFLAGS_LDP_DYN += -L$(ODP_DIR)/lib
+LDFLAGS_LDP_DYN += -Wl,-rpath,$(ODP_DIR)/lib
 LDFLAGS_LDP_DYN += -lodp-linux
 endif
 ifeq ($(WITH_DPDK),yes)
@@ -55,7 +56,11 @@ LDFLAGS_LDP += -lm
 LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libnuma.a
 LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libpcap.a
 LDFLAGS_LDP_DYN += -L$(DPDK_LIBDIR)
+LDFLAGS_LDP_DYN += -Wl,--whole-archive
 LDFLAGS_LDP_DYN += -ldpdk
+LDFLAGS_LDP_DYN += -Wl,--no-whole-archive
+LDFLAGS_LDP_DYN += -lnuma
+LDFLAGS_LDP_DYN += -lm
 endif
 
 unit_LDP:
