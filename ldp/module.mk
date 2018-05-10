@@ -31,7 +31,7 @@ clean_$(LCLDP): clean_LDP
 distclean_$(LCLDP): distclean_LDP
 unit_$(LCLDP): unit_LDP
 
-LDP: $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel
+LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel
 
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
@@ -41,6 +41,8 @@ CFLAGS_LDP += -I$(ODP_DIR)/include -DWITH_ODP
 LDFLAGS_LDP += $(ODP_DIR)/lib/libodp-linux.a
 LDFLAGS_LDP += $(LIBS_ODPDEP)
 LDFLAGS_LDP += -lrt -ldl
+LDFLAGS_LDP_DYN += -L$(ODP_DIR)/lib
+LDFLAGS_LDP_DYN += -lodp-linux
 endif
 ifeq ($(WITH_DPDK),yes)
 CFLAGS_LDP += -I$(DPDK_INCDIR) -DWITH_DPDK
@@ -52,6 +54,8 @@ LDFLAGS_LDP += -Wl,--no-whole-archive
 LDFLAGS_LDP += -lm
 LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libnuma.a
 LDFLAGS_LDP += /usr/lib/x86_64-linux-gnu/libpcap.a
+LDFLAGS_LDP_DYN += -L$(DPDK_LIBDIR)
+LDFLAGS_LDP_DYN += -ldpdk
 endif
 
 unit_LDP:
@@ -60,6 +64,9 @@ unit_LDP:
 $(DIRLDP)/libldp.a: $(LDP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
+
+$(DIRLDP)/libldp.so: $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
+	$(CC) -shared -fPIC -o $(DIRLDP)/libldp.so -Wl,--whole-archive $(DIRLDP)/libldp.a -Wl,--no-whole-archive $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(LDFLAGS_LDP_DYN) -lc
 
 $(DIRLDP)/testldp: $(DIRLDP)/testldp.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
