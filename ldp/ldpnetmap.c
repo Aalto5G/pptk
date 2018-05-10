@@ -325,6 +325,8 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   intf->promisc_mode_get = NULL;
   intf->allmulti_set = NULL;
   intf->allmulti_get = NULL;
+  intf->mtu_set = NULL;
+  intf->mtu_get = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;
   intf->mac_addr = NULL;

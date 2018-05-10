@@ -63,6 +63,8 @@ struct ldp_interface {
   int (*promisc_mode_set)(struct ldp_interface *intf, int on);
   int (*allmulti_get)(struct ldp_interface *intf);
   int (*allmulti_set)(struct ldp_interface *intf, int on);
+  int (*mtu_get)(struct ldp_interface *intf);
+  int (*mtu_set)(struct ldp_interface *intf, uint16_t mtu);
   int (*link_wait)(struct ldp_interface *intf);
   int (*link_status)(struct ldp_interface *intf);
 };

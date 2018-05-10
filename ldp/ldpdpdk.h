@@ -19,4 +19,6 @@ int ldp_dpdk_allmulti_set(int portid, int on);
 
 int ldp_dpdk_allmulti_get(int portid);
 
+int ldp_dpdk_mtu_get(int portid);
+
 #endif
