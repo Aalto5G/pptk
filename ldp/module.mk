@@ -60,6 +60,7 @@ LDFLAGS_LDP_DYN += -Wl,--whole-archive
 LDFLAGS_LDP_DYN += -ldpdk
 LDFLAGS_LDP_DYN += -Wl,--no-whole-archive
 LDFLAGS_LDP_DYN += -lnuma
+LDFLAGS_LDP_DYN += -lpcap
 LDFLAGS_LDP_DYN += -lm
 endif
 
