@@ -30,6 +30,8 @@ ldp_interface_set_mtu(struct ldp_interface *intf, uint16_t mtu)
 
 int ldp_set_promisc_mode(int sockfd, const char *ifname, int on);
 
+int ldp_get_promisc_mode(int sockfd, const char *ifname);
+
 static inline int
 ldp_interface_set_promisc_mode(struct ldp_interface *intf, int on)
 {
@@ -44,6 +46,24 @@ ldp_interface_set_promisc_mode(struct ldp_interface *intf, int on)
     return -1;
   }
   ret = ldp_set_promisc_mode(sockfd, intf->name, on);
+  close(sockfd);
+  return ret;
+}
+
+static inline int
+ldp_interface_get_promisc_mode(struct ldp_interface *intf)
+{
+  int ret, sockfd;
+  if (intf->promisc_mode_set)
+  {
+    return intf->promisc_mode_set(intf, on);
+  }
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0)
+  {
+    return -1;
+  }
+  ret = ldp_get_promisc_mode(sockfd, intf->name);
   close(sockfd);
   return ret;
 }

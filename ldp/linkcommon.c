@@ -121,6 +121,42 @@ int ldp_set_promisc_mode(int sockfd, const char *ifname, int on)
   return 0;
 }
 
+int ldp_get_promisc_mode(int sockfd, const char *ifname)
+{
+  struct ifreq ifr;
+  long portid;
+  char *endptr;
+  portid = strtol(ifname, &endptr, 10);
+  if (*ifname != '\0' && *endptr == '\0' && portid >= 0 && portid <= INT_MAX)
+  {
+#if WITH_DPDK
+    return ldp_dpdk_promisc_mode_get(portid);
+#else
+    return -ENOTSUP; // DPDK
+#endif
+  }
+
+  memset(&ifr, 0, sizeof(ifr));
+  if (strncmp(ifname, "null:", 5) == 0)
+  {
+    return 0;
+  }
+  if (strncmp(ifname, "vale", 4) == 0)
+  {
+    return 0;
+  }
+  if (strncmp(ifname, "netmap:", 7) == 0)
+  {
+    ifname = ifname + 7;
+  }
+  snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname);
+  if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0)
+  {
+    return -1;
+  }
+  return !!(ifr.ifr_flags & IFF_PROMISC);
+}
+
 int ldp_set_allmulti(int sockfd, const char *ifname, int on)
 {
   struct ifreq ifr;

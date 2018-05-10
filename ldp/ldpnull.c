@@ -87,6 +87,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
     goto err;
   }
   intf->promisc_mode_set = NULL;
+  intf->promisc_mode_get = NULL;
   intf->allmulti_set = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;

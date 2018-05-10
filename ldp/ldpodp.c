@@ -77,6 +77,12 @@ static int ldp_odp_promisc_mode_set(struct ldp_in_queue *q, int on)
   return odp_pktio_promisc_mode_set(odpq->port->pktio, on);
 }
 
+static int ldp_odp_promisc_mode_get(struct ldp_in_queue *q)
+{
+  struct ldp_in_queue_odp *odpq = CONTAINER_OF(q, struct ldp_in_queue_odp, q);
+  return odp_pktio_promisc_mode(odpq->port->pktio);
+}
+
 static int ldp_odp_mac_addr_2(struct ldp_interface *intf, void *mac)
 {
   return ldp_odp_mac_addr(intf->inq[0], mac);
@@ -85,6 +91,11 @@ static int ldp_odp_mac_addr_2(struct ldp_interface *intf, void *mac)
 static int ldp_odp_promisc_mode_set_2(struct ldp_interface *intf, int on)
 {
   return ldp_odp_promisc_mode_set(intf->inq[0], on);
+}
+
+static int ldp_odp_promisc_mode_get_2(struct ldp_interface *intf)
+{
+  return ldp_odp_promisc_mode_get(intf->inq[0]);
 }
 
 static int ldp_odp_link_wait_2(struct ldp_interface *intf)
@@ -487,6 +498,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   }
   intf->mac_addr = ldp_odp_mac_addr_2;
   intf->promisc_mode_set = ldp_odp_promisc_mode_set_2;
+  intf->promisc_mode_get = ldp_odp_promisc_mode_get_2;
   intf->link_wait = ldp_odp_link_wait_2;
   intf->link_status = ldp_odp_link_status_2;
   inqs = malloc(numinq*sizeof(*inqs));

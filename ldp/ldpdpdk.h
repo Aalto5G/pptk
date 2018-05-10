@@ -13,6 +13,8 @@ int ldp_dpdk_set_mac_addr(int portid, const void *mac);
 
 int ldp_dpdk_promisc_mode_set(int portid, int on);
 
+int ldp_dpdk_promisc_mode_get(int portid);
+
 int ldp_dpdk_allmulti_set(int portid, int on);
 
 #endif
