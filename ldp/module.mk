@@ -19,11 +19,10 @@ LDP_OBJ := $(patsubst %.c,%.o,$(LDP_SRC))
 LDP_DEP_LIB := $(patsubst %.c,%.d,$(LDP_SRC_LIB))
 LDP_DEP := $(patsubst %.c,%.d,$(LDP_SRC))
 
-CFLAGS_LDP := -I$(DIRPACKET) -I$(DIRLINKEDLIST) -I$(DIRIPHDR) -I$(DIRMISC) -I$(DIRLOG) -I$(DIRHASHTABLE) -I$(DIRHASHLIST) -I$(DIRPORTS) -I$(DIRALLOC) -I$(DIRDYNARR) -I$(DIRMYPCAP) -I$(DIRLOG) -I$(DIRMISC)
-
+CFLAGS_LDP := -I$(DIRMISC) -I$(DIRMYPCAP) -I$(DIRDYNARR) -I$(DIRHASHTABLE) -I$(DIRHASHLIST) -I$(DIRLINKEDLIST) -I$(DIRIPHDR)
 MAKEFILES_LDP := $(DIRLDP)/module.mk
 
-LIBS_LDP := $(DIRALLOC)/liballoc.a $(DIRIPHDR)/libiphdr.a $(DIRLOG)/liblog.a $(DIRPORTS)/libports.a $(DIRHASHTABLE)/libhashtable.a $(DIRHASHLIST)/libhashlist.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
+LIBS_LDP := $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(DIRIPHDR)/libiphdr.a
 
 .PHONY: LDP clean_LDP distclean_LDP unit_LDP $(LCLDP) clean_$(LCLDP) distclean_$(LCLDP) unit_$(LCLDP)
 

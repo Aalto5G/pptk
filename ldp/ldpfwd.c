@@ -2,7 +2,6 @@
 #include <pthread.h>
 #include "iphdr.h"
 #include "ipcksum.h"
-#include "packet.h"
 #include <sys/poll.h>
 #include "time64.h"
 #include "ldp.h"
