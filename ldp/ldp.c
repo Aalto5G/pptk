@@ -29,6 +29,112 @@
 #include "ldpodp.h"
 #endif
 
+struct feature_state {
+  struct ethtool_gfeatures features;
+};
+
+static int check_offloads(const char *name)
+{
+  int i;
+  struct ethtool_gstrings *names;
+  struct {
+    struct ethtool_sset_info hdr;
+    uint32_t buf[1];
+  } sset_info;
+  struct feature_state *state;
+  struct ifreq ifr = {};
+  int fd;
+  uint32_t len;
+
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0)
+  {
+    return 0;
+  }
+
+  sset_info.hdr.cmd = ETHTOOL_GSSET_INFO;
+  sset_info.hdr.reserved = 0;
+  sset_info.hdr.sset_mask = 1ULL << ETH_SS_FEATURES;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&sset_info.hdr; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    errno = errnosave;
+    return 0;
+  }
+  len = sset_info.hdr.sset_mask ? sset_info.hdr.data[0] : 0;
+  names = calloc(1, sizeof(*names) + len * ETH_GSTRING_LEN);
+  if (names == NULL)
+  {
+    errno = ENOMEM;
+    return 0;
+  }
+
+  names->cmd = ETHTOOL_GSTRINGS;
+  names->string_set = ETH_SS_FEATURES;
+  names->len = len;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)names; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    errno = errnosave;
+    return 0;
+  }
+
+  for (i = 0; i < (int)len; i++)
+  {
+    names->data[(i+1)*ETH_GSTRING_LEN - 1] = '\0';
+  }
+
+  state = malloc(sizeof(*state) + ((len+31)/32) * sizeof(state->features.features[0]));
+
+  state->features.cmd = ETHTOOL_GFEATURES;
+  state->features.size = (len+31) / 32;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&state->features; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    errno = errnosave;
+    return 0;
+  }
+  close(fd);
+
+  for (i = 0; i < (int)len; i++)
+  {
+    char *offload = (char*)&names->data[i*ETH_GSTRING_LEN];
+    int x;
+    x = !!(state->features.features[i/32].active & (1U<<(i%32U)));
+    if (strcmp(offload, "rx-checksum") == 0 && x)
+    {
+      errno = EMEDIUMTYPE;
+      return 0;
+    }
+    else if (strcmp(offload, "rx-gro") == 0 && x)
+    {
+      errno = EMEDIUMTYPE;
+      return 0;
+    }
+    else if (strcmp(offload, "rx-lro") == 0 && x)
+    {
+      errno = EMEDIUMTYPE;
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+
+
 static int ldp_config_global_isset = 0;
 static struct ldp_config ldp_config_global = {};
 
@@ -670,6 +776,10 @@ ldp_interface_open_2(const char *name, int numinq, int numoutq,
   }
   else if (strncmp(name, "netmap:", 7) == 0)
   {
+    if (!check_offloads(name+7))
+    {
+      return NULL;
+    }
 #if WITH_NETMAP
     return ldp_interface_open_netmap(name, numinq, numoutq, settings);
 #else
@@ -683,6 +793,10 @@ ldp_interface_open_2(const char *name, int numinq, int numoutq,
 #else
     return NULL;
 #endif
+  }
+  if (!check_offloads(name))
+  {
+    return NULL;
   }
   return ldp_interface_open_socket(name, numinq, numoutq, settings);
 }
