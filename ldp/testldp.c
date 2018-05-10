@@ -1,4 +1,5 @@
 #include "ldp.h"
+#include "linkcommon.h"
 #include <stdio.h>
 
 int main(int argc, char **argv)
@@ -13,6 +14,11 @@ int main(int argc, char **argv)
   if (intf == NULL)
   {
     perror("Can't open interface");
+    return 1;
+  }
+  if (ldp_interface_link_wait(intf) != 0)
+  {
+    printf("Can't wait for link\n");
     return 1;
   }
   ldp_interface_close(intf);
