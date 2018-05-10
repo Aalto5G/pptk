@@ -483,6 +483,7 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
   intf->promisc_mode_set = NULL;
   intf->promisc_mode_get = NULL;
   intf->allmulti_set = NULL;
+  intf->allmulti_get = NULL;
   intf->link_wait = NULL;
   intf->link_status = NULL;
   intf->mac_addr = NULL;
@@ -659,4 +660,9 @@ int ldp_dpdk_allmulti_set(int portid, int on)
     rte_eth_allmulticast_disable(portid);
   }
   return 0;
+}
+
+int ldp_dpdk_allmulti_get(int portid)
+{
+  return rte_eth_allmulticast_get(portid);
 }

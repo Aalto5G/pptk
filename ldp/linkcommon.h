@@ -70,6 +70,8 @@ ldp_interface_get_promisc_mode(struct ldp_interface *intf)
 
 int ldp_set_allmulti(int sockfd, const char *ifname, int on);
 
+int ldp_get_allmulti(int sockfd, const char *ifname);
+
 static inline int
 ldp_interface_set_allmulti(struct ldp_interface *intf, int on)
 {
@@ -84,6 +86,24 @@ ldp_interface_set_allmulti(struct ldp_interface *intf, int on)
     return -1;
   }
   ret = ldp_set_allmulti(sockfd, intf->name, on);
+  close(sockfd);
+  return ret;
+}
+
+static inline int
+ldp_interface_get_allmulti(struct ldp_interface *intf)
+{
+  int ret, sockfd;
+  if (intf->allmulti_get)
+  {
+    return intf->allmulti_get(intf);
+  }
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0)
+  {
+    return -1;
+  }
+  ret = ldp_get_allmulti(sockfd, intf->name);
   close(sockfd);
   return ret;
 }

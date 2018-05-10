@@ -61,6 +61,7 @@ struct ldp_interface {
   int (*mac_addr_set)(struct ldp_interface *intf, const void *mac);
   int (*promisc_mode_get)(struct ldp_interface *intf);
   int (*promisc_mode_set)(struct ldp_interface *intf, int on);
+  int (*allmulti_get)(struct ldp_interface *intf);
   int (*allmulti_set)(struct ldp_interface *intf, int on);
   int (*link_wait)(struct ldp_interface *intf);
   int (*link_status)(struct ldp_interface *intf);

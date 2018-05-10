@@ -497,8 +497,11 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
     goto err;
   }
   intf->mac_addr = ldp_odp_mac_addr_2;
+  intf->mac_addr_set = NULL;
   intf->promisc_mode_set = ldp_odp_promisc_mode_set_2;
   intf->promisc_mode_get = ldp_odp_promisc_mode_get_2;
+  intf->allmulti_set = NULL;
+  intf->allmulti_get = NULL;
   intf->link_wait = ldp_odp_link_wait_2;
   intf->link_status = ldp_odp_link_status_2;
   inqs = malloc(numinq*sizeof(*inqs));
