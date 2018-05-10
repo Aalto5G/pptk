@@ -12,12 +12,17 @@ struct ip_hash_entry_small {
   uint16_t tokens;
 };
 
+struct ip_hash_entry_tiny {
+  uint8_t tokens;
+};
+
 struct batch_timer_userdata;
 
 struct ip_hash {
   union {
     struct ip_hash_entry *entries;
     struct ip_hash_entry_small *entries_small;
+    struct ip_hash_entry_tiny *entries_tiny;
   } u;
   struct timer_link *timers;
   struct batch_timer_userdata *timerud;
@@ -47,7 +52,12 @@ void ipv6_increment_one(
 
 static inline int use_small(struct ip_hash *hash)
 {
-  return hash->initial_tokens <= 65535;
+  return hash->initial_tokens <= 65535 && hash->initial_tokens >= 256;
+}
+
+static inline int use_tiny(struct ip_hash *hash)
+{
+  return hash->initial_tokens <= 255;
 }
 
 #endif
