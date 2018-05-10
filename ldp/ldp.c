@@ -69,6 +69,7 @@ static int check_offloads(const char *name)
   names = calloc(1, sizeof(*names) + len * ETH_GSTRING_LEN);
   if (names == NULL)
   {
+    close(fd);
     errno = ENOMEM;
     return 0;
   }
@@ -83,6 +84,7 @@ static int check_offloads(const char *name)
     int errnosave;
     errnosave = errno;
     close(fd);
+    free(names);
     errno = errnosave;
     return 0;
   }
@@ -93,6 +95,13 @@ static int check_offloads(const char *name)
   }
 
   state = malloc(sizeof(*state) + ((len+31)/32) * sizeof(state->features.features[0]));
+  if (state == NULL)
+  {
+    free(names);
+    close(fd);
+    errno = ENOMEM;
+    return 0;
+  }
 
   state->features.cmd = ETHTOOL_GFEATURES;
   state->features.size = (len+31) / 32;
@@ -103,6 +112,8 @@ static int check_offloads(const char *name)
     int errnosave;
     errnosave = errno;
     close(fd);
+    free(names);
+    free(state);
     errno = errnosave;
     return 0;
   }
@@ -116,20 +127,28 @@ static int check_offloads(const char *name)
     if (strcmp(offload, "rx-checksum") == 0 && x)
     {
       errno = EMEDIUMTYPE;
+      free(names);
+      free(state);
       return 0;
     }
     else if (strcmp(offload, "rx-gro") == 0 && x)
     {
       errno = EMEDIUMTYPE;
+      free(names);
+      free(state);
       return 0;
     }
     else if (strcmp(offload, "rx-lro") == 0 && x)
     {
       errno = EMEDIUMTYPE;
+      free(names);
+      free(state);
       return 0;
     }
   }
 
+  free(names);
+  free(state);
   return 1;
 }
 
