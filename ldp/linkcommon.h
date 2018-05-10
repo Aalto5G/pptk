@@ -8,22 +8,40 @@
 
 int ldp_set_mtu(int sockfd, const char *ifname, uint16_t mtu);
 
+int ldp_get_mtu(int sockfd, const char *ifname);
+
 static inline int
 ldp_interface_set_mtu(struct ldp_interface *intf, uint16_t mtu)
 {
   int ret, sockfd;
-#if 0
   if (intf->mtu_set)
   {
-    return intf->mtu_set(intf, on);
+    return intf->mtu_set(intf, mtu);
   }
-#endif
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0)
   {
     return -1;
   }
   ret = ldp_set_mtu(sockfd, intf->name, mtu);
+  close(sockfd);
+  return ret;
+}
+
+static inline int
+ldp_interface_get_mtu(struct ldp_interface *intf)
+{
+  int ret, sockfd;
+  if (intf->mtu_get)
+  {
+    return intf->mtu_get(intf);
+  }
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0)
+  {
+    return -1;
+  }
+  ret = ldp_get_mtu(sockfd, intf->name);
   close(sockfd);
   return ret;
 }

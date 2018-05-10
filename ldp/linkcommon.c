@@ -52,6 +52,50 @@ int ldp_set_mtu(int sockfd, const char *ifname, uint16_t mtu)
   return 0;
 }
 
+int ldp_get_mtu(int sockfd, const char *ifname)
+{
+  struct ifreq ifr;
+  long portid;
+  char *endptr;
+  portid = strtol(ifname, &endptr, 10);
+  if (*ifname != '\0' && *endptr == '\0' && portid >= 0 && portid <= INT_MAX)
+  {
+#if WITH_DPDK
+    return ldp_dpdk_mtu_get(portid);
+#else
+    return -ENOTSUP; // DPDK
+#endif
+  }
+
+  memset(&ifr, 0, sizeof(ifr));
+  if (strncmp(ifname, "null:", 5) == 0)
+  {
+    return -ENOTSUP;
+  }
+  if (strncmp(ifname, "odp:", 4) == 0)
+  {
+    return -ENOTSUP;
+  }
+  if (strncmp(ifname, "pcap:", 5) == 0)
+  {
+    return -ENOTSUP;
+  }
+  if (strncmp(ifname, "vale", 4) == 0)
+  {
+    return -ENOTSUP;
+  }
+  if (strncmp(ifname, "netmap:", 7) == 0)
+  {
+    ifname = ifname + 7;
+  }
+  snprintf(ifr.ifr_name, IF_NAMESIZE, "%s", ifname);
+  if (ioctl(sockfd, SIOCGIFMTU, &ifr) < 0)
+  {
+    return -1;
+  }
+  return ifr.ifr_mtu;
+}
+
 int ldp_set_promisc_mode(int sockfd, const char *ifname, int on)
 {
   struct ifreq ifr;
