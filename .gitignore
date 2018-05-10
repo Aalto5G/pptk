@@ -3,6 +3,7 @@ a.out
 *.o
 *.d
 *.s
+*.so
 *.swp
 *.log
 perf.data
