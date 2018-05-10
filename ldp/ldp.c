@@ -35,17 +35,94 @@ static struct ldp_config ldp_config_global = {};
 void ldp_config_init(struct ldp_config *config)
 {
   memset(config, 0, sizeof(*config));
-  config->netmap_nr_rx_slots = 256;
-  config->netmap_nr_tx_slots = 64;
-  config->dpdk_pool_num = 8192;
-  config->dpdk_pool_cache_num = 256;
-  config->dpdk_pool_data_room = 2176;
-  config->dpdk_nb_rxd = 128;
-  config->dpdk_nb_txd = 512;
-  config->socket_num_bufs = 1024;
-  config->odp_num_pkt = 8192;
-  config->odp_pkt_len = 1856;
-  config->pcap_num_bufs = 1024;
+  if (getenv("LDP_NETMAP_NR_RX_SLOTS"))
+  {
+    config->netmap_nr_rx_slots = atoi(getenv("LDP_NETMAP_NR_RX_SLOTS"));
+  }
+  else
+  {
+    config->netmap_nr_rx_slots = 256;
+  }
+  if (getenv("LDP_NETMAP_NR_TX_SLOTS"))
+  {
+    config->netmap_nr_tx_slots = atoi(getenv("LDP_NETMAP_NR_TX_SLOTS"));
+  }
+  else
+  {
+    config->netmap_nr_tx_slots = 64;
+  }
+  if (getenv("LDP_DPDK_POOL_NUM"))
+  {
+    config->dpdk_pool_num = atoi(getenv("LDP_DPDK_POOL_NUM"));
+  }
+  else
+  {
+    config->dpdk_pool_num = 8192;
+  }
+  if (getenv("LDP_DPDK_POOL_CACHE_NUM"))
+  {
+    config->dpdk_pool_cache_num = atoi(getenv("LDP_DPDK_POOL_CACHE_NUM"));
+  }
+  else
+  {
+    config->dpdk_pool_cache_num = 256;
+  }
+  if (getenv("LDP_DPDK_POOL_DATA_ROOM"))
+  {
+    config->dpdk_pool_data_room = atoi(getenv("LDP_DPDK_POOL_DATA_ROOM"));
+  }
+  else
+  {
+    config->dpdk_pool_data_room = 2176;
+  }
+  if (getenv("LDP_DPDK_NB_RXD"))
+  {
+    config->dpdk_nb_rxd = atoi(getenv("LDP_DPDK_NB_RXD"));
+  }
+  else
+  {
+    config->dpdk_nb_rxd = 128;
+  }
+  if (getenv("LDP_DPDK_NB_TXD"))
+  {
+    config->dpdk_nb_txd = atoi(getenv("LDP_DPDK_NB_TXD"));
+  }
+  else
+  {
+    config->dpdk_nb_txd = 512;
+  }
+  if (getenv("LDP_SOCKET_NUM_BUFS"))
+  {
+    config->socket_num_bufs = atoi(getenv("LDP_SOCKET_NUM_BUFS"));
+  }
+  else
+  {
+    config->socket_num_bufs = 1024;
+  }
+  if (getenv("LDP_ODP_NUM_PKT"))
+  {
+    config->odp_num_pkt = atoi(getenv("LDP_ODP_NUM_PKT"));
+  }
+  else
+  {
+    config->odp_num_pkt = 8192;
+  }
+  if (getenv("LDP_ODP_PKT_LEN"))
+  {
+    config->odp_pkt_len = atoi(getenv("LDP_ODP_PKT_LEN"));
+  }
+  else
+  {
+    config->odp_pkt_len = 1856;
+  }
+  if (getenv("LDP_PCAP_NUM_BUFS"))
+  {
+    config->pcap_num_bufs = atoi(getenv("LDP_PCAP_NUM_BUFS"));
+  }
+  else
+  {
+    config->pcap_num_bufs = 1024;
+  }
 }
 
 struct ldp_config *ldp_config_get_global(void)
