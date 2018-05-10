@@ -496,14 +496,14 @@ int ldp_set_mac_addr(int sockfd, const char *ifname, const void *mac)
 int ldp_link_wait(int sockfd, const char *ifname)
 {
   int i;
-  for (i = 0; i <= 10; i++)
+  for (i = 0; i <= 100; i++)
   {
     if (ldp_link_status(sockfd, ifname))
     {
-      sleep(1); // Better safe than sorry
+      usleep(100*1000); // Better safe than sorry
       return 0;
     }
-    sleep(1);
+    usleep(100*1000);
   }
   return -ENETDOWN;
 }
