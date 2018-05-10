@@ -115,6 +115,10 @@ DIRLDP := ldp
 LCLDP := ldp
 MODULES += LDP
 
+DIRLIBPPTK := libpptk
+LCLIBPPTK := libpptk
+MODULES += LIBPPTK
+
 CFLAGS := -g -O2 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith -Werror -std=gnu11 -fPIC
 
 .PHONY: all clean distclean unit
