@@ -63,7 +63,9 @@ In order to remedy the poor performance of ODP, PPTK has a data plane wrapper
 called LDP. LDP supports packet I/O via sockets, netmap, DPDK, and also via
 ODP. In order to improve the poor multithreaded interface of netmap, LDP
 automatically checks that the number of queues in an interface is properly
-configured before starting the LDP application.
+configured before starting the LDP application, and also tries to make
+automatic adjustments to the queue count if possible. Furthermore, offloads are
+automatically adjusted.
 
 # LDP
 
