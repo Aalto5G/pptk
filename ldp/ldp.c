@@ -33,6 +33,149 @@ struct feature_state {
   struct ethtool_gfeatures features;
 };
 
+struct feature_state_set {
+  struct ethtool_sfeatures features;
+};
+
+static int turn_off_offloads(const char *name)
+{
+  int i;
+  struct ethtool_gstrings *names;
+  struct {
+    struct ethtool_sset_info hdr;
+    uint32_t buf[1];
+  } sset_info;
+  struct feature_state *state;
+  struct feature_state_set *setstate;
+  struct ifreq ifr = {};
+  int fd;
+  uint32_t len;
+
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0)
+  {
+    return 0;
+  }
+
+  sset_info.hdr.cmd = ETHTOOL_GSSET_INFO;
+  sset_info.hdr.reserved = 0;
+  sset_info.hdr.sset_mask = 1ULL << ETH_SS_FEATURES;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&sset_info.hdr; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    errno = errnosave;
+    return 0;
+  }
+  len = sset_info.hdr.sset_mask ? sset_info.hdr.data[0] : 0;
+  names = calloc(1, sizeof(*names) + len * ETH_GSTRING_LEN);
+  if (names == NULL)
+  {
+    close(fd);
+    errno = ENOMEM;
+    return 0;
+  }
+
+  names->cmd = ETHTOOL_GSTRINGS;
+  names->string_set = ETH_SS_FEATURES;
+  names->len = len;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)names; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    free(names);
+    errno = errnosave;
+    return 0;
+  }
+
+  for (i = 0; i < (int)len; i++)
+  {
+    names->data[(i+1)*ETH_GSTRING_LEN - 1] = '\0';
+  }
+
+  state = malloc(sizeof(*state) + ((len+31)/32) * sizeof(state->features.features[0]));
+  if (state == NULL)
+  {
+    free(names);
+    close(fd);
+    errno = ENOMEM;
+    return 0;
+  }
+
+  state->features.cmd = ETHTOOL_GFEATURES;
+  state->features.size = (len+31) / 32;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&state->features; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    free(names);
+    free(state);
+    errno = errnosave;
+    return 0;
+  }
+
+  setstate = calloc(1,sizeof(*setstate) + ((len+31)/32) * sizeof(setstate->features.features[0]));
+
+  for (i = 0; i < (int)len; i++)
+  {
+    char *offload = (char*)&names->data[i*ETH_GSTRING_LEN];
+    int fixed;
+    fixed =
+        !(state->features.features[i/32].available & (1U<<(i%32U))) ||
+        (state->features.features[i/32].never_changed & (1U<<(i%32U)));
+    if (fixed)
+    {
+      continue;
+    }
+    if (strcmp(offload, "rx-checksum") == 0)
+    {
+      setstate->features.features[i/32].valid |= (1U<<(i%32U));
+      setstate->features.features[i/32].requested &= ~(1U<<(i%32U));
+    }
+    else if (strcmp(offload, "rx-gro") == 0)
+    {
+      setstate->features.features[i/32].valid |= (1U<<(i%32U));
+      setstate->features.features[i/32].requested &= ~(1U<<(i%32U));
+    }
+    else if (strcmp(offload, "rx-lro") == 0)
+    {
+      setstate->features.features[i/32].valid |= (1U<<(i%32U));
+      setstate->features.features[i/32].requested &= ~(1U<<(i%32U));
+    }
+  }
+
+  setstate->features.cmd = ETHTOOL_SFEATURES;
+  setstate->features.size = (len+31) / 32;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&setstate->features; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    errnosave = errno;
+    close(fd);
+    free(names);
+    free(state);
+    free(setstate);
+    errno = errnosave;
+    return 0;
+  }
+  close(fd);
+
+  free(names);
+  free(state);
+  free(setstate);
+  return 1;
+}
+
 static int check_offloads(const char *name)
 {
   int i;
@@ -799,6 +942,10 @@ ldp_interface_open_2(const char *name, int numinq, int numoutq,
   }
   else if (strncmp(name, "netmap:", 7) == 0)
   {
+    if (!turn_off_offloads(name+7))
+    {
+      return NULL;
+    }
     if (!check_offloads(name+7))
     {
       return NULL;
@@ -816,6 +963,10 @@ ldp_interface_open_2(const char *name, int numinq, int numoutq,
 #else
     return NULL;
 #endif
+  }
+  if (!turn_off_offloads(name))
+  {
+    return NULL;
   }
   if (!check_offloads(name))
   {
