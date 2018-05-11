@@ -240,7 +240,7 @@ static int check_channels(const char *name, int numinq, int numoutq)
   if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
   {
     int errnosave;
-    if (errno == ENOTSUP && numinq == 1)
+    if (errno == ENOTSUP && numinq == 1 && numoutq == 1)
     {
       close(fd);
       return 1;
@@ -275,6 +275,91 @@ static int check_channels(const char *name, int numinq, int numoutq)
   return 1;
 }
 
+static int set_channels(const char *name, int numinq, int numoutq)
+{
+  int rx, tx;
+  struct ethtool_channels echannels = {};
+  struct ifreq ifr = {};
+  int fd;
+  int use_combined = 0;
+
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0)
+  {
+    return 0;
+  }
+  echannels.cmd = ETHTOOL_GCHANNELS;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&echannels; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    if (errno == ENOTSUP && numinq == 1 && numoutq == 1)
+    {
+      close(fd);
+      return 1;
+    }
+    errnosave = errno;
+    close(fd);
+    errno = errnosave;
+    return 0;
+  }
+
+  rx = echannels.rx_count;
+  if (rx <= 0)
+  {
+    rx = echannels.combined_count;
+    use_combined = 1;
+  }
+  if (rx <= 0)
+  {
+    errno = ECHRNG;
+    return 0;
+  }
+  tx = echannels.tx_count;
+  if (tx <= 0)
+  {
+    tx = echannels.combined_count;
+  }
+  if (tx <= 0)
+  {
+    errno = ECHRNG;
+    return 0;
+  }
+  if (use_combined && numoutq > numinq)
+  {
+    errno = ECHRNG;
+    return 0;
+  }
+  if (use_combined)
+  {
+    echannels.combined_count = numinq;
+  }
+  else
+  {
+    echannels.rx_count = numinq;
+    echannels.tx_count = numoutq;
+  }
+  echannels.cmd = ETHTOOL_SCHANNELS;
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+  ifr.ifr_data = (void*)&echannels; // cmd
+  if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+  {
+    int errnosave;
+    if (errno == ENOTSUP && numinq == rx && numoutq <= tx)
+    {
+      close(fd);
+      return 1;
+    }
+    errnosave = errno;
+    close(fd);
+    errno = errnosave;
+    return 0;
+  }
+  close(fd);
+  return 1;
+}
+
 struct ldp_interface *
 ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
                           const struct ldp_interface_settings *settings)
@@ -295,6 +380,11 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   if (strncmp(name, "netmap:", 7) == 0)
   {
     devname = name + 7;
+    if (!set_channels(devname, numinq, numoutq))
+    {
+      // errno already set
+      return NULL;
+    }
     if (!check_channels(devname, numinq, numoutq))
     {
       // errno already set
