@@ -19,6 +19,7 @@ int main(int argc, char **argv)
   if (ldp_interface_link_wait(intf) != 0)
   {
     printf("Can't wait for link\n");
+    ldp_interface_close(intf);
     return 1;
   }
   ldp_interface_close(intf);
