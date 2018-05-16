@@ -393,6 +393,9 @@ ldp_interface_open_dpdk(const char *name, int numinq, int numoutq,
 
   port_conf.rxmode.hw_strip_crc = 1;
   port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
+  port_conf.rxmode.mq_mode = ETH_MQ_RX_RSS;
+  port_conf.rx_adv_conf.rss_conf.rss_hf =
+    ETH_RSS_IP | ETH_RSS_TCP | ETH_RSS_UDP | ETH_RSS_SCTP;
 
   if (numinq < 0 || numoutq < 0 || numinq > 1024*1024 || numoutq > 1024*1024)
   {
