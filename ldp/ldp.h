@@ -40,6 +40,30 @@ void ldp_config_init(struct ldp_config *config);
  */
 void ldp_config_set(struct ldp_config *config);
 
+enum rss_enum {
+  RSS_OPT_SRC_IP = (1<<0),
+  RSS_OPT_DST_IP = (1<<1),
+  RSS_OPT_SRC_PORT = (1<<2),
+  RSS_OPT_DST_PORT = (1<<3),
+};
+
+#define RSS_OPT_SRC_IP (1<<0)
+
+struct rss_opts {
+  enum rss_enum tcp4;
+  int tcp4_set;
+  enum rss_enum tcp6;
+  int tcp6_set;
+  enum rss_enum udp4;
+  int udp4_set;
+  enum rss_enum udp6;
+  int udp6_set;
+  enum rss_enum ipv4;
+  int ipv4_set;
+  enum rss_enum ipv6;
+  int ipv6_set;
+};
+
 struct ldp_interface_settings {
   int mtu_set;
   uint16_t mtu;
@@ -49,6 +73,8 @@ struct ldp_interface_settings {
   int promisc_on;
   int allmulti_set;
   int allmulti_on;
+  int rss_set;
+  struct rss_opts rss;
 };
 
 struct ldp_interface {
