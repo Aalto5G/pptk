@@ -8,7 +8,7 @@ endif
 ifeq ($(WITH_ODP),yes)
 LDP_SRC_LIB += ldpodp.c
 endif
-LDP_SRC := $(LDP_SRC_LIB) testldp.c ldpfwd.c ldpfwdmt.c ldptunnel.c
+LDP_SRC := $(LDP_SRC_LIB) testldp.c testrss.c ldpfwd.c ldpfwdmt.c ldptunnel.c
 
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
 LDP_SRC := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC))
@@ -31,7 +31,7 @@ clean_$(LCLDP): clean_LDP
 distclean_$(LCLDP): distclean_LDP
 unit_$(LCLDP): unit_LDP
 
-LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel
+LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel
 
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
@@ -77,6 +77,9 @@ $(DIRLDP)/libldp.so: $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/li
 $(DIRLDP)/testldp: $(DIRLDP)/testldp.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
 
+$(DIRLDP)/testrss: $(DIRLDP)/testrss.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
+
 $(DIRLDP)/ldpfwd: $(DIRLDP)/ldpfwd.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
 
@@ -97,6 +100,6 @@ clean_LDP:
 	rm -f $(LDP_OBJ) $(LDP_DEP)
 
 distclean_LDP: clean_LDP
-	rm -f $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/ldpfwd
+	rm -f $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd
 
 -include $(DIRLDP)/*.d

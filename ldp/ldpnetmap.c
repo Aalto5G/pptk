@@ -360,6 +360,144 @@ static int set_channels(const char *name, int numinq, int numoutq)
   return 1;
 }
 
+static int set_rss(const char *name, const struct rss_opts *rss)
+{
+  struct ethtool_rxnfc nfc = {};
+  struct ifreq ifr = {};
+  int fd;
+
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0)
+  {
+    return 0;
+  }
+  if (rss->udp4_set)
+  {
+    nfc.cmd = ETHTOOL_SRXFH;
+    nfc.flow_type = UDP_V4_FLOW;
+    nfc.data = 0;
+    if (rss->udp4 & RSS_OPT_SRC_IP) nfc.data |= RXH_IP_SRC;
+    if (rss->udp4 & RSS_OPT_DST_IP) nfc.data |= RXH_IP_DST;
+    if (rss->udp4 & RSS_OPT_SRC_PORT) nfc.data |= RXH_L4_B_0_1;
+    if (rss->udp4 & RSS_OPT_DST_PORT) nfc.data |= RXH_L4_B_2_3;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    ifr.ifr_data = (void*)&nfc; // cmd
+    if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+    {
+      int errnosave;
+      errnosave = errno;
+      close(fd);
+      errno = errnosave;
+      return 0;
+    }
+  }
+  if (rss->udp6_set)
+  {
+    nfc.cmd = ETHTOOL_SRXFH;
+    nfc.flow_type = UDP_V6_FLOW;
+    nfc.data = 0;
+    if (rss->udp6 & RSS_OPT_SRC_IP) nfc.data |= RXH_IP_SRC;
+    if (rss->udp6 & RSS_OPT_DST_IP) nfc.data |= RXH_IP_DST;
+    if (rss->udp6 & RSS_OPT_SRC_PORT) nfc.data |= RXH_L4_B_0_1;
+    if (rss->udp6 & RSS_OPT_DST_PORT) nfc.data |= RXH_L4_B_2_3;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    ifr.ifr_data = (void*)&nfc; // cmd
+    if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+    {
+      int errnosave;
+      errnosave = errno;
+      close(fd);
+      errno = errnosave;
+      return 0;
+    }
+  }
+
+  if (rss->tcp4_set)
+  {
+    nfc.cmd = ETHTOOL_SRXFH;
+    nfc.flow_type = TCP_V4_FLOW;
+    nfc.data = 0;
+    if (rss->tcp4 & RSS_OPT_SRC_IP) nfc.data |= RXH_IP_SRC;
+    if (rss->tcp4 & RSS_OPT_DST_IP) nfc.data |= RXH_IP_DST;
+    if (rss->tcp4 & RSS_OPT_SRC_PORT) nfc.data |= RXH_L4_B_0_1;
+    if (rss->tcp4 & RSS_OPT_DST_PORT) nfc.data |= RXH_L4_B_2_3;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    ifr.ifr_data = (void*)&nfc; // cmd
+    if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+    {
+      int errnosave;
+      errnosave = errno;
+      close(fd);
+      errno = errnosave;
+      return 0;
+    }
+  }
+  if (rss->tcp6_set)
+  {
+    nfc.cmd = ETHTOOL_SRXFH;
+    nfc.flow_type = TCP_V6_FLOW;
+    nfc.data = 0;
+    if (rss->tcp6 & RSS_OPT_SRC_IP) nfc.data |= RXH_IP_SRC;
+    if (rss->tcp6 & RSS_OPT_DST_IP) nfc.data |= RXH_IP_DST;
+    if (rss->tcp6 & RSS_OPT_SRC_PORT) nfc.data |= RXH_L4_B_0_1;
+    if (rss->tcp6 & RSS_OPT_DST_PORT) nfc.data |= RXH_L4_B_2_3;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    ifr.ifr_data = (void*)&nfc; // cmd
+    if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+    {
+      int errnosave;
+      errnosave = errno;
+      close(fd);
+      errno = errnosave;
+      return 0;
+    }
+  }
+
+  if (rss->ipv4_set)
+  {
+    nfc.cmd = ETHTOOL_SRXFH;
+    nfc.flow_type = IPV4_FLOW;
+    nfc.data = 0;
+    if (rss->ipv4 & RSS_OPT_SRC_IP) nfc.data |= RXH_IP_SRC;
+    if (rss->ipv4 & RSS_OPT_DST_IP) nfc.data |= RXH_IP_DST;
+    if (rss->ipv4 & RSS_OPT_SRC_PORT) nfc.data |= RXH_L4_B_0_1;
+    if (rss->ipv4 & RSS_OPT_DST_PORT) nfc.data |= RXH_L4_B_2_3;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    ifr.ifr_data = (void*)&nfc; // cmd
+    if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+    {
+      int errnosave;
+      errnosave = errno;
+      close(fd);
+      errno = errnosave;
+      return 0;
+    }
+  }
+  if (rss->ipv6_set)
+  {
+    nfc.cmd = ETHTOOL_SRXFH;
+    nfc.flow_type = IPV6_FLOW;
+    nfc.data = 0;
+    if (rss->ipv6 & RSS_OPT_SRC_IP) nfc.data |= RXH_IP_SRC;
+    if (rss->ipv6 & RSS_OPT_DST_IP) nfc.data |= RXH_IP_DST;
+    if (rss->ipv6 & RSS_OPT_SRC_PORT) nfc.data |= RXH_L4_B_0_1;
+    if (rss->ipv6 & RSS_OPT_DST_PORT) nfc.data |= RXH_L4_B_2_3;
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+    ifr.ifr_data = (void*)&nfc; // cmd
+    if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
+    {
+      int errnosave;
+      errnosave = errno;
+      close(fd);
+      errno = errnosave;
+      return 0;
+    }
+  }
+
+  close(fd);
+  return 1;
+}
+
 struct ldp_interface *
 ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
                           const struct ldp_interface_settings *settings)
@@ -389,6 +527,14 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     {
       // errno already set
       return NULL;
+    }
+    if (settings && settings->rss_set)
+    {
+        if (!set_rss(devname, &settings->rss))
+        {
+          // errno already set
+          return NULL;
+        }
     }
   }
   else if (strncmp(name, "vale", 4) == 0)
