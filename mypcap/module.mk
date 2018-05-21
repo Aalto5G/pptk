@@ -60,6 +60,6 @@ clean_MYPCAP:
 	rm -f $(MYPCAP_OBJ) $(MYPCAP_DEP)
 
 distclean_MYPCAP: clean_MYPCAP
-	rm -f $(DIRMYPCAP)/libmypcap.a $(DIRMYPCAP)/testpcap $(DIRMYPCAP)/testpcapng $(DIRMYPCAP)/pcaptong $(DIRMYPCAP)/pcapngcmp $(DIRMYPCAP)/pcapcmp
+	rm -f $(DIRMYPCAP)/libmypcap.a $(DIRMYPCAP)/testpcap $(DIRMYPCAP)/testpcapng $(DIRMYPCAP)/pcaptong $(DIRMYPCAP)/pcapngcmp $(DIRMYPCAP)/pcapcmp $(DIRMYPCAP)/pcaptoregular
 
 -include $(DIRMYPCAP)/*.d

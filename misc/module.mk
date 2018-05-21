@@ -76,6 +76,6 @@ clean_MISC:
 	rm -f $(MISC_OBJ) $(MISC_DEP)
 
 distclean_MISC: clean_MISC
-	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest $(DIRMISC)/shatest
+	rm -f $(DIRMISC)/libmisc.a $(DIRMISC)/containeroftest $(DIRMISC)/murmurtest $(DIRMISC)/branchpredicttest $(DIRMISC)/siphashtest $(DIRMISC)/memperftest $(DIRMISC)/chachatest $(DIRMISC)/shatest $(DIRMISC)/murmurperf $(DIRMISC)/siphashperf $(DIRMISC)/linuxhashperf
 
 -include $(DIRMISC)/*.d

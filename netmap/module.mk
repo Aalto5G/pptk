@@ -60,6 +60,6 @@ clean_NETMAP:
 	rm -f $(NETMAP_OBJ) $(NETMAP_DEP)
 
 distclean_NETMAP: clean_NETMAP
-	rm -f $(DIRNETMAP)/libnetmap.a $(DIRNETMAP)/netmapperf $(DIRNETMAP)/netmapfwd $(DIRNETMAP)/netmaprecv
+	rm -f $(DIRNETMAP)/libnetmap.a $(DIRNETMAP)/netmapperf $(DIRNETMAP)/netmapfwd $(DIRNETMAP)/netmaprecv $(DIRNETMAP)/netmapreplay
 
 -include $(DIRNETMAP)/*.d
