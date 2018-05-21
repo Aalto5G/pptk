@@ -8,7 +8,7 @@ endif
 ifeq ($(WITH_ODP),yes)
 LDP_SRC_LIB += ldpodp.c
 endif
-LDP_SRC := $(LDP_SRC_LIB) testldp.c testrss.c ldpfwd.c ldpfwdmt.c ldptunnel.c ldprecv.c ldpreplay.c
+LDP_SRC := $(LDP_SRC_LIB) testldp.c testrss.c ldpfwd.c ldpfwdmt.c ldptunnel.c ldprecv.c ldpreplay.c ldpswitch.c
 
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
 LDP_SRC := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC))
@@ -22,7 +22,7 @@ LDP_DEP := $(patsubst %.c,%.d,$(LDP_SRC))
 CFLAGS_LDP := -I$(DIRMISC) -I$(DIRMYPCAP) -I$(DIRDYNARR) -I$(DIRHASHTABLE) -I$(DIRHASHLIST) -I$(DIRLINKEDLIST) -I$(DIRIPHDR)
 MAKEFILES_LDP := $(DIRLDP)/module.mk
 
-LIBS_LDP := $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(DIRIPHDR)/libiphdr.a
+LIBS_LDP := $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(DIRIPHDR)/libiphdr.a $(DIRMISC)/libmisc.a $(DIRLOG)/liblog.a
 
 .PHONY: LDP clean_LDP distclean_LDP unit_LDP $(LCLDP) clean_$(LCLDP) distclean_$(LCLDP) unit_$(LCLDP)
 
@@ -31,7 +31,7 @@ clean_$(LCLDP): clean_LDP
 distclean_$(LCLDP): distclean_LDP
 unit_$(LCLDP): unit_LDP
 
-LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay
+LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch
 
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
@@ -95,6 +95,9 @@ $(DIRLDP)/ldprecv: $(DIRLDP)/ldprecv.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILE
 $(DIRLDP)/ldpreplay: $(DIRLDP)/ldpreplay.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
 
+$(DIRLDP)/ldpswitch: $(DIRLDP)/ldpswitch.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
+
 $(LDP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_LDP)
 	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_LDP)
@@ -106,6 +109,6 @@ clean_LDP:
 	rm -f $(LDP_OBJ) $(LDP_DEP)
 
 distclean_LDP: clean_LDP
-	rm -f $(DIRLDP)/libldp.so $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay
+	rm -f $(DIRLDP)/libldp.so $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch
 
 -include $(DIRLDP)/*.d
