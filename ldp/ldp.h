@@ -47,8 +47,6 @@ enum rss_enum {
   RSS_OPT_DST_PORT = (1<<3),
 };
 
-#define RSS_OPT_SRC_IP (1<<0)
-
 struct rss_opts {
   enum rss_enum tcp4;
   int tcp4_set;
