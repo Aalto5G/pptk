@@ -50,6 +50,6 @@ clean_ALLOC:
 	rm -f $(ALLOC_OBJ) $(ALLOC_DEP)
 
 distclean_ALLOC: clean_ALLOC
-	rm -f $(DIRALLOC)/liballoc.a $(DIRALLOC)/llperfst
+	rm -f $(DIRALLOC)/liballoc.a $(DIRALLOC)/llperfst $(DIRALLOC)/allociftest
 
 -include $(DIRALLOC)/*.d

@@ -100,6 +100,6 @@ clean_LDP:
 	rm -f $(LDP_OBJ) $(LDP_DEP)
 
 distclean_LDP: clean_LDP
-	rm -f $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd
+	rm -f $(DIRLDP)/libldp.so $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel
 
 -include $(DIRLDP)/*.d
