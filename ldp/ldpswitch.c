@@ -90,7 +90,10 @@ static int port_get(const char mac[6])
 static void time_out(uint64_t time64)
 {
   struct linked_list_node *n, *tmp;
-  pthread_mutex_lock(&gbl_mtx);
+  if (num_thrs > 1)
+  {
+    pthread_mutex_lock(&gbl_mtx);
+  }
   LINKED_LIST_FOR_EACH_SAFE(n, tmp, &oldest_to_newest)
   {
     struct entry *e = CONTAINER_OF(n, struct entry, n);
@@ -113,7 +116,10 @@ static void time_out(uint64_t time64)
       break;
     }
   }
-  pthread_mutex_unlock(&gbl_mtx);
+  if (num_thrs > 1)
+  {
+    pthread_mutex_unlock(&gbl_mtx);
+  }
 }
 
 static void port_put(const char mac[6], int port, uint64_t time64)
@@ -131,16 +137,25 @@ static void port_put(const char mac[6], int port, uint64_t time64)
       e2 = e;
       e2->port = port;
       e2->time64 = time64;
-      pthread_mutex_lock(&gbl_mtx);
+      if (num_thrs > 1)
+      {
+        pthread_mutex_lock(&gbl_mtx);
+      }
       linked_list_delete(&e2->n);
       linked_list_add_tail(&e2->n, &oldest_to_newest);
-      pthread_mutex_unlock(&gbl_mtx);
+      if (num_thrs > 1)
+      {
+        pthread_mutex_unlock(&gbl_mtx);
+      }
       break;
     }
   }
   if (e2 == NULL)
   {
-    pthread_mutex_lock(&gbl_mtx);
+    if (num_thrs > 1)
+    {
+      pthread_mutex_lock(&gbl_mtx);
+    }
     if (table.itemcnt >= table.bucketcnt)
     {
       struct entry *e = CONTAINER_OF(oldest_to_newest.node.next, struct entry, n);
@@ -174,7 +189,10 @@ static void port_put(const char mac[6], int port, uint64_t time64)
     e2->time64 = time64;
     linked_list_add_tail(&e2->n, &oldest_to_newest);
     hash_table_add_nogrow_already_bucket_locked(&table, &e2->e, hashval);
-    pthread_mutex_unlock(&gbl_mtx);
+    if (num_thrs > 1)
+    {
+      pthread_mutex_unlock(&gbl_mtx);
+    }
     printf("adding entry with MAC %d:%d:%d:%d:%d:%d port %d to hash table due to learning\n",
            (unsigned char)e2->mac[0],
            (unsigned char)e2->mac[1],
