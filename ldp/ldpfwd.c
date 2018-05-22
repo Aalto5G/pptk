@@ -53,8 +53,8 @@ int main(int argc, char **argv)
       exit(0);
     }
 
-    ulintf->outq[0]->txsync(ulintf->outq[0]);
-    dlintf->outq[0]->txsync(dlintf->outq[0]);
+    ldp_out_txsync(ulintf->outq[0]);
+    ldp_out_txsync(dlintf->outq[0]);
 
     pfds[0].fd = dlintf->inq[0]->fd;
     pfds[0].events = POLLIN;
