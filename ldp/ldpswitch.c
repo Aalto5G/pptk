@@ -167,7 +167,10 @@ static void *thrfn(void *arg)
         {
           for (k = 0; k < num_intfs; k++)
           {
-            pktout_tbl[k][numout[k]++] = pkt_tbl[j];
+            if (k != i)
+            {
+              pktout_tbl[k][numout[k]++] = pkt_tbl[j];
+            }
           }
         }
         else
