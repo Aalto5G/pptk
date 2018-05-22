@@ -194,6 +194,7 @@ static void *thrfn(void *arg)
 int main(int argc, char **argv)
 {
   int i;
+  int ret;
 
   hash_seed_init();
 
@@ -204,8 +205,6 @@ int main(int argc, char **argv)
     printf("usage: %s 3 vale0:1 vale1:1 ...\n", argv[0]);
     exit(1);
   }
-
-  hash_table_init_locked(&table, 8192, mac_hash_fn, NULL, 1);
 
   num_intfs = argc - 2;
   intfs = malloc(num_intfs*sizeof(*intfs));
@@ -218,6 +217,19 @@ int main(int argc, char **argv)
   if (num_thrs < 1 || num_thrs > 1024)
   {
     printf("invalid thread count %s\n", argv[1]);
+    exit(1);
+  }
+  if (num_thrs > 1)
+  {
+    ret = hash_table_init_locked(&table, 8192, mac_hash_fn, NULL, 1);
+  }
+  else
+  {
+    ret = hash_table_init(&table, 8192, mac_hash_fn, NULL);
+  }
+  if (ret != 0)
+  {
+    printf("out of memory\n");
     exit(1);
   }
   thrs = malloc(num_thrs*sizeof(*thrs));
