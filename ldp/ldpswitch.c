@@ -44,6 +44,19 @@ static uint32_t mac_hash_fn(struct hash_list_node *e, void *userdata)
   return hash(CONTAINER_OF(e, struct entry, e));
 }
 
+static inline int fast_mac_equals(const char mac1[6], const char mac2[6])
+{
+  if (hdr_get32h(mac1) != hdr_get32h(mac2))
+  {
+    return 0;
+  }
+  if (hdr_get16h(mac1+4) != hdr_get16h(mac2+4))
+  {
+    return 0;
+  }
+  return 1;
+}
+
 static int port_get(const char mac[6])
 {
   uint32_t hashval = mac_hash(mac);
@@ -54,7 +67,7 @@ static int port_get(const char mac[6])
   HASH_TABLE_FOR_EACH_POSSIBLE(&table, x, hashval)
   {
     struct entry *e = CONTAINER_OF(x, struct entry, e);
-    if (memcmp(e->mac, mac, 6) == 0)
+    if (fast_mac_equals(e->mac, mac))
     {
       port = e->port;
       break;
@@ -74,7 +87,7 @@ static void port_put(const char mac[6], int port)
   HASH_TABLE_FOR_EACH_POSSIBLE(&table, x, hashval)
   {
     struct entry *e = CONTAINER_OF(x, struct entry, e);
-    if (memcmp(e->mac, mac, 6) == 0)
+    if (fast_mac_equals(e->mac, mac))
     {
       e2 = e;
       e2->port = port;
