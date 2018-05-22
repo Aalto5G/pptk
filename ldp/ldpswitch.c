@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <pthread.h>
 #include "hashtable.h"
+#include "linkedlist.h"
 #include "hashlist.h"
 #include "iphdr.h"
 #include "containerof.h"
@@ -19,14 +20,21 @@ int num_thrs;
 
 struct hash_table table;
 
+struct linked_list_head oldest_to_newest;
+
+pthread_mutex_t gbl_mtx = PTHREAD_MUTEX_INITIALIZER;
+
 struct thrctx {
   int id;
 };
 
 struct entry {
   struct hash_list_node e;
+  struct linked_list_node n;
   char mac[6];
   int port;
+  uint64_t time64;
+  uint32_t bucket;
 };
 
 static inline uint32_t mac_hash(const char mac[6])
@@ -77,7 +85,38 @@ static int port_get(const char mac[6])
   return port;
 }
 
-static void port_put(const char mac[6], int port)
+#define TIMEOUT (300*1000*1000)
+
+static void time_out(uint64_t time64)
+{
+  struct linked_list_node *n, *tmp;
+  pthread_mutex_lock(&gbl_mtx);
+  LINKED_LIST_FOR_EACH_SAFE(n, tmp, &oldest_to_newest)
+  {
+    struct entry *e = CONTAINER_OF(n, struct entry, n);
+    if (e->time64 + TIMEOUT < time64)
+    {
+      linked_list_delete(&e->n);
+      printf("deleting entry with MAC %d:%d:%d:%d:%d:%d port %d from hash table due to timeout\n",
+             (unsigned char)e->mac[0],
+             (unsigned char)e->mac[1],
+             (unsigned char)e->mac[2],
+             (unsigned char)e->mac[3],
+             (unsigned char)e->mac[4],
+             (unsigned char)e->mac[5],
+             e->port);
+      hash_table_delete(&table, &e->e, mac_hash_fn(&e->e, NULL));
+      free(e);
+    }
+    else
+    {
+      break;
+    }
+  }
+  pthread_mutex_unlock(&gbl_mtx);
+}
+
+static void port_put(const char mac[6], int port, uint64_t time64)
 {
   uint32_t hashval = mac_hash(mac);
   struct hash_list_node *x;
@@ -91,19 +130,59 @@ static void port_put(const char mac[6], int port)
     {
       e2 = e;
       e2->port = port;
+      e2->time64 = time64;
+      pthread_mutex_lock(&gbl_mtx);
+      linked_list_delete(&e2->n);
+      linked_list_add_tail(&e2->n, &oldest_to_newest);
+      pthread_mutex_unlock(&gbl_mtx);
       break;
     }
   }
   if (e2 == NULL)
   {
+    pthread_mutex_lock(&gbl_mtx);
+    if (table.itemcnt >= table.bucketcnt)
+    {
+      struct entry *e = CONTAINER_OF(oldest_to_newest.node.next, struct entry, n);
+      linked_list_delete(&e->n);
+      printf("deleting entry with MAC %d:%d:%d:%d:%d:%d port %d from hash table due to memory shortage\n",
+             (unsigned char)e->mac[0],
+             (unsigned char)e->mac[1],
+             (unsigned char)e->mac[2],
+             (unsigned char)e->mac[3],
+             (unsigned char)e->mac[4],
+             (unsigned char)e->mac[5],
+             e->port);
+      if (e->bucket >> table.mutex_shift == (hashval & (table.bucketcnt - 1)) >> table.mutex_shift)
+      {
+        hash_table_delete_already_bucket_locked(&table, &e->e);
+      }
+      else
+      {
+        hash_table_delete(&table, &e->e, hashval);
+      }
+      free(e);
+    }
     e2 = malloc(sizeof(*e2));
     if (e2 == NULL)
     {
       goto out;
     }
     memcpy(e2->mac, mac, 6);
+    e2->bucket = (hashval & (table.bucketcnt - 1));
     e2->port = port;
+    e2->time64 = time64;
+    linked_list_add_tail(&e2->n, &oldest_to_newest);
     hash_table_add_nogrow_already_bucket_locked(&table, &e2->e, hashval);
+    pthread_mutex_unlock(&gbl_mtx);
+    printf("adding entry with MAC %d:%d:%d:%d:%d:%d port %d to hash table due to learning\n",
+           (unsigned char)e2->mac[0],
+           (unsigned char)e2->mac[1],
+           (unsigned char)e2->mac[2],
+           (unsigned char)e2->mac[3],
+           (unsigned char)e2->mac[4],
+           (unsigned char)e2->mac[5],
+           e2->port);
   }
 
 out:
@@ -157,8 +236,15 @@ static void *thrfn(void *arg)
       memcpy(pfds, pfds_template, sizeof(*pfds)*num_intfs);
       poll(pfds, num_intfs, 5);
     }
+    if (id == 0)
+    {
+      time_out(gettime64());
+    }
     for (i = 0; i < num_intfs; i++)
     {
+      uint64_t time64;
+      char last_mac[6] = {1,0,0,0,0,0};
+      time64 = gettime64();
       num = ldp_in_nextpkts(intfs[i]->inq[id], pkt_tbl, sizeof(pkt_tbl)/sizeof(*pkt_tbl));
       for (j = 0; j < num; j++)
       {
@@ -168,7 +254,11 @@ static void *thrfn(void *arg)
           char *src = ether_src(pkt_tbl[j].data);
           if (!(src[0] & 1))
           {
-            port_put(src, i);
+            if (!fast_mac_equals(src, last_mac))
+            {
+              port_put(src, i, time64);
+              memcpy(last_mac, src, 6);
+            }
           }
           port = port_get(ether_dst(pkt_tbl[j].data));
         }
@@ -210,6 +300,7 @@ int main(int argc, char **argv)
   int ret;
 
   hash_seed_init();
+  linked_list_head_init(&oldest_to_newest);
 
   setlinebuf(stdout);
 
