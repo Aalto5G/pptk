@@ -90,6 +90,7 @@ static void port_put(const char mac[6], int port)
     }
     memcpy(e2->mac, mac, 6);
     e2->port = port;
+    hash_table_add_nogrow_already_bucket_locked(&table, &e2->e, hashval);
   }
 
 out:
