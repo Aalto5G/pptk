@@ -102,6 +102,7 @@ int main(int argc, char **argv)
       if (cnt == sizeof(pkt_tbl)/sizeof(*pkt_tbl))
       {
         ldp_out_inject(dlnmd->outq[0], pkt_tbl, cnt);
+        ldp_out_txsync(dlnmd->outq[0]);
         cnt = 0;
       }
       if (pkts % 16 == 0 && gettime64() >= last_time64 + 1000*1000)

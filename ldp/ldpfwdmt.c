@@ -37,8 +37,8 @@ static void *thr(void *arg)
       exit(0);
     }
 
-    ulintf->outq[thrid]->txsync(ulintf->outq[thrid]);
-    dlintf->outq[thrid]->txsync(dlintf->outq[thrid]);
+    ldp_out_txsync(ulintf->outq[thrid]);
+    ldp_out_txsync(dlintf->outq[thrid]);
 
     pfds[0].fd = dlintf->inq[thrid]->fd;
     pfds[0].events = POLLIN;

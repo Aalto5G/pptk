@@ -249,6 +249,10 @@ static void *thrfn(void *arg)
 
   for (;;)
   {
+    for (k = 0; k < num_intfs; k++)
+    {
+      ldp_out_txsync(intfs[k]->outq[id]);
+    }
     if (do_poll)
     {
       memcpy(pfds, pfds_template, sizeof(*pfds)*num_intfs);
