@@ -102,7 +102,7 @@ static int mac_parse(const char *str, char mac[6])
         return -EINVAL;
       }
     }
-    if (uli >= 255)
+    if (uli > 255)
     {
       return -EINVAL;
     }
