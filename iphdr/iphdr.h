@@ -1048,6 +1048,12 @@ static inline uint16_t udp_total_len(const void *pkt)
   return hdr_get16n(&cpkt[4]);
 }
 
+static inline void udp_set_total_len(void *pkt, uint16_t total_len)
+{
+  char *cpkt = pkt;
+  return hdr_set16n(&cpkt[4], total_len);
+}
+
 static inline uint16_t udp_cksum(const void *pkt)
 {
   const char *cpkt = pkt;

@@ -5,5 +5,7 @@
 /ldptunnel
 /ldprecv
 /ldprecvmt
+/ldpsend
+/ldpsendmt
 /ldpreplay
 /ldpswitch
