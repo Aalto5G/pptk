@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "ldp.h"
 #include "iphdr.h"
 #include "ipcksum.h"
@@ -241,6 +242,11 @@ static void *thrfn(void *arg)
       last_time64 = time64;
       last_pkts = pkts;
       last_bytes = bytes;
+    }
+
+    if (global_opts.interval_usec > 0)
+    {
+      usleep(global_opts.interval_usec);
     }
   }
   return NULL;
