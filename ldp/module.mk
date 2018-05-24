@@ -8,7 +8,7 @@ endif
 ifeq ($(WITH_ODP),yes)
 LDP_SRC_LIB += ldpodp.c
 endif
-LDP_SRC := $(LDP_SRC_LIB) testldp.c testrss.c ldpfwd.c ldpfwdmt.c ldptunnel.c ldprecv.c ldpreplay.c ldpswitch.c
+LDP_SRC := $(LDP_SRC_LIB) testldp.c testrss.c ldpfwd.c ldpfwdmt.c ldptunnel.c ldprecv.c ldpreplay.c ldpswitch.c ldprecvmt.c
 
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
 LDP_SRC := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC))
@@ -31,7 +31,7 @@ clean_$(LCLDP): clean_LDP
 distclean_$(LCLDP): distclean_LDP
 unit_$(LCLDP): unit_LDP
 
-LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch
+LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch $(DIRLDP)/ldprecvmt
 
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
@@ -92,6 +92,9 @@ $(DIRLDP)/ldpfwdmt: $(DIRLDP)/ldpfwdmt.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFI
 $(DIRLDP)/ldprecv: $(DIRLDP)/ldprecv.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
 
+$(DIRLDP)/ldprecvmt: $(DIRLDP)/ldprecvmt.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
+
 $(DIRLDP)/ldpreplay: $(DIRLDP)/ldpreplay.o $(DIRLDP)/libldp.a $(LIBS_LDP) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_LDP) $(LDFLAGS_LDP) -lpthread -ldl
 
@@ -109,6 +112,6 @@ clean_LDP:
 	rm -f $(LDP_OBJ) $(LDP_DEP)
 
 distclean_LDP: clean_LDP
-	rm -f $(DIRLDP)/libldp.so $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch
+	rm -f $(DIRLDP)/libldp.so $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch $(DIRLDP)/ldprecvmt
 
 -include $(DIRLDP)/*.d
