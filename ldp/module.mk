@@ -9,6 +9,9 @@ ifeq ($(WITH_ODP),yes)
 LDP_SRC_LIB += ldpodp.c
 endif
 LDP_SRC := $(LDP_SRC_LIB) testldp.c testrss.c ldpfwd.c ldpfwdmt.c ldptunnel.c ldprecv.c ldpreplay.c ldpswitch.c ldprecvmt.c ldpsend.c ldpsendmt.c
+ifeq ($(WITH_LUA),yes)
+LDP_SRC += lualdp.c
+endif
 
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
 LDP_SRC := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC))
@@ -33,8 +36,16 @@ unit_$(LCLDP): unit_LDP
 
 LDP: $(DIRLDP)/libldp.a $(DIRLDP)/libldp.so $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch $(DIRLDP)/ldprecvmt $(DIRLDP)/ldpsend $(DIRLDP)/ldpsendmt
 
+ifeq ($(WITH_LUA),yes)
+LDP: $(DIRLDP)/lualdp.so
+endif
+
 ifeq ($(WITH_NETMAP),yes)
 CFLAGS_LDP += -I$(NETMAP_INCDIR) -DWITH_NETMAP
+endif
+ifeq ($(WITH_LUA),yes)
+CFLAGS_LDP += -I$(LUA_INCDIR) -DWITH_LUA
+LDFLAGS_LDP += $(LIBS_LUA)
 endif
 ifeq ($(WITH_ODP),yes)
 CFLAGS_LDP += -I$(ODP_DIR)/include -DWITH_ODP
@@ -70,6 +81,9 @@ unit_LDP:
 $(DIRLDP)/libldp.a: $(LDP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
+
+$(DIRLDP)/lualdp.so: $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
+	$(CC) -shared -fPIC -o $(DIRLDP)/lualdp.so $(DIRLDP)/lualdp.o -Wl,--whole-archive $(DIRLDP)/libldp.a -Wl,--no-whole-archive $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(LDFLAGS_LDP_DYN) -lc
 
 $(DIRLDP)/libldp.so: $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
 	$(CC) -shared -fPIC -o $(DIRLDP)/libldp.so -Wl,--whole-archive $(DIRLDP)/libldp.a -Wl,--no-whole-archive $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(LDFLAGS_LDP_DYN) -lc
