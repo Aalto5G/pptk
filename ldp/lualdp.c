@@ -14,7 +14,14 @@ static int lualdp_interface_open(lua_State *lua)
   int numinq = lua_tointeger(lua, 2);
   int numoutq = lua_tointeger(lua, 3);
   struct ldp_interface *intf = ldp_interface_open(dev, numinq, numoutq);
-  lua_pushlightuserdata(lua, intf);
+  if (intf == NULL)
+  {
+    lua_pushnil(lua);
+  }
+  else
+  {
+    lua_pushlightuserdata(lua, intf);
+  }
   return 1;
 }
 
@@ -22,7 +29,14 @@ static int lualdp_get_inq(lua_State *lua)
 {
   struct ldp_interface *intf = lua_touserdata(lua, 1);
   int qid = lua_tointeger(lua, 2);
-  lua_pushlightuserdata(lua, intf->inq[qid]);
+  if (qid <= 0 || qid > intf->num_inq)
+  {
+    lua_pushnil(lua);
+  }
+  else
+  {
+    lua_pushlightuserdata(lua, intf->inq[qid - 1]);
+  }
   return 1;
 }
 
@@ -30,7 +44,14 @@ static int lualdp_get_outq(lua_State *lua)
 {
   struct ldp_interface *intf = lua_touserdata(lua, 1);
   int qid = lua_tointeger(lua, 2);
-  lua_pushlightuserdata(lua, intf->outq[qid]);
+  if (qid <= 0 || qid > intf->num_outq)
+  {
+    lua_pushnil(lua);
+  }
+  else
+  {
+    lua_pushlightuserdata(lua, intf->outq[qid - 1]);
+  }
   return 1;
 }
 
