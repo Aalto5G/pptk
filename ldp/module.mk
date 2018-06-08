@@ -82,7 +82,7 @@ $(DIRLDP)/libldp.a: $(LDP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
-$(DIRLDP)/lualdp.so: $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
+$(DIRLDP)/lualdp.so: $(DIRLDP)/lualdp.o $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
 	$(CC) -shared -fPIC -o $(DIRLDP)/lualdp.so $(DIRLDP)/lualdp.o -Wl,--whole-archive $(DIRLDP)/libldp.a -Wl,--no-whole-archive $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(LDFLAGS_LDP_DYN) -lc
 
 $(DIRLDP)/libldp.so: $(DIRLDP)/libldp.a $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a
