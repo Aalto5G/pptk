@@ -43,7 +43,7 @@ static inline void arp_cache_init(struct arp_cache *cache)
 
 void arp_cache_drain(struct arp_entry *entry, struct port *port);
 
-static inline struct arp_entry *arp_cache_get(
+static inline struct arp_entry *arp_cache_get_accept_invalid(
   struct arp_cache *cache, uint32_t ip)
 {
   uint32_t hashval = ip_hash(ip);
@@ -52,12 +52,24 @@ static inline struct arp_entry *arp_cache_get(
   HASH_TABLE_FOR_EACH_POSSIBLE(&cache->hash, node, hashval)
   {
     entry = CONTAINER_OF(node, struct arp_entry, node);
-    if (entry->ip == ip && entry->valid)
+    if (entry->ip == ip)
     {
       return entry;
     }
   }
   return NULL;
+}
+
+static inline struct arp_entry *arp_cache_get(
+  struct arp_cache *cache, uint32_t ip)
+{
+  struct arp_entry *e;
+  e = arp_cache_get_accept_invalid(cache, ip);
+  if (e == NULL || !e->valid)
+  {
+    return NULL;
+  }
+  return e;
 }
 
 void arp_cache_put_packet(
