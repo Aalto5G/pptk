@@ -4,6 +4,119 @@
 #include "hdr.h"
 #include <stdlib.h>
 
+static inline int arp_is_valid_reqresp(const void *vpkt)
+{
+  uint16_t oper;
+  const char *pkt = vpkt;
+  if (hdr_get16n(&pkt[0]) != 1)
+  {
+    return 0;
+  }
+  if (hdr_get16n(&pkt[2]) != 0x0800)
+  {
+    return 0;
+  }
+  if (pkt[4] != 6)
+  {
+    return 0;
+  }
+  if (pkt[5] != 4)
+  {
+    return 0;
+  }
+  oper = hdr_get16n(&pkt[6]);
+  if (oper != 1 && oper != 2)
+  {
+    return 0;
+  }
+  return 1;
+}
+
+static inline int arp_is_req(const void *vpkt)
+{
+  uint16_t oper;
+  const char *pkt = vpkt;
+  oper = hdr_get16n(&pkt[6]);
+  return oper == 1;
+}
+
+static inline int arp_is_resp(const void *vpkt)
+{
+  uint16_t oper;
+  const char *pkt = vpkt;
+  oper = hdr_get16n(&pkt[6]);
+  return oper == 2;
+}
+
+static inline void *arp_sha(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[8];
+}
+
+static inline void *arp_tha(void *pkt)
+{
+  char *cpkt = pkt;
+  return &cpkt[18];
+}
+
+static inline const void *arp_const_sha(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[8];
+}
+
+static inline const void *arp_const_tha(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return &cpkt[18];
+}
+
+static inline uint32_t arp_spa(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get32n(&cpkt[14]);
+}
+
+static inline uint32_t arp_tpa(const void *pkt)
+{
+  const char *cpkt = pkt;
+  return hdr_get32n(&cpkt[24]);
+}
+
+static inline void arp_set_spa(void *pkt, uint32_t addr)
+{
+  char *cpkt = pkt;
+  hdr_set32n(&cpkt[14], addr);
+}
+
+static inline void arp_set_ether(void *pkt)
+{
+  char *arp2 = pkt;
+  hdr_set16n(&arp2[0], 1);
+  hdr_set16n(&arp2[2], 0x0800);
+  arp2[4] = 6;
+  arp2[5] = 4;
+}
+
+static inline void arp_set_req(void *pkt)
+{
+  char *arp2 = pkt;
+  hdr_set16n(&arp2[6], 1);
+}
+
+static inline void arp_set_resp(void *pkt)
+{
+  char *arp2 = pkt;
+  hdr_set16n(&arp2[6], 2);
+}
+
+static inline void arp_set_tpa(void *pkt, uint32_t addr)
+{
+  char *cpkt = pkt;
+  hdr_set32n(&cpkt[24], addr);
+}
+
 static inline void *ether_dst(void *pkt)
 {
   char *cpkt = pkt;
