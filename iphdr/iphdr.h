@@ -489,7 +489,7 @@ static inline void *ipv6_proto_hdr_2(
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
   int is_fragmented = 0;
-  uint16_t frag_hdr_off;
+  uint16_t frag_hdr_off = 0;
   while (is_ipv6_nexthdr(nexthdr))
   {
     uint32_t extlen;
@@ -553,7 +553,7 @@ static inline const void *ipv6_const_proto_hdr_2(
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
   int is_fragmented = 0;
-  uint16_t frag_hdr_off;
+  uint16_t frag_hdr_off = 0;
   while (is_ipv6_nexthdr(nexthdr))
   {
     uint32_t extlen;
