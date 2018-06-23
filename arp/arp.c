@@ -52,7 +52,9 @@ void arp_cache_put_packet(
     }
   }
   entry = malloc(sizeof(*entry));
+  memset(entry, 0, sizeof(*entry));
   entry->ip = ip;
+  memset(entry->mac, 0, sizeof(entry->mac));
   linked_list_head_init(&entry->list);
   linked_list_add_tail(&pkt->node, &entry->list);
   hash_table_add_nogrow(&cache->hash, &entry->node, hashval);
@@ -76,6 +78,7 @@ void arp_cache_put(
     }
   }
   entry = malloc(sizeof(*entry));
+  memset(entry, 0, sizeof(*entry));
   entry->ip = ip;
   entry->valid = 1;
   memcpy(entry->mac, mac, 6);
