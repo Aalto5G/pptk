@@ -31,14 +31,16 @@ uint32_t arp_entry_hash_fn(struct hash_list_node *node, void *userdata);
 
 struct arp_cache {
   struct hash_table hash;
+  struct allocif *intf;
 };
 
-static inline void arp_cache_init(struct arp_cache *cache)
+static inline void arp_cache_init(struct arp_cache *cache, struct allocif *intf)
 {
   if (hash_table_init(&cache->hash, 1024, arp_entry_hash_fn, NULL) != 0)
   {
     abort();
   }
+  cache->intf = intf;
 }
 
 void arp_cache_drain(struct arp_entry *entry, struct port *port);

@@ -45,7 +45,7 @@ void arp_cache_put_packet(
         struct packet *pkt2 =
           CONTAINER_OF(entry->list.node.next, struct packet, node);
         linked_list_delete(&pkt2->node);
-        free(pkt2); // FIXME replace with better allocator
+        allocif_free(cache->intf, pkt2);
       }
       linked_list_add_tail(&pkt->node, &entry->list);
       return;
