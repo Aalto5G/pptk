@@ -101,7 +101,7 @@ void arp_cache_put(
   timer_linkheap_add(timers, &entry->timer);
 }
 
-void arp_entry_expiry_fn(struct timer_link *timer, struct timer_linkheap *heap, void *userdata)
+void arp_entry_expiry_fn(struct timer_link *timer, struct timer_linkheap *heap, void *userdata, void *threaddata)
 {
   struct arp_entry *entry = CONTAINER_OF(timer, struct arp_entry, timer);
   struct arp_cache *cache = userdata;

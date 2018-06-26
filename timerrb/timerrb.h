@@ -14,7 +14,7 @@ struct timerrb {
 
 struct rbtimer;
 
-typedef void (*rbtimer_fn)(struct rbtimer *timer, struct timerrb *rb, void *userdata);
+typedef void (*rbtimer_fn)(struct rbtimer *timer, struct timerrb *rb, void *userdata, void *threaddata);
 
 struct rbtimer {
   uint64_t time64;

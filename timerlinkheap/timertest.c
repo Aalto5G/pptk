@@ -12,7 +12,8 @@ struct periodud {
 };
 
 static void periodic_fn(
-  struct timer_link *timer, struct timer_linkheap *heap, void *userdata)
+  struct timer_link *timer, struct timer_linkheap *heap, void *userdata,
+  void *threaddata)
 {
   struct periodud *ud = userdata;
   if (!timer_linkheap_verify(heap))
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
     }
     timer = timer_linkheap_next_expiry_timer(&heap);
     timer_linkheap_remove(&heap, timer);
-    timer->fn(timer, &heap, timer->userdata);
+    timer->fn(timer, &heap, timer->userdata, NULL);
 
     i = rand()%50;
     periodics[i].time64 += periodics_ud[i].period;

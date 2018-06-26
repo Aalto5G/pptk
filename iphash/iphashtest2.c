@@ -20,7 +20,7 @@ struct ip_hash2 {
   struct ip_hash_entry2 *entries;
 };
 
-void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud);
+void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td);
 
 static void ip_hash_init(struct ip_hash2 *hash)
 {
@@ -35,7 +35,7 @@ static void ip_hash_init(struct ip_hash2 *hash)
   }
 }
 
-void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud)
+void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td)
 {
   struct ip_hash_entry2 *e = CONTAINER_OF(timer, struct ip_hash_entry2, timer);
   e->tokens += TIMER_ADD;
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     {
       struct timer_link *timer = timer_linkheap_next_expiry_timer(&heap);
       timer_linkheap_remove(&heap, timer);
-      timer->fn(timer, &heap, timer->userdata);
+      timer->fn(timer, &heap, timer->userdata, NULL);
       timer_burst++;
     }
     if (timer_burst >= 5000)

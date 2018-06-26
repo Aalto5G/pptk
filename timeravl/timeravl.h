@@ -14,7 +14,7 @@ struct timeravl {
 
 struct avltimer;
 
-typedef void (*avltimer_fn)(struct avltimer *timer, struct timeravl *avl, void *userdata);
+typedef void (*avltimer_fn)(struct avltimer *timer, struct timeravl *avl, void *userdata, void *threaddata);
 
 struct avltimer {
   uint64_t time64;

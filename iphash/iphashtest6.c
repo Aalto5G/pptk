@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     {
       struct timer_link *timer = timer_linkheap_next_expiry_timer(&heap);
       timer_linkheap_remove(&heap, timer);
-      timer->fn(timer, &heap, timer->userdata);
+      timer->fn(timer, &heap, timer->userdata, NULL);
       timer_burst++;
     }
     if (timer_burst >= 2)

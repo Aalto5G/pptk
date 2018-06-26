@@ -19,7 +19,7 @@ struct arp_entry {
   struct timer_link timer;
 };
 
-void arp_entry_expiry_fn(struct timer_link *timer, struct timer_linkheap *heap, void *userdata);
+void arp_entry_expiry_fn(struct timer_link *timer, struct timer_linkheap *heap, void *userdata, void *threaddata);
 
 static inline uint32_t ip_hash(uint32_t ip)
 {

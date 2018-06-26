@@ -48,7 +48,7 @@ struct priv_timer;
 /**
  * Callback function type for timer expiry.
  */
-typedef void (*timer_skiplist_cb_t)(struct timer_skiplist *, struct priv_timer *, void *);
+typedef void (*timer_skiplist_cb_t)(struct timer_skiplist *, struct priv_timer *, void *, void *);
 
 #define MAX_SKIPLIST_DEPTH 10
 
@@ -284,7 +284,7 @@ int timer_skiplist_pending(struct timer_skiplist *tim);
  * function. However, the more often the function is called, the more
  * CPU resources it will use.
  */
-void timer_skiplist_manage(struct priv_timer *priv);
+void timer_skiplist_manage(struct priv_timer *priv, void *threaddata);
 
 uint64_t timer_skiplist_next_expiry_time(struct priv_timer *priv);
 

@@ -13,7 +13,7 @@
 struct timer_wheel;
 struct timer_wheel_task;
 
-typedef void (*timer_wheel_fn)(struct timer_wheel_task *timer, struct timer_wheel *wheel, void *userdata);
+typedef void (*timer_wheel_fn)(struct timer_wheel_task *timer, struct timer_wheel *wheel, void *userdata, void *threaddata);
 
 struct timer_wheel_task {
   struct hash_list_node node;
@@ -89,7 +89,7 @@ static inline uint64_t timer_wheel_next_expiry_time(struct timer_wheel *wheel)
   return wheel->next_time64;
 }
 
-static inline void timer_wheel_process(struct timer_wheel *wheel, uint64_t curtime64)
+static inline void timer_wheel_process(struct timer_wheel *wheel, uint64_t curtime64, void *threaddata)
 {
   while (curtime64 >= wheel->next_time64)
   {
@@ -112,7 +112,7 @@ static inline void timer_wheel_process(struct timer_wheel *wheel, uint64_t curti
       else
       {
         hash_list_delete(&task->node);
-        task->fn(task, wheel, task->userdata);
+        task->fn(task, wheel, task->userdata, threaddata);
       }
     }
     if (wheel->locks)
