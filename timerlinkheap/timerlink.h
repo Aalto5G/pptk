@@ -10,7 +10,7 @@
 struct timer_linkheap;
 struct timer_link;
 
-typedef void (*timer_link_fn)(struct timer_link *timer, struct timer_linkheap *heap, void *userdata);
+typedef void (*timer_link_fn)(struct timer_link *timer, struct timer_linkheap *heap, void *userdata, void *threaddata);
 
 struct timer_link {
   uint64_t time64;

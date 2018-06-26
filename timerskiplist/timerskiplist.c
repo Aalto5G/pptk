@@ -418,7 +418,7 @@ struct timer_skiplist *timer_skiplist_next_expiry_timer(struct priv_timer *priv)
 }
 
 /* must be called periodically, run all timer that expired */
-void timer_skiplist_manage(struct priv_timer *priv)
+void timer_skiplist_manage(struct priv_timer *priv, void *threaddata)
 {
 	union timer_skiplist_status status;
 	struct timer_skiplist *tim, *next_tim;
@@ -494,7 +494,7 @@ void timer_skiplist_manage(struct priv_timer *priv)
 		priv->running_tim = tim;
 
 		/* execute callback function with list unlocked */
-		tim->fn(tim, priv, tim->userdata);
+		tim->fn(tim, priv, tim->userdata, threaddata);
 
 		__TIMER_STAT_ADD(pending, -1);
 		/* the timer was stopped or reloaded by the callback

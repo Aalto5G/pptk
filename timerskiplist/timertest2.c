@@ -13,7 +13,7 @@ struct periodud {
 };
 
 static void periodic_fn(
-  struct timer_skiplist *timer, struct priv_timer *heap, void *userdata)
+  struct timer_skiplist *timer, struct priv_timer *heap, void *userdata, void *threaddata)
 {
   struct periodud *ud = userdata;
 #if 0
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     }
     timer = timer_skiplist_next_expiry_timer(&heap);
     timer_skiplist_remove(&heap, timer);
-    timer->fn(timer, &heap, timer->userdata);
+    timer->fn(timer, &heap, timer->userdata, NULL);
 
     i = rand()%50;
     timer_skiplist_remove(&heap, &periodics[i]);

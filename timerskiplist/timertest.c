@@ -12,7 +12,7 @@ struct periodud {
 };
 
 static void periodic_fn(
-  struct timer_skiplist *timer, struct priv_timer *priv, void *userdata)
+  struct timer_skiplist *timer, struct priv_timer *priv, void *userdata, void *threaddata)
 {
   struct periodud *ud = userdata;
   printf("periodic timer, period %g\n", ud->period/1000.0/1000.0);
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     }
     timer = timer_skiplist_next_expiry_timer(&priv);
     timer_skiplist_remove(&priv, timer);
-    timer->fn(timer, &priv, timer->userdata);
+    timer->fn(timer, &priv, timer->userdata, NULL);
 
     i = rand()%50;
 

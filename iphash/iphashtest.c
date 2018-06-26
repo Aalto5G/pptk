@@ -21,7 +21,7 @@ struct ip_hash_entry { // 56 bytes total + ~8 bytes allocator overhead = 64
   struct timer_link timer; // 32 bytes
 };
 
-static uint32_t ip_hash_entry_hash_fn(struct hash_list_node *n, void *userdata)
+static uint32_t ip_hash_entry_hash_fn(struct hash_list_node *n, void *ud)
 {
   struct ip_hash_entry *e = CONTAINER_OF(n, struct ip_hash_entry, node);
   return e->hashval;
@@ -33,7 +33,7 @@ static void ip_hash_init(struct ip_hash *hash)
 }
 
 static void ip_hash_timer_fn(
-  struct timer_link *timer, struct timer_linkheap *heap, void *ud)
+  struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td)
 {
   //struct hash_table *table = ud;
   struct ip_hash_entry *e = CONTAINER_OF(timer, struct ip_hash_entry, timer);
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
     {
       struct timer_link *timer = timer_linkheap_next_expiry_timer(&heap);
       timer_linkheap_remove(&heap, timer);
-      timer->fn(timer, &heap, timer->userdata);
+      timer->fn(timer, &heap, timer->userdata, NULL);
     }
     for (inner = 0; inner < 64; inner++)
     {

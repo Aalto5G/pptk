@@ -19,7 +19,7 @@ struct ip_hash3 {
   struct ip_hash_entry3 *entries;
 };
 
-void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud);
+void ip_hash_timer_fn(struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td);
 
 static void ip_hash_init(struct ip_hash3 *hash)
 {
@@ -54,7 +54,7 @@ struct batch_timer_userdata {
 };
 
 static void batch_timer_fn(
-  struct timer_link *timer, struct timer_linkheap *heap, void *ud)
+  struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td)
 {
   struct batch_timer_userdata *args = ud;
   size_t i;
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     {
       struct timer_link *timer = timer_linkheap_next_expiry_timer(&heap);
       timer_linkheap_remove(&heap, timer);
-      timer->fn(timer, &heap, timer->userdata);
+      timer->fn(timer, &heap, timer->userdata, NULL);
       timer_burst++;
     }
     if (timer_burst >= 5000)

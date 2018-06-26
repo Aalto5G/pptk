@@ -15,7 +15,7 @@ struct batch_timer_userdata {
 };
 
 static void batch_timer_fn(
-  struct timer_link *timer, struct timer_linkheap *heap, void *ud);
+  struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td);
 
 static inline int power_of_2(size_t x)
 {
@@ -286,7 +286,7 @@ void ip_increment_one(
 }
 
 static void batch_timer_fn(
-  struct timer_link *timer, struct timer_linkheap *heap, void *ud)
+  struct timer_link *timer, struct timer_linkheap *heap, void *ud, void *td)
 {
   struct batch_timer_userdata *args = ud;
   size_t i;

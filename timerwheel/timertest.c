@@ -12,7 +12,7 @@ struct periodud {
 };
 
 static void periodic_fn(
-  struct timer_wheel_task *timer, struct timer_wheel *wheel, void *userdata)
+  struct timer_wheel_task *timer, struct timer_wheel *wheel, void *userdata, void *threaddata)
 {
   struct periodud *ud = userdata;
   printf("periodic timer, period %g\n", ud->period/1000.0/1000.0);
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     {
       // spin
     }
-    timer_wheel_process(&wheel, gettime64());
+    timer_wheel_process(&wheel, gettime64(), NULL);
 
     i = rand()%50;
     periodics[i].time64 += periodics_ud[i].period;

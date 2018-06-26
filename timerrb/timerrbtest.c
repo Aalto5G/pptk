@@ -13,7 +13,7 @@ struct periodud {
 };
 
 static void periodic_fn(
-  struct rbtimer *timer, struct timerrb *rb, void *userdata)
+  struct rbtimer *timer, struct timerrb *rb, void *userdata, void *threaddata)
 {
   struct periodud *ud = userdata;
   if (!timerrb_verify(rb))
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     }
     timer = timerrb_next_expiry_timer(&rb);
     timerrb_remove(&rb, timer);
-    timer->fn(timer, &rb, timer->userdata);
+    timer->fn(timer, &rb, timer->userdata, NULL);
 
     i = rand()%50;
     periodics[i].time64 += periodics_ud[i].period;

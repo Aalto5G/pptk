@@ -13,7 +13,8 @@ struct periodud {
 };
 
 static void periodic_fn(
-  struct avltimer *timer, struct timeravl *avl, void *userdata)
+  struct avltimer *timer, struct timeravl *avl, void *userdata,
+  void *threaddata)
 {
   struct periodud *ud = userdata;
   if (!timeravl_verify(avl))
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
     }
     timer = timeravl_next_expiry_timer(&avl);
     timeravl_remove(&avl, timer);
-    timer->fn(timer, &avl, timer->userdata);
+    timer->fn(timer, &avl, timer->userdata, NULL);
 
     i = rand()%50;
     periodics[i].time64 += periodics_ud[i].period;
