@@ -8,6 +8,7 @@
 #include "containerof.h"
 #include "siphash.h"
 #include "hashseed.h"
+#include "timerlink.h"
 
 struct arp_entry {
   struct hash_list_node node;
@@ -15,7 +16,10 @@ struct arp_entry {
   char mac[6];
   int valid;
   struct linked_list_head list;
+  struct timer_link timer;
 };
+
+void arp_entry_expiry_fn(struct timer_link *timer, struct timer_linkheap *heap, void *userdata);
 
 static inline uint32_t ip_hash(uint32_t ip)
 {
@@ -75,9 +79,11 @@ static inline struct arp_entry *arp_cache_get(
 }
 
 void arp_cache_put_packet(
-  struct arp_cache *cache, uint32_t ip, struct packet *pkt);
+  struct arp_cache *cache, uint32_t ip, struct packet *pkt,
+  struct timer_linkheap *timers, uint64_t time64);
 
 void arp_cache_put(
-  struct arp_cache *cache, struct port *port, uint32_t ip, const char *mac);
+  struct arp_cache *cache, struct port *port, uint32_t ip, const char *mac,
+  struct timer_linkheap *timers, uint64_t time64);
 
 #endif
