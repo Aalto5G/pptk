@@ -4,6 +4,69 @@
 #include "hdr.h"
 #include <stdlib.h>
 
+static inline uint8_t icmp_type(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[0];
+}
+
+static inline uint8_t icmp_code(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[1];
+}
+
+static inline uint16_t icmp_checksum(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get16n(&pkt[2]);
+}
+
+static inline uint32_t icmp_header_data(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get32n(&pkt[4]);
+}
+
+static inline void icmp_set_type(void *vpkt, uint8_t type)
+{
+  unsigned char *pkt = vpkt;
+  pkt[0] = type;
+}
+
+static inline void icmp_set_code(void *vpkt, uint8_t code)
+{
+  unsigned char *pkt = vpkt;
+  pkt[1] = code;
+}
+
+static inline void icmp_set_checksum(void *vpkt, uint16_t checksum)
+{
+  unsigned char *pkt = vpkt;
+  hdr_set16n(&pkt[2], checksum);
+}
+
+static inline void icmp_set_header_data(void *vpkt, uint32_t header_data)
+{
+  unsigned char *pkt = vpkt;
+  hdr_set32n(&pkt[4], header_data);
+}
+
+#define ICMP_HEADER_MINLEN 8
+#define ICMP_L4_PAYLOAD_PORTS_MINLEN 4
+
+static inline void *icmp_payload(void *vpkt)
+{
+  unsigned char *pkt = vpkt;
+  return &pkt[8];
+}
+
+static inline const void *icmp_const_payload(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return &pkt[8];
+}
+
 static inline int arp_is_valid_reqresp(const void *vpkt)
 {
   uint16_t oper;
