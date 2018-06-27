@@ -280,6 +280,16 @@ static inline void tcp_set_dst_port_cksum_update(
   tcp_set_dst_port(tcphdr, dst_port);
 }
 
+static inline void icmp_set_echo_identifier_cksum_update(
+  void *icmphdr, uint16_t icmplen, uint16_t echo_identifier)
+{
+  uint16_t old_echo_identifier = icmp_echo_identifier(icmphdr);
+  uint16_t old_cksum = icmp_checksum(icmphdr);
+  old_cksum = ip_update_cksum16(old_cksum, old_echo_identifier, echo_identifier);
+  icmp_set_checksum(icmphdr, old_cksum);
+  icmp_set_echo_identifier(icmphdr, echo_identifier);
+}
+
 static inline void tcp_set_seq_number_cksum_update(
   void *tcphdr, uint16_t tcplen, uint32_t seq_number)
 {
