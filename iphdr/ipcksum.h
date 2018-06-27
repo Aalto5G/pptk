@@ -251,8 +251,11 @@ static inline void ip_set_src_cksum_update(
   else if (proto == 17)
   {
     old_cksum = udp_cksum(payhdr);
-    old_cksum = ip_update_cksum32(old_cksum, old_src, src);
-    udp_set_cksum(payhdr, old_cksum);
+    if (old_cksum != 0)
+    {
+      old_cksum = ip_update_cksum32(old_cksum, old_src, src);
+      udp_set_cksum(payhdr, old_cksum);
+    }
   }
   ip_set_src(iphdr, src);
 }
@@ -312,8 +315,11 @@ static inline void udp_set_src_port_cksum_update(
 {
   uint16_t old_src_port = udp_src_port(udphdr);
   uint16_t old_cksum = udp_cksum(udphdr);
-  old_cksum = ip_update_cksum16(old_cksum, old_src_port, src_port);
-  udp_set_cksum(udphdr, old_cksum);
+  if (old_cksum != 0)
+  {
+    old_cksum = ip_update_cksum16(old_cksum, old_src_port, src_port);
+    udp_set_cksum(udphdr, old_cksum);
+  }
   udp_set_src_port(udphdr, src_port);
 }
 
@@ -322,8 +328,11 @@ static inline void udp_set_dst_port_cksum_update(
 {
   uint16_t old_dst_port = udp_dst_port(udphdr);
   uint16_t old_cksum = udp_cksum(udphdr);
-  old_cksum = ip_update_cksum16(old_cksum, old_dst_port, dst_port);
-  udp_set_cksum(udphdr, old_cksum);
+  if (old_cksum != 0)
+  {
+    old_cksum = ip_update_cksum16(old_cksum, old_dst_port, dst_port);
+    udp_set_cksum(udphdr, old_cksum);
+  }
   udp_set_dst_port(udphdr, dst_port);
 }
 
@@ -343,8 +352,11 @@ static inline void ip_set_dst_cksum_update(
   else if (proto == 17)
   {
     old_cksum = udp_cksum(payhdr);
-    old_cksum = ip_update_cksum32(old_cksum, old_dst, dst);
-    udp_set_cksum(payhdr, old_cksum);
+    if (old_cksum != 0)
+    {
+      old_cksum = ip_update_cksum32(old_cksum, old_dst, dst);
+      udp_set_cksum(payhdr, old_cksum);
+    }
   }
   ip_set_dst(iphdr, dst);
 }
