@@ -28,6 +28,12 @@ static inline uint32_t icmp_header_data(const void *vpkt)
   return hdr_get32n(&pkt[4]);
 }
 
+static inline uint16_t icmp_echo_identifier(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get16n(&pkt[4]);
+}
+
 static inline void icmp_set_type(void *vpkt, uint8_t type)
 {
   unsigned char *pkt = vpkt;
@@ -50,6 +56,12 @@ static inline void icmp_set_header_data(void *vpkt, uint32_t header_data)
 {
   unsigned char *pkt = vpkt;
   hdr_set32n(&pkt[4], header_data);
+}
+
+static inline void icmp_set_echo_identifier(void *vpkt, uint16_t echo_identifier)
+{
+  unsigned char *pkt = vpkt;
+  hdr_set16n(&pkt[4], echo_identifier);
 }
 
 #define ICMP_HEADER_MINLEN 8
