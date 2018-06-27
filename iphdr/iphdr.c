@@ -1,4 +1,5 @@
 #include "iphdr.h"
+#include <errno.h>
 
 void tcp_parse_options(
   void *pkt,
@@ -248,4 +249,173 @@ void *tcp_find_sack_header(
     curoff += curoptlen;
   }
   return NULL;
+}
+
+int dns_put_next(void *vdns, uint16_t *off, uint16_t *remcnt,
+                 uint16_t plen,
+                 char *buf,
+                 uint16_t qtype, uint16_t qclass, uint32_t ttl,
+                 uint16_t rdlength, void *rdata)
+{
+  unsigned char *cdns = vdns;
+  char *chr;
+  if (*off + strlen(buf)+2 + 10 + rdlength > plen)
+  {
+    return -EFAULT;
+  }
+  for (;;)
+  {
+    chr = strchr(buf, '.');
+    if (chr == NULL)
+    {
+      chr = buf+strlen(buf);
+    }
+    if (*off + 1 + (chr-buf) > plen)
+    {
+      return -EFAULT;
+    }
+    cdns[(*off)++] = chr-buf;
+    memcpy(&cdns[*off], buf, chr-buf);
+    (*off) += chr-buf;
+    if (chr == buf)
+    {
+      break;
+    }
+    if (*chr == '\0')
+    {
+      buf = chr;
+    }
+    else
+    {
+      buf = chr+1;
+    }
+  }
+  if (*off + 10 + rdlength > plen)
+  {
+    return -EFAULT;
+  }
+  hdr_set16n(&cdns[(*off)], qtype);
+  hdr_set16n(&cdns[(*off)+2], qclass);
+  hdr_set32n(&cdns[(*off)+4], ttl);
+  hdr_set16n(&cdns[(*off)+8], rdlength);
+  memcpy(&cdns[(*off)+10], rdata, rdlength);
+  (*off) += 10+rdlength;
+  return 0;
+}
+
+int dns_put_next_qr(void *vdns, uint16_t *off, uint16_t *remcnt,
+                    uint16_t plen,
+                    char *buf,
+                    uint16_t qtype, uint16_t qclass)
+{
+  unsigned char *cdns = vdns;
+  char *chr;
+  if (*off + strlen(buf)+2 + 4 > plen)
+  {
+    return -EFAULT;
+  }
+  for (;;)
+  {
+    chr = strchr(buf, '.');
+    if (chr == NULL)
+    {
+      chr = buf+strlen(buf);
+    }
+    if (*off + 1 + (chr-buf) > plen)
+    {
+      return -EFAULT;
+    }
+    cdns[(*off)++] = chr-buf;
+    memcpy(&cdns[*off], buf, chr-buf);
+    (*off) += chr-buf;
+    if (chr == buf)
+    {
+      break;
+    }
+    if (*chr == '\0')
+    {
+      buf = chr;
+    }
+    else
+    {
+      buf = chr+1;
+    }
+  }
+  if (*off + 4 > plen)
+  {
+    return -EFAULT;
+  }
+  hdr_set16n(&cdns[(*off)], qtype);
+  hdr_set16n(&cdns[(*off)+2], qclass);
+  (*off) += 4;
+  return 0;
+}
+
+int dns_next(void *vdns, uint16_t *off, uint16_t *remcnt,
+             uint16_t plen,
+             char *buf, size_t bufsiz, uint16_t *qtype,
+             uint16_t *qclass)
+{
+  unsigned char *cdns = vdns;
+  uint16_t tocopy;
+  uint16_t labsiz, laboff;
+  size_t strlentmp;
+  *buf = '\0';
+  if (*remcnt == 0)
+  {
+    return -ENOENT;
+  }
+  while (*off < plen && *remcnt)
+  {
+    labsiz = cdns[(*off)++];
+    if (labsiz == 0)
+    {
+      break;
+    }
+    if ((labsiz & 0xc0) == 0xc0)
+    {
+      labsiz &= ~0xc0;
+      labsiz <<= 8;
+      if (*off >= plen)
+      {
+        return -EFAULT;
+      }
+      labsiz |= cdns[(*off)++];
+      if (labsiz >= plen)
+      {
+        return -EFAULT;
+      }
+      laboff = labsiz + 1;
+      labsiz = cdns[laboff - 1];
+    }
+    else
+    {
+      laboff = *off;
+    }
+    if (laboff + labsiz >= plen) // have to have room for '\0'
+    {
+      return -EFAULT;
+    }
+    tocopy = labsiz;
+    strlentmp = strlen(buf);
+    if (tocopy+strlentmp+2 > bufsiz)
+    {
+      return -EFAULT;
+    }
+    (*off) += labsiz;
+    memcpy(buf+strlentmp, &cdns[laboff], tocopy);
+    memcpy(buf+strlentmp+tocopy, ".\0", 2);
+    strlentmp += tocopy + 1;
+  }
+  if (*off + 4 > plen)
+  {
+    return -EFAULT;
+  }
+  *qtype = hdr_get16n(&cdns[(*off)]);
+  *qclass = hdr_get16n(&cdns[(*off)+2]);
+  (*off) += 4;
+  strlentmp = strlen(buf);
+  buf[strlentmp-1] = '\0';
+  (*remcnt)--;
+  return 0;
 }
