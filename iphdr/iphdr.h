@@ -4,6 +4,189 @@
 #include "hdr.h"
 #include <stdlib.h>
 
+#define PCP_RCODE_SUCCESS 0
+#define PCP_RCODE_UNSUPP_VERSION 1
+#define PCP_RCODE_NOT_AUTHORIZED 2
+#define PCP_RCODE_MALFORMED_REQUEST 3
+#define PCP_RCODE_UNSUPP_OPCODE 4
+#define PCP_RCODE_UNSUPP_OPTION 5
+#define PCP_RCODE_MALFORMED_OPTION 6
+#define PCP_RCODE_NETWORK_FAILURE 7
+#define PCP_RCODE_NO_RESOURCES 8
+#define PCP_RCODE_UNSUPP_PROTOCOL 9
+#define PCP_RCODE_USER_EX_QUOTA 10
+#define PCP_RCODE_CANNOT_PROVIDE_EXTERNAL 11
+#define PCP_RCODE_ADDRESS_MISMATCH 12
+#define PCP_RCODE_EXCESSIVE_REMOTE_PEERS 13
+
+#define PCP_OPCODE_ANNOUNCE 0
+#define PCP_OPCODE_MAP 1
+#define PCP_OPCODE_PEER 2
+
+static inline uint8_t pcp_version(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[0];
+}
+static inline void pcp_set_version(void *vpkt, uint8_t version)
+{
+  unsigned char *pkt = vpkt;
+  pkt[0] = version;
+}
+static inline uint8_t pcp_r(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[1] >> 7;
+}
+static inline void pcp_set_r(void *vpkt, int val)
+{
+  unsigned char *pkt = vpkt;
+  pkt[1] &= ~(1<<7);
+  pkt[1] |= (!!val)<<7;
+}
+static inline uint8_t pcp_opcode(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[1] & ~(1<<7);
+}
+static inline void pcp_set_opcode(void *vpkt, uint8_t opcode)
+{
+  unsigned char *pkt = vpkt;
+  pkt[1] |= opcode & ~(1<<7);
+}
+static inline void pcp_req_set_reserved(void *vpkt, uint16_t val)
+{
+  unsigned char *pkt = vpkt;
+  hdr_set16n(&pkt[2], val);
+}
+static inline void pcp_resp_set_reserved(void *vpkt, uint8_t val)
+{
+  unsigned char *pkt = vpkt;
+  pkt[2] = val;
+}
+static inline uint8_t pcp_resp_rcode(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[3];
+}
+static inline void pcp_resp_set_rcode(void *vpkt, uint8_t rcode)
+{
+  unsigned char *pkt = vpkt;
+  pkt[3] = rcode;
+}
+static inline uint32_t pcp_lifetime(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get32n(&pkt[4]);
+}
+static inline void pcp_set_lifetime(void *vpkt, uint32_t lifetime)
+{
+  unsigned char *pkt = vpkt;
+  hdr_set32n(&pkt[4], lifetime);
+}
+static inline int pcp_req_is_ipv4(void *vpkt)
+{
+  unsigned char *pkt = vpkt;
+  static const char compar[12] = {0,0,0,0,0,0,0,0,0,0,0xff,0xff};
+  return memcmp(&pkt[8], compar, sizeof(compar)) == 0;
+}
+static inline int pcp_req_get_ipv4(void *vpkt)
+{
+  unsigned char *pkt = vpkt;
+  return hdr_get32n(&pkt[8+12]);
+}
+static inline uint32_t pcp_resp_epoch_time(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get32n(&pkt[8]);
+}
+static inline void pcp_resp_set_epoch_time(void *vpkt, uint32_t epoch_time)
+{
+  unsigned char *pkt = vpkt;
+  hdr_set32n(&pkt[8], epoch_time);
+}
+static inline void pcp_resp_zero_reserved2(void *vpkt)
+{
+  unsigned char *pkt = vpkt;
+  memset(&pkt[12], 0, 96/8);
+}
+static inline const void *pcp_mapreq_nonce(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return &pkt[24];
+}
+static inline uint8_t pcp_mapreq_protocol(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[36];
+}
+static inline uint16_t pcp_mapreq_int_port(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get16n(&pkt[40]);
+}
+static inline uint16_t pcp_mapreq_sugg_ext_port(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get16n(&pkt[42]);
+}
+static inline const void *pcp_mapreq_sugg_ext_ip(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return &pkt[44];
+}
+static inline const void *pcp_mapreq_options(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return &pkt[60];
+}
+static inline void pcp_mapresp_set_nonce(void *vpkt, const void *nonce)
+{
+  unsigned char *cpkt = vpkt;
+  memcpy(&cpkt[24], nonce, 96/8);
+}
+static inline void pcp_mapresp_set_protocol(void *vpkt, uint8_t proto)
+{
+  unsigned char *cpkt = vpkt;
+  cpkt[36] = proto;
+}
+static inline void pcp_mapresp_zero_reserved(void *vpkt)
+{
+  unsigned char *cpkt = vpkt;
+  cpkt[37] = 0;
+  hdr_set16n(&cpkt[38], 0);
+}
+static inline void pcp_mapresp_set_int_port(void *vpkt, uint16_t int_port)
+{
+  unsigned char *cpkt = vpkt;
+  hdr_set16n(&cpkt[40], int_port);
+}
+static inline void pcp_mapresp_set_ext_port(void *vpkt, uint16_t ext_port)
+{
+  unsigned char *cpkt = vpkt;
+  hdr_set16n(&cpkt[42], ext_port);
+}
+static inline void pcp_mapresp_set_ext_ipv4(void *vpkt, uint32_t ext_ipv4)
+{
+  unsigned char *cpkt = vpkt;
+  memset(&cpkt[44], 0, 10);
+  memset(&cpkt[54], 0xff, 2);
+  hdr_set32n(&cpkt[56], ext_ipv4);
+}
+#define PCP_OPTION_HEADER_LENGTH 4
+#define PCP_OPTION_PREFER_FAILURE 2
+static inline uint8_t pcp_option_code(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return pkt[0];
+}
+static inline uint16_t pcp_option_paylength(const void *vpkt)
+{
+  const unsigned char *pkt = vpkt;
+  return hdr_get16n(&pkt[2]);
+}
+
+
 static inline uint8_t icmp_type(const void *vpkt)
 {
   const unsigned char *pkt = vpkt;
