@@ -90,7 +90,7 @@ static inline int pcp_req_is_ipv4(void *vpkt)
   static const char compar[12] = {0,0,0,0,0,0,0,0,0,0,0xff,0xff};
   return memcmp(&pkt[8], compar, sizeof(compar)) == 0;
 }
-static inline int pcp_req_get_ipv4(void *vpkt)
+static inline uint32_t pcp_req_get_ipv4(void *vpkt)
 {
   unsigned char *pkt = vpkt;
   return hdr_get32n(&pkt[8+12]);
