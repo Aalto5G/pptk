@@ -8,6 +8,8 @@
 enum packet_direction {
   PACKET_DIRECTION_UPLINK = 0,
   PACKET_DIRECTION_DOWNLINK = 1,
+  PACKET_DIRECTION_FROMTUN = 2,
+  PACKET_DIRECTION_TOTUN = 3,
 };
 
 struct hole {
