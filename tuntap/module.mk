@@ -1,5 +1,5 @@
 TUNTAP_SRC_LIB := tuntap.c
-TUNTAP_SRC := $(TUNTAP_SRC_LIB) tapsilent.c
+TUNTAP_SRC := $(TUNTAP_SRC_LIB) tapsilent.c tunsilent.c
 
 TUNTAP_SRC_LIB := $(patsubst %,$(DIRTUNTAP)/%,$(TUNTAP_SRC_LIB))
 TUNTAP_SRC := $(patsubst %,$(DIRTUNTAP)/%,$(TUNTAP_SRC))
@@ -21,7 +21,7 @@ clean_$(LCTUNTAP): clean_TUNTAP
 distclean_$(LCTUNTAP): distclean_TUNTAP
 unit_$(LCTUNTAP): unit_TUNTAP
 
-TUNTAP: $(DIRTUNTAP)/libtuntap.a $(DIRTUNTAP)/tapsilent
+TUNTAP: $(DIRTUNTAP)/libtuntap.a $(DIRTUNTAP)/tapsilent $(DIRTUNTAP)/tunsilent
 
 unit_TUNTAP:
 	@true
@@ -31,6 +31,9 @@ $(DIRTUNTAP)/libtuntap.a: $(TUNTAP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_TUNT
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRTUNTAP)/tapsilent: $(DIRTUNTAP)/tapsilent.o $(DIRTUNTAP)/libtuntap.a $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TUNTAP)
+
+$(DIRTUNTAP)/tunsilent: $(DIRTUNTAP)/tunsilent.o $(DIRTUNTAP)/libtuntap.a $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TUNTAP)
 
 $(TUNTAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TUNTAP)
