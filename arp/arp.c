@@ -64,7 +64,7 @@ void arp_cache_put_packet(
   hash_table_add_nogrow(&cache->hash, &entry->node, hashval);
   entry->timer.time64 = time64 + ARP_CACHE_TIMEOUT_SECS*1000ULL*1000ULL;
   entry->timer.fn = arp_entry_expiry_fn;
-  entry->timer.userdata = timers;
+  entry->timer.userdata = cache;
   timer_linkheap_add(timers, &entry->timer);
 }
 
@@ -97,7 +97,7 @@ void arp_cache_put(
   hash_table_add_nogrow(&cache->hash, &entry->node, hashval);
   entry->timer.time64 = time64 + ARP_CACHE_TIMEOUT_SECS*1000ULL*1000ULL;
   entry->timer.fn = arp_entry_expiry_fn;
-  entry->timer.userdata = timers;
+  entry->timer.userdata = cache;
   timer_linkheap_add(timers, &entry->timer);
 }
 
