@@ -1,4 +1,4 @@
-ALLOC_SRC_LIB := llalloc.c
+ALLOC_SRC_LIB := llalloc.c directalloc.c
 ALLOC_SRC := $(ALLOC_SRC_LIB) llperfst.c allociftest.c
 
 ALLOC_SRC_LIB := $(patsubst %,$(DIRALLOC)/%,$(ALLOC_SRC_LIB))
