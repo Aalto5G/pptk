@@ -20,10 +20,6 @@ struct rfc815hole {
 };
 
 struct rfc815ctx {
-  uint32_t src_ip;
-  uint32_t dst_ip;
-  uint16_t ip_id;
-  uint8_t proto;
   uint16_t first_hole; // 65535 == initial link
   uint16_t last_hole; // 65535 == initial link
   uint16_t most_restricting_last;

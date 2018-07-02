@@ -13,10 +13,6 @@
 #include "containerof.h"
 
 struct rfc791ctx {
-  uint32_t src_ip;
-  uint32_t dst_ip;
-  uint16_t ip_id;
-  uint8_t proto;
   uint16_t most_restricting_last;
   struct linked_list_head packet_list;
   uint64_t bits[128];
