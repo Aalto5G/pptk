@@ -9,10 +9,6 @@
 #include "ipfrag.h"
 
 struct reassctx {
-  uint32_t src_ip;
-  uint32_t dst_ip;
-  uint16_t ip_id;
-  uint8_t proto;
   struct linked_list_head packet_list;
   struct linked_list_head hole_list;
   struct hole first_hole;
@@ -23,6 +19,13 @@ void reassctx_init(struct reassctx *ctx);
 
 static inline int reassctx_complete(struct reassctx *ctx)
 {
+  printf("sz %zu\n", linked_list_size(&ctx->hole_list));
+  struct linked_list_node *node;
+  LINKED_LIST_FOR_EACH(node, &ctx->hole_list)
+  {
+    struct hole *hole = CONTAINER_OF(node, struct hole, node);
+    printf("%u:%u\n", hole->first, hole->last);
+  }
   return linked_list_is_empty(&ctx->hole_list);
 }
 
