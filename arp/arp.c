@@ -30,7 +30,7 @@ void arp_cache_drain(struct arp_entry *entry, struct port *port)
 #define ARP_CACHE_MAX_PACKETS 40
 #define ARP_CACHE_TIMEOUT_SECS 30
 
-void arp_cache_put_packet(
+struct arp_entry *arp_cache_put_packet(
   struct arp_cache *cache, uint32_t ip, struct packet *pkt,
   struct timer_linkheap *timers, uint64_t time64)
 {
@@ -52,12 +52,13 @@ void arp_cache_put_packet(
       linked_list_add_tail(&pkt->node, &entry->list);
       entry->timer.time64 = time64 + ARP_CACHE_TIMEOUT_SECS*1000ULL*1000ULL;
       timer_linkheap_modify(timers, &entry->timer);
-      return;
+      return entry;
     }
   }
   entry = malloc(sizeof(*entry));
   memset(entry, 0, sizeof(*entry));
   entry->ip = ip;
+  entry->last_tx = 0;
   memset(entry->mac, 0, sizeof(entry->mac));
   linked_list_head_init(&entry->list);
   linked_list_add_tail(&pkt->node, &entry->list);
@@ -66,6 +67,7 @@ void arp_cache_put_packet(
   entry->timer.fn = arp_entry_expiry_fn;
   entry->timer.userdata = cache;
   timer_linkheap_add(timers, &entry->timer);
+  return entry;
 }
 
 void arp_cache_put(
@@ -92,6 +94,7 @@ void arp_cache_put(
   memset(entry, 0, sizeof(*entry));
   entry->ip = ip;
   entry->valid = 1;
+  entry->last_tx = 0;
   memcpy(entry->mac, mac, 6);
   linked_list_head_init(&entry->list);
   hash_table_add_nogrow(&cache->hash, &entry->node, hashval);
