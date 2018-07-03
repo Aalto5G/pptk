@@ -17,6 +17,7 @@ struct arp_entry {
   int valid;
   struct linked_list_head list;
   struct timer_link timer;
+  uint64_t last_tx;
 };
 
 void arp_entry_expiry_fn(struct timer_link *timer, struct timer_linkheap *heap, void *userdata, void *threaddata);
@@ -78,7 +79,7 @@ static inline struct arp_entry *arp_cache_get(
   return e;
 }
 
-void arp_cache_put_packet(
+struct arp_entry *arp_cache_put_packet(
   struct arp_cache *cache, uint32_t ip, struct packet *pkt,
   struct timer_linkheap *timers, uint64_t time64);
 
