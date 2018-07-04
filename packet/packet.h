@@ -2,18 +2,23 @@
 #define _PACKET_H_
 
 #include "linkedlist.h"
+#include "rbtree.h"
 #include <stddef.h>
 #include <stdint.h>
 
 enum packet_direction {
   PACKET_DIRECTION_UPLINK = 0,
   PACKET_DIRECTION_DOWNLINK = 1,
-  PACKET_DIRECTION_FROMTUN = 2,
-  PACKET_DIRECTION_TOTUN = 3,
 };
 
 struct hole {
   struct linked_list_node node;
+  uint16_t first;
+  uint16_t last;
+};
+
+struct rbhole {
+  struct rb_tree_node node;
   uint16_t first;
   uint16_t last;
 };
@@ -28,6 +33,7 @@ struct packet {
   struct linked_list_node node;
   union {
     struct hole hole;
+    struct rbhole rbhole;
     struct positive positive;
   };
   enum packet_direction direction;
