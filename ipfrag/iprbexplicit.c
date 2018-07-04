@@ -196,7 +196,54 @@ back:
     new_hole->first = data_last + 1;
     new_hole->last = hole->last;
     hole->last = data_first - 1;
-    rb_tree_insert(&ctx->hole_tree, &new_hole->node);
+#ifdef EXTRA_DEBUG
+    if (!rb_tree_valid(&ctx->hole_tree))
+    {
+      printf("Invalid1\n");
+      abort();
+    }
+#endif
+    if (hole->node.right == NULL)
+    {
+#ifdef EXTRA_DEBUG
+      printf("Easy!\n");
+#endif
+      hole->node.right = &new_hole->node;
+      new_hole->node.is_black = 0;
+      new_hole->node.parent = &hole->node;
+      new_hole->node.left = NULL;
+      new_hole->node.right = NULL;
+      rb_tree_insert_repair(&ctx->hole_tree, &new_hole->node);
+#ifdef EXTRA_DEBUG
+      if (!rb_tree_valid(&ctx->hole_tree))
+      {
+        printf("Invalid2\n");
+        abort();
+      }
+#endif
+      *mod = 1;
+      return;
+    }
+    node = node->right;
+    while (node->left != NULL)
+    {
+      node = node->left;
+    }
+    hole = CONTAINER_OF(node, struct rbhole, node);
+    hole->node.left = &new_hole->node;
+    new_hole->node.is_black = 0;
+    new_hole->node.parent = &hole->node;
+    new_hole->node.left = NULL;
+    new_hole->node.right = NULL;
+    rb_tree_insert_repair(&ctx->hole_tree, &new_hole->node);
+#ifdef EXTRA_DEBUG
+    if (!rb_tree_valid(&ctx->hole_tree))
+    {
+      printf("Invalid3\n");
+      abort();
+    }
+#endif
+    //rb_tree_insert(&ctx->hole_tree, &new_hole->node);
     *mod = 1;
     return;
   }
