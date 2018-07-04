@@ -10,7 +10,7 @@ PACKET_OBJ := $(patsubst %.c,%.o,$(PACKET_SRC))
 PACKET_DEP_LIB := $(patsubst %.c,%.d,$(PACKET_SRC_LIB))
 PACKET_DEP := $(patsubst %.c,%.d,$(PACKET_SRC))
 
-CFLAGS_PACKET := -I$(DIRLINKEDLIST)
+CFLAGS_PACKET := -I$(DIRLINKEDLIST) -I$(DIRRBTREE)
 
 MAKEFILES_PACKET := $(DIRPACKET)/module.mk
 
