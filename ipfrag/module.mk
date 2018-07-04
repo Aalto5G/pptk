@@ -1,5 +1,5 @@
-IPFRAG_SRC_LIB := ipfrag.c ipreass.c rfc815.c combo.c linux.c rfc791.c
-IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c combotest.c rfc815perf.c ipreassperf.c comboperf.c linuxperf.c rfc791test.c rfc791perf.c linuxtest.c
+IPFRAG_SRC_LIB := ipfrag.c ipreass.c rfc815.c combo.c linux.c rfc791.c iprbexplicit.c
+IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c combotest.c rfc815perf.c ipreassperf.c comboperf.c linuxperf.c rfc791test.c rfc791perf.c linuxtest.c iprbexplicittest.c iprbexplicitperf.c ipreassworst.c iprbexplicitworst.c
 
 IPFRAG_SRC_LIB := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC_LIB))
 IPFRAG_SRC := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC))
@@ -11,7 +11,7 @@ IPFRAG_DEP_LIB := $(patsubst %.c,%.d,$(IPFRAG_SRC_LIB))
 IPFRAG_DEP := $(patsubst %.c,%.d,$(IPFRAG_SRC))
 
 CFLAGS_IPFRAG := -I$(DIRMISC) -I$(DIRIPHDR) -I$(DIRALLOC) -I$(DIRPACKET) -I$(DIRLINKEDLIST) -I$(DIRMYPCAP) -I$(DIRRBTREE)
-LIBS_IPFRAG := $(DIRALLOC)/liballoc.a $(DIRIPHDR)/libiphdr.a $(DIRMYPCAP)/libmypcap.a
+LIBS_IPFRAG := $(DIRALLOC)/liballoc.a $(DIRIPHDR)/libiphdr.a $(DIRMYPCAP)/libmypcap.a $(DIRRBTREE)/librbtree.a
 
 MAKEFILES_IPFRAG := $(DIRIPFRAG)/module.mk
 
@@ -22,7 +22,7 @@ clean_$(LCIPFRAG): clean_IPFRAG
 distclean_$(LCIPFRAG): distclean_IPFRAG
 unit_$(LCIPFRAG): unit_IPFRAG
 
-IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest $(DIRIPFRAG)/rfc815test $(DIRIPFRAG)/combotest $(DIRIPFRAG)/rfc815perf $(DIRIPFRAG)/ipreassperf $(DIRIPFRAG)/comboperf $(DIRIPFRAG)/linuxperf $(DIRIPFRAG)/rfc791test $(DIRIPFRAG)/rfc791perf $(DIRIPFRAG)/linuxtest
+IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest $(DIRIPFRAG)/rfc815test $(DIRIPFRAG)/combotest $(DIRIPFRAG)/rfc815perf $(DIRIPFRAG)/ipreassperf $(DIRIPFRAG)/comboperf $(DIRIPFRAG)/linuxperf $(DIRIPFRAG)/rfc791test $(DIRIPFRAG)/rfc791perf $(DIRIPFRAG)/linuxtest $(DIRIPFRAG)/iprbexplicittest $(DIRIPFRAG)/iprbexplicitperf $(DIRIPFRAG)/ipreassworst $(DIRIPFRAG)/iprbexplicitworst
 
 unit_IPFRAG:
 	@true
@@ -38,6 +38,12 @@ $(DIRIPFRAG)/linuxperf: $(DIRIPFRAG)/linuxperf.o $(DIRIPFRAG)/libipfrag.a $(LIBS
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/ipfragtest: $(DIRIPFRAG)/ipfragtest.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/iprbexplicittest: $(DIRIPFRAG)/iprbexplicittest.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/iprbexplicitperf: $(DIRIPFRAG)/iprbexplicitperf.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/ipreasstest: $(DIRIPFRAG)/ipreasstest.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
@@ -56,6 +62,12 @@ $(DIRIPFRAG)/rfc791perf: $(DIRIPFRAG)/rfc791perf.o $(DIRIPFRAG)/libipfrag.a $(LI
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/ipreassperf: $(DIRIPFRAG)/ipreassperf.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/ipreassworst: $(DIRIPFRAG)/ipreassworst.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/iprbexplicitworst: $(DIRIPFRAG)/iprbexplicitworst.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/comboperf: $(DIRIPFRAG)/comboperf.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
