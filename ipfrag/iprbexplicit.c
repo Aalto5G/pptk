@@ -162,7 +162,8 @@ static void print_tree(struct rb_tree_node *node)
 
 static void add_data(struct rb_explicit_reassctx *ctx,
                      uint16_t data_first, uint16_t data_last,
-                     struct rbhole *new_hole)
+                     struct rbhole *new_hole,
+                     int *mod)
 {
   struct rb_tree_node *node;
   struct rbhole *hole;
@@ -196,42 +197,49 @@ back:
     new_hole->last = hole->last;
     hole->last = data_first - 1;
     rb_tree_insert(&ctx->hole_tree, &new_hole->node);
+    *mod = 1;
     return;
   }
   if (hole->last <= data_last && hole->first >= data_first)
   {
     rb_tree_delete(&ctx->hole_tree, node);
+    *mod = 1;
     goto back;
   }
   if (hole->last <= data_last && hole->last + 1 > data_first)
   {
     hole->last = data_first - 1;
+    *mod = 1;
     goto back;
   }
   if (hole->first >= data_first && hole->first < data_last + 1)
   {
     hole->first = data_last + 1;
+    *mod = 1;
     goto back;
   }
 }
 
-void rb_explicit_reassctx_add(struct rb_explicit_reassctx *ctx, struct packet *pkt)
+void rb_explicit_reassctx_add(struct allocif *loc,
+                              struct rb_explicit_reassctx *ctx, struct packet *pkt)
 {
   const char *ether = pkt->data;
   const char *ip = ether_const_payload(ether);
   uint16_t data_first;
   uint16_t data_last;
-  linked_list_add_tail(&pkt->node, &ctx->packet_list);
+  int mod = 0;
   //linktest(ctx);
   if (pkt->sz < 34 ||
       ip_total_len(ip) <= ip_hdr_len(ip) ||
       (size_t)(ip_total_len(ip) + 14) > pkt->sz)
   {
+    allocif_free(loc, pkt);
     return;
   }
   data_first = ip_frag_off(ip);
   if (ip_total_len(ip) - (ip_hdr_len(ip) + 1) + ip_frag_off(ip) > 65535)
   {
+    allocif_free(loc, pkt);
     return;
   }
   data_last = ip_total_len(ip) - (ip_hdr_len(ip) + 1) + ip_frag_off(ip);
@@ -239,6 +247,7 @@ void rb_explicit_reassctx_add(struct rb_explicit_reassctx *ctx, struct packet *p
   {
     ctx->most_restricting_last = data_last;
     repair_most_restricting(ctx);
+    mod = 1;
   }
 #if 0
   else
@@ -254,9 +263,17 @@ void rb_explicit_reassctx_add(struct rb_explicit_reassctx *ctx, struct packet *p
   printf("-----\n");
   printf("first %d last %d\n", data_first, data_last); // FIXME comment out
 #endif
-  add_data(ctx, data_first, data_last, &pkt->rbhole);
+  add_data(ctx, data_first, data_last, &pkt->rbhole, &mod);
 #ifdef PRINT_TREE
   print_tree(ctx->hole_tree.root);
   printf("-----\n");
 #endif
+  if (mod)
+  {
+    linked_list_add_tail(&pkt->node, &ctx->packet_list);
+  }
+  else
+  {
+    allocif_free(loc, pkt);
+  }
 }

@@ -61,12 +61,12 @@ int main(int argc, char **argv)
   }
 
   rb_explicit_reassctx_init(&ctx);
-  rb_explicit_reassctx_add(&ctx, fragment[0].pkt);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
   if (rb_explicit_reassctx_complete(&ctx))
   {
     abort();
   }
-  rb_explicit_reassctx_add(&ctx, fragment[1].pkt);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
   if (!rb_explicit_reassctx_complete(&ctx))
   {
     abort();
@@ -83,12 +83,12 @@ int main(int argc, char **argv)
   allocif_free(&intf, reassembled);
 
   rb_explicit_reassctx_init(&ctx);
-  rb_explicit_reassctx_add(&ctx, fragment[1].pkt);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
   if (rb_explicit_reassctx_complete(&ctx))
   {
     abort();
   }
-  rb_explicit_reassctx_add(&ctx, fragment[0].pkt);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
   if (!rb_explicit_reassctx_complete(&ctx))
   {
     abort();
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
       {
         abort();
       }
-      rb_explicit_reassctx_add(&ctx, fragment[0].pkt);
+      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
       if (rb_explicit_reassctx_complete(&ctx))
       {
         break;

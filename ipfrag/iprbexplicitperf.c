@@ -8,7 +8,7 @@
 #include "ipcksum.h"
 #include "ipfrag.h"
 #include "containerof.h"
-#include "ipreass.h"
+#include "iprbexplicit.h"
 #include "time64.h"
 
 int main(int argc, char **argv)
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   char edst[6] = {0x02,0x00,0x00,0x00,0x00,0x01};
   char esrc[6] = {0x02,0x00,0x00,0x00,0x00,0x02};
   struct packet *reassembled;
-  struct reassctx ctx;
+  struct rb_explicit_reassctx ctx;
   int j;
   uint64_t begin, end;
 
@@ -63,24 +63,24 @@ int main(int argc, char **argv)
     abort();
   }
 
-  reassctx_init(&ctx);
-  reassctx_add(&ctx, fragment[0].pkt);
+  rb_explicit_reassctx_init(&ctx);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
   printf("beginning test 1\n");
-  if (reassctx_complete(&ctx))
+  if (rb_explicit_reassctx_complete(&ctx))
   {
     printf("1\n");
     abort();
   }
   printf("beginning test 1\n");
-  reassctx_add(&ctx, fragment[1].pkt);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
   printf("beginning test 1\n");
-  if (!reassctx_complete(&ctx))
+  if (!rb_explicit_reassctx_complete(&ctx))
   {
     printf("2\n");
     abort();
   }
   printf("beginning test 1\n");
-  reassembled = reassctx_reassemble(&intf, &ctx);
+  reassembled = rb_explicit_reassctx_reassemble(&intf, &ctx);
   if (reassembled->sz != sz)
   {
     printf("3\n");
@@ -106,20 +106,20 @@ int main(int argc, char **argv)
 
   printf("beginning test 2\n");
 
-  reassctx_init(&ctx);
-  reassctx_add(&ctx, fragment[1].pkt);
-  if (reassctx_complete(&ctx))
+  rb_explicit_reassctx_init(&ctx);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
+  if (rb_explicit_reassctx_complete(&ctx))
   {
     printf("5\n");
     abort();
   }
-  reassctx_add(&ctx, fragment[0].pkt);
-  if (!reassctx_complete(&ctx))
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
+  if (!rb_explicit_reassctx_complete(&ctx))
   {
     printf("6\n");
     abort();
   }
-  reassembled = reassctx_reassemble(&intf, &ctx);
+  reassembled = rb_explicit_reassctx_reassemble(&intf, &ctx);
   if (reassembled->sz != sz)
   {
     printf("7\n");
@@ -153,20 +153,20 @@ int main(int argc, char **argv)
       abort();
     }
   
-    reassctx_init(&ctx);
-    reassctx_add(&ctx, fragment[0].pkt);
-    if (reassctx_complete(&ctx))
+    rb_explicit_reassctx_init(&ctx);
+    rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
+    if (rb_explicit_reassctx_complete(&ctx))
     {
       printf("1\n");
       abort();
     }
-    reassctx_add(&ctx, fragment[1].pkt);
-    if (!reassctx_complete(&ctx))
+    rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
+    if (!rb_explicit_reassctx_complete(&ctx))
     {
       printf("2\n");
       abort();
     }
-    reassembled = reassctx_reassemble(&intf, &ctx);
+    reassembled = rb_explicit_reassctx_reassemble(&intf, &ctx);
     if (reassembled->sz != sz)
     {
       printf("size mismatch %zu %zu\n", reassembled->sz, sz);
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
       abort();
     }
 #endif
-    reassctx_free(&intf, &ctx);
+    rb_explicit_reassctx_free(&intf, &ctx);
     ll_free_st(&st, reassembled);
   }
   end = gettime64();
