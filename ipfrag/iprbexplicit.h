@@ -27,6 +27,7 @@ void rb_explicit_reassctx_free(struct allocif *loc, struct rb_explicit_reassctx 
 struct packet *
 rb_explicit_reassctx_reassemble(struct allocif *loc, struct rb_explicit_reassctx *ctx);
 
-void rb_explicit_reassctx_add(struct rb_explicit_reassctx *ctx, struct packet *pkt);
+void rb_explicit_reassctx_add(struct allocif *loc,
+                              struct rb_explicit_reassctx *ctx, struct packet *pkt);
 
 #endif

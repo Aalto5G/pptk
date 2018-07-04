@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   tcp_set_data_offset(tcp, 20);
   memset(((char*)tcp) + 20, 'X', sizeof(pkt)-14-20-20);
   tcp_set_cksum_calc(ip, 20, tcp, sizeof(pkt)-14-20);
-  ll_alloc_st_init(&st, 1000, 4096);
+  ll_alloc_st_init(&st, 10000, 4096);
 
   printf("beginning randomized tests\n");
 
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         abort();
       }
       pktcnt++;
-      rb_explicit_reassctx_add(&ctx, fragment[0].pkt);
+      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
       if (rb_explicit_reassctx_complete(&ctx))
       {
         printf("1\n");

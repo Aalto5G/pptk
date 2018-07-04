@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   tcp_set_data_offset(tcp, 20);
   memset(((char*)tcp) + 20, 'X', sizeof(pkt)-14-20-20);
   tcp_set_cksum_calc(ip, 20, tcp, sizeof(pkt)-14-20);
-  ll_alloc_st_init(&st, 1000, 4096);
+  ll_alloc_st_init(&st, 10000, 4096);
 
   printf("beginning randomized tests\n");
 
