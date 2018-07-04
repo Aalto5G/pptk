@@ -29,6 +29,8 @@ struct rb_tree_node *rb_tree_leftmost(struct rb_tree *tree);
 
 struct rb_tree_node *rb_tree_rightmost(struct rb_tree *tree);
 
+void rb_tree_insert_repair(struct rb_tree *tree, struct rb_tree_node *node);
+
 void rb_tree_insert(struct rb_tree *tree, struct rb_tree_node *node);
 
 void rb_tree_delete(struct rb_tree *tree, struct rb_tree_node *node);

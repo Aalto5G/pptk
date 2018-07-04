@@ -273,7 +273,7 @@ static inline void rotate_right(struct rb_tree *tree, struct rb_tree_node *q)
   }
 }
 
-static void rb_tree_insert_repair(struct rb_tree *tree, struct rb_tree_node *node)
+void rb_tree_insert_repair(struct rb_tree *tree, struct rb_tree_node *node)
 {
   if (node->parent == NULL)
   {
