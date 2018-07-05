@@ -23,6 +23,12 @@ struct rbhole {
   uint16_t last;
 };
 
+struct rbtcppositive {
+  struct rb_tree_node node;
+  uint32_t first;
+  uint32_t last;
+};
+
 struct positive {
   uint32_t flags;
   uint16_t offset;
@@ -35,6 +41,7 @@ struct packet {
     struct hole hole;
     struct rbhole rbhole;
     struct positive positive;
+    struct rbtcppositive rbtcppositive;
   };
   enum packet_direction direction;
   size_t sz;
