@@ -3,6 +3,10 @@ CC := cc
 
 .SUFFIXES:
 
+DIRTCPREASS := tcpreass
+LCTCPREASS := tcpreass
+MODULES += TCPREASS
+
 DIRDYNARR := dynarr
 LCDYNARR := dynarr
 MODULES += DYNARR
