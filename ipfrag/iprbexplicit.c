@@ -169,7 +169,7 @@ static void add_data(struct rb_explicit_reassctx *ctx,
   struct rbhole *hole;
 
 back:
-  node = ctx->hole_tree.root;
+  node = rb_tree_root(&ctx->hole_tree);
   hole = CONTAINER_OF(node, struct rbhole, node);
   while (node != NULL)
   {

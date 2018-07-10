@@ -69,9 +69,9 @@ void tcp_rb_explicit_reassctx_init(struct tcp_rb_explicit_reassctx *ctx,
 
 void tcp_rb_explicit_reassctx_free(struct allocif *loc, struct tcp_rb_explicit_reassctx *ctx)
 {
-  while (ctx->packet_tree.root != NULL)
+  while (rb_tree_root(&ctx->packet_tree) != NULL)
   {
-    struct rb_tree_node *root = ctx->packet_tree.root;
+    struct rb_tree_node *root = rb_tree_root(&ctx->packet_tree);
     struct rbtcppositive *positive;
     rb_tree_delete(&ctx->packet_tree, root);
     positive = CONTAINER_OF(root, struct rbtcppositive, node);
@@ -134,7 +134,7 @@ static int add_data(struct allocif *loc,
   struct rbtcppositive *positive;
 
 back:
-  node = ctx->packet_tree.root;
+  node = rb_tree_root(&ctx->packet_tree);
   positive = CONTAINER_OF(node, struct rbtcppositive, node);
   while (node != NULL)
   {
