@@ -1,5 +1,5 @@
 RBTREE_SRC_LIB := rbtree.c
-RBTREE_SRC := $(RBTREE_SRC_LIB) rbtreetest.c
+RBTREE_SRC := $(RBTREE_SRC_LIB) rbtreetest.c rbhashtest.c
 
 RBTREE_SRC_LIB := $(patsubst %,$(DIRRBTREE)/%,$(RBTREE_SRC_LIB))
 RBTREE_SRC := $(patsubst %,$(DIRRBTREE)/%,$(RBTREE_SRC))
@@ -22,7 +22,7 @@ clean_$(LCRBTREE): clean_RBTREE
 distclean_$(LCRBTREE): distclean_RBTREE
 unit_$(LCRBTREE): unit_RBTREE
 
-RBTREE: $(DIRRBTREE)/librbtree.a $(DIRRBTREE)/rbtreetest
+RBTREE: $(DIRRBTREE)/librbtree.a $(DIRRBTREE)/rbtreetest $(DIRRBTREE)/rbhashtest
 
 unit_RBTREE: $(DIRRBTREE)/rbtreetest
 	$(DIRRBTREE)/rbtreetest
@@ -32,6 +32,9 @@ $(DIRRBTREE)/librbtree.a: $(RBTREE_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_RBTR
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRRBTREE)/rbtreetest: $(DIRRBTREE)/rbtreetest.o $(DIRRBTREE)/librbtree.a $(LIBS_RBTREE) $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_RBTREE)
+
+$(DIRRBTREE)/rbhashtest: $(DIRRBTREE)/rbhashtest.o $(DIRRBTREE)/librbtree.a $(LIBS_RBTREE) $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_RBTREE)
 
 $(RBTREE_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_RBTREE)

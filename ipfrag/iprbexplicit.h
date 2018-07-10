@@ -19,7 +19,7 @@ void rb_explicit_reassctx_init(struct rb_explicit_reassctx *ctx);
 
 static inline int rb_explicit_reassctx_complete(struct rb_explicit_reassctx *ctx)
 {
-  return ctx->hole_tree.root == NULL;
+  return rb_tree_root(&ctx->hole_tree) == NULL;
 }
 
 void rb_explicit_reassctx_free(struct allocif *loc, struct rb_explicit_reassctx *ctx);
