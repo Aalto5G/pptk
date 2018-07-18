@@ -1,5 +1,5 @@
-#ifndef _IPREASS_H_
-#define _IPREASS_H_
+#ifndef _IPRBEXPLICIT_H_
+#define _IPRBEXPLICIT_H_
 
 #include <errno.h>
 #include <stdio.h>

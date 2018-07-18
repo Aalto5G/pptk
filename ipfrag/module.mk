@@ -1,5 +1,5 @@
-IPFRAG_SRC_LIB := ipfrag.c ipreass.c rfc815.c combo.c linux.c rfc791.c iprbexplicit.c
-IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c combotest.c rfc815perf.c ipreassperf.c comboperf.c linuxperf.c rfc791test.c rfc791perf.c linuxtest.c iprbexplicittest.c iprbexplicitperf.c ipreassworst.c iprbexplicitworst.c
+IPFRAG_SRC_LIB := ipfrag.c ipreass.c rfc815.c combo.c linux.c rfc791.c iprbexplicit.c iprb815.c
+IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c combotest.c rfc815perf.c ipreassperf.c comboperf.c linuxperf.c rfc791test.c rfc791perf.c linuxtest.c iprbexplicittest.c iprbexplicitperf.c ipreassworst.c iprbexplicitworst.c iprb815test.c
 
 IPFRAG_SRC_LIB := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC_LIB))
 IPFRAG_SRC := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC))
@@ -22,7 +22,7 @@ clean_$(LCIPFRAG): clean_IPFRAG
 distclean_$(LCIPFRAG): distclean_IPFRAG
 unit_$(LCIPFRAG): unit_IPFRAG
 
-IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest $(DIRIPFRAG)/rfc815test $(DIRIPFRAG)/combotest $(DIRIPFRAG)/rfc815perf $(DIRIPFRAG)/ipreassperf $(DIRIPFRAG)/comboperf $(DIRIPFRAG)/linuxperf $(DIRIPFRAG)/rfc791test $(DIRIPFRAG)/rfc791perf $(DIRIPFRAG)/linuxtest $(DIRIPFRAG)/iprbexplicittest $(DIRIPFRAG)/iprbexplicitperf $(DIRIPFRAG)/ipreassworst $(DIRIPFRAG)/iprbexplicitworst
+IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest $(DIRIPFRAG)/rfc815test $(DIRIPFRAG)/combotest $(DIRIPFRAG)/rfc815perf $(DIRIPFRAG)/ipreassperf $(DIRIPFRAG)/comboperf $(DIRIPFRAG)/linuxperf $(DIRIPFRAG)/rfc791test $(DIRIPFRAG)/rfc791perf $(DIRIPFRAG)/linuxtest $(DIRIPFRAG)/iprbexplicittest $(DIRIPFRAG)/iprbexplicitperf $(DIRIPFRAG)/ipreassworst $(DIRIPFRAG)/iprbexplicitworst $(DIRIPFRAG)/iprb815test
 
 unit_IPFRAG:
 	@true
@@ -50,6 +50,9 @@ $(DIRIPFRAG)/ipreasstest: $(DIRIPFRAG)/ipreasstest.o $(DIRIPFRAG)/libipfrag.a $(
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/rfc815test: $(DIRIPFRAG)/rfc815test.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/iprb815test: $(DIRIPFRAG)/iprb815test.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/rfc791test: $(DIRIPFRAG)/rfc791test.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
