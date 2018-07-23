@@ -8,7 +8,7 @@
 #include "ipcksum.h"
 #include "ipfrag.h"
 #include "containerof.h"
-#include "iprbexplicit.h"
+#include "linux.h"
 #include "time64.h"
 
 int main(int argc, char **argv)
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   char *tcp;
   char edst[6] = {0x02,0x00,0x00,0x00,0x00,0x01};
   char esrc[6] = {0x02,0x00,0x00,0x00,0x00,0x02};
-  struct rb_explicit_reassctx ctx;
+  struct ipq ipq;
   int i,j;
   uint64_t begin, end;
   uint64_t pktcnt = 0;
@@ -56,27 +56,26 @@ int main(int argc, char **argv)
   printf("beginning randomized tests\n");
 
   begin = gettime64();
-  for (j = 0; j < 1000; j++)
+  for (j = 0; j < 3; j++)
   {
-    rb_explicit_reassctx_init(&ctx);
-    for (i = 0; i < 65535-14-20; i += 16)
+    ipq_init(&ipq);
+    for (i = 0; i < 50000; i += 1)
     {
-      fragment[0].datastart = i;
+      fragment[0].datastart = 8*(rand() % ((65535-14-20-8)/8));
       fragment[0].datalen = 8;
+      //printf("start %d\n", (65535-14-20-8)/8*8 - i);
       fragment[0].pkt = NULL;
       if (fragment4(&intf, pkt, sz, fragment, 1) != 0)
       {
         abort();
       }
       pktcnt++;
-      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
-      if (rb_explicit_reassctx_complete(&ctx))
+      if (ip_frag_queue(&intf, &ipq, fragment[0].pkt) != -EINPROGRESS)
       {
-        printf("1\n");
-        abort();
+        break;
       }
     }
-    rb_explicit_reassctx_free(&intf, &ctx);
+    ipq_free(&intf, &ipq);
   }
   end = gettime64();
   printf("%g MPPS\n", pktcnt*1.0/(end-begin));
