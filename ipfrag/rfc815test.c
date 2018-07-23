@@ -141,7 +141,7 @@ int main(int argc, char **argv)
   {
     printf("seeding random %d\n", j);
     srand(j);
-    rfc815ctx_init(&ctx);
+    rfc815ctx_init_fast(&ctx);
     i = 0;
     for (;;)
     {
