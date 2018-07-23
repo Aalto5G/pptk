@@ -129,6 +129,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
   uint16_t data_first;
   uint16_t data_last;
   uint16_t iter;
+  int mod = 0;
   //linktest(ctx);
   if (pkt->sz < 34 ||
       ip_total_len(ip) <= ip_hdr_len(ip) ||
@@ -199,12 +200,14 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
         //printf("DELETE2 %d\n", iter);
         holenonptr_set_next(ctx, hole.prev_hole, hole.next_hole);
         holenonptr_set_prev(ctx, hole.next_hole, hole.prev_hole);
+        mod = 1;
         break;
       }
       else
       {
         hole.last = data_first - 1;
         memcpy(&ctx->pkt[iter], &hole, sizeof(hole));
+        mod = 1;
         break;
       }
     }
@@ -218,6 +221,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
           holenonptr_set_next(ctx, hole.prev_hole, data_last + 1);
           holenonptr_set_prev(ctx, hole.next_hole, data_last + 1);
           memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
+          mod = 1;
         }
         break;
       }
@@ -236,6 +240,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
         hole.first = data_last + 1;
         hole.last = old_last;
         memcpy(&ctx->pkt[data_last + 1], &hole, sizeof(hole));
+        mod = 1;
         break;
       }
     }
@@ -248,6 +253,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
         iter = hole.next_hole;
         holenonptr_set_next(ctx, hole.prev_hole, hole.next_hole);
         holenonptr_set_prev(ctx, hole.next_hole, hole.prev_hole);
+        mod = 1;
         //printf("continuing 1 %d\n", iter);
         continue;
       }
@@ -257,6 +263,7 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
         {
           hole.last = data_first - 1;
           memcpy(&ctx->pkt[iter], &hole, sizeof(hole));
+          mod = 1;
         }
         iter = hole.next_hole;
         //printf("continuing 2 %d\n", iter);
@@ -264,5 +271,8 @@ void rfc815ctx_add(struct rfc815ctx *ctx, struct packet *pkt)
       }
     }
   }
-  memcpy(&ctx->pkt[data_first], ip_const_payload(ip), data_last - data_first + 1);
+  if (mod)
+  {
+    memcpy(&ctx->pkt[data_first], ip_const_payload(ip), data_last - data_first + 1);
+  }
 }
