@@ -8,7 +8,7 @@
 #include "ipcksum.h"
 #include "ipfrag.h"
 #include "containerof.h"
-#include "iprbexplicit.h"
+#include "iprb815.h"
 #include "time64.h"
 
 int main(int argc, char **argv)
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   char *tcp;
   char edst[6] = {0x02,0x00,0x00,0x00,0x00,0x01};
   char esrc[6] = {0x02,0x00,0x00,0x00,0x00,0x02};
-  struct rb_explicit_reassctx ctx;
+  struct rb815ctx ctx;
   int i,j;
   uint64_t begin, end;
   uint64_t pktcnt = 0;
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   begin = gettime64();
   for (j = 0; j < 1000; j++)
   {
-    rb_explicit_reassctx_init(&ctx);
+    rb815ctx_init_fast(&ctx);
     for (i = 0; i < 65535-14-20; i += 16)
     {
       fragment[0].datastart = i;
@@ -69,14 +69,14 @@ int main(int argc, char **argv)
         abort();
       }
       pktcnt++;
-      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
-      if (rb_explicit_reassctx_complete(&ctx))
+      rb815ctx_add(&ctx, fragment[0].pkt);
+      allocif_free(&intf, fragment[0].pkt);
+      if (rb815ctx_complete(&ctx))
       {
         printf("1\n");
         abort();
       }
     }
-    rb_explicit_reassctx_free(&intf, &ctx);
   }
   end = gettime64();
   printf("%g MPPS\n", pktcnt*1.0/(end-begin));
