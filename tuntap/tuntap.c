@@ -28,7 +28,7 @@ int tap_alloc(const char *devreq, char actual_dev[IFNAMSIZ])
   ifr.ifr_flags = IFF_TAP; 
   if (devreq && *devreq)
   {
-    strncpy(ifr.ifr_name, devreq, IFNAMSIZ);
+    strncpy(ifr.ifr_name, devreq, IFNAMSIZ-1);
   }
 
   err = ioctl(fd, TUNSETIFF, (void *)&ifr);
@@ -57,7 +57,7 @@ int tun_alloc(const char *devreq, char actual_dev[IFNAMSIZ])
   ifr.ifr_flags = IFF_TUN; 
   if (devreq && *devreq)
   {
-    strncpy(ifr.ifr_name, devreq, IFNAMSIZ);
+    strncpy(ifr.ifr_name, devreq, IFNAMSIZ-1);
   }
 
   err = ioctl(fd, TUNSETIFF, (void *)&ifr);
