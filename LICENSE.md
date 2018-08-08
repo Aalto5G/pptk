@@ -2,6 +2,7 @@ Copyright (c) 2017-2018 Aalto University
 
 Authors:
 - Juha-Matti Tilli (copyright to Aalto University transferred on 19.4.2018)
+- Vladis Dronov (copyright to Aalto University transferred on 8.8.2018)
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
