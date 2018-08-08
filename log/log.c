@@ -58,9 +58,9 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
 {
   struct timeval tv;
   struct tm tm;
-  char msgbuf[16384] = {0};
+  char msgbuf[16200] = {0};
   char linebuf[16384] = {0};
-  char timebuf[256] = {0};
+  char timebuf[64] = {0};
   const char *progname = globals.progname;
   int time_condition;
   int i;
