@@ -1,5 +1,5 @@
 TIMERRB_SRC_LIB := timerrb.c timerrbwheel.c
-TIMERRB_SRC := $(TIMERRB_SRC_LIB) timerrbtest.c timerrbwheeltest.c
+TIMERRB_SRC := $(TIMERRB_SRC_LIB) timerrbtest.c timerrbwheeltest.c timerrbwheelperf.c
 
 TIMERRB_SRC_LIB := $(patsubst %,$(DIRTIMERRB)/%,$(TIMERRB_SRC_LIB))
 TIMERRB_SRC := $(patsubst %,$(DIRTIMERRB)/%,$(TIMERRB_SRC))
@@ -22,7 +22,7 @@ clean_$(LCTIMERRB): clean_TIMERRB
 distclean_$(LCTIMERRB): distclean_TIMERRB
 unit_$(LCTIMERRB): unit_TIMERRB
 
-TIMERRB: $(DIRTIMERRB)/libtimerrb.a $(DIRTIMERRB)/timerrbtest $(DIRTIMERRB)/timerrbwheeltest
+TIMERRB: $(DIRTIMERRB)/libtimerrb.a $(DIRTIMERRB)/timerrbtest $(DIRTIMERRB)/timerrbwheeltest $(DIRTIMERRB)/timerrbwheelperf
 
 unit_TIMERRB:
 	@true
@@ -35,6 +35,9 @@ $(DIRTIMERRB)/timerrbtest: $(DIRTIMERRB)/timerrbtest.o $(DIRTIMERRB)/libtimerrb.
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERRB)
 
 $(DIRTIMERRB)/timerrbwheeltest: $(DIRTIMERRB)/timerrbwheeltest.o $(DIRTIMERRB)/libtimerrb.a $(LIBS_TIMERRB) $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERRB)
+
+$(DIRTIMERRB)/timerrbwheelperf: $(DIRTIMERRB)/timerrbwheelperf.o $(DIRTIMERRB)/libtimerrb.a $(LIBS_TIMERRB) $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERRB)
 
 $(TIMERRB_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERRB)
