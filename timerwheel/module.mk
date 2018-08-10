@@ -1,5 +1,5 @@
 TIMERWHEEL_SRC_LIB := timerwheel.c
-TIMERWHEEL_SRC := $(TIMERWHEEL_SRC_LIB) timertest.c
+TIMERWHEEL_SRC := $(TIMERWHEEL_SRC_LIB) timertest.c timerperf.c
 
 TIMERWHEEL_SRC_LIB := $(patsubst %,$(DIRTIMERWHEEL)/%,$(TIMERWHEEL_SRC_LIB))
 TIMERWHEEL_SRC := $(patsubst %,$(DIRTIMERWHEEL)/%,$(TIMERWHEEL_SRC))
@@ -21,7 +21,7 @@ clean_$(LCTIMERWHEEL): clean_TIMERWHEEL
 distclean_$(LCTIMERWHEEL): distclean_TIMERWHEEL
 unit_$(LCTIMERWHEEL): unit_TIMERWHEEL
 
-TIMERWHEEL: $(DIRTIMERWHEEL)/libtimerwheel.a $(DIRTIMERWHEEL)/timertest
+TIMERWHEEL: $(DIRTIMERWHEEL)/libtimerwheel.a $(DIRTIMERWHEEL)/timertest $(DIRTIMERWHEEL)/timerperf
 
 unit_TIMERWHEEL:
 	@true
@@ -31,6 +31,9 @@ $(DIRTIMERWHEEL)/libtimerwheel.a: $(TIMERWHEEL_OBJ_LIB) $(MAKEFILES_COMMON) $(MA
 	ar rvs $@ $(filter %.o,$^)
 
 $(DIRTIMERWHEEL)/timertest: $(DIRTIMERWHEEL)/timertest.o $(DIRTIMERWHEEL)/libtimerwheel.a $(MAKEFILES_COMMON) $(MAKEFILES_TIMERWHEEL)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERWHEEL)
+
+$(DIRTIMERWHEEL)/timerperf: $(DIRTIMERWHEEL)/timerperf.o $(DIRTIMERWHEEL)/libtimerwheel.a $(MAKEFILES_COMMON) $(MAKEFILES_TIMERWHEEL)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERWHEEL)
 
 $(TIMERWHEEL_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERWHEEL)
@@ -44,6 +47,6 @@ clean_TIMERWHEEL:
 	rm -f $(TIMERWHEEL_OBJ) $(TIMERWHEEL_DEP)
 
 distclean_TIMERWHEEL: clean_TIMERWHEEL
-	rm -f $(DIRTIMERWHEEL)/libtimerwheel.a $(DIRTIMERWHEEL)/timertest
+	rm -f $(DIRTIMERWHEEL)/libtimerwheel.a $(DIRTIMERWHEEL)/timertest $(DIRTIMERWHEEL)/timerperf
 
 -include $(DIRTIMERWHEEL)/*.d
