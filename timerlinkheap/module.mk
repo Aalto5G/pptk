@@ -1,5 +1,5 @@
-TIMERLINKHEAP_SRC_LIB := timerlink.c
-TIMERLINKHEAP_SRC := $(TIMERLINKHEAP_SRC_LIB) timertest.c timertest2.c
+TIMERLINKHEAP_SRC_LIB := timerlink.c timerlinkwheel.c
+TIMERLINKHEAP_SRC := $(TIMERLINKHEAP_SRC_LIB) timertest.c timertest2.c timerlinkwheeltest.c
 
 TIMERLINKHEAP_SRC_LIB := $(patsubst %,$(DIRTIMERLINKHEAP)/%,$(TIMERLINKHEAP_SRC_LIB))
 TIMERLINKHEAP_SRC := $(patsubst %,$(DIRTIMERLINKHEAP)/%,$(TIMERLINKHEAP_SRC))
@@ -21,7 +21,7 @@ clean_$(LCTIMERLINKHEAP): clean_TIMERLINKHEAP
 distclean_$(LCTIMERLINKHEAP): distclean_TIMERLINKHEAP
 unit_$(LCTIMERLINKHEAP): unit_TIMERLINKHEAP
 
-TIMERLINKHEAP: $(DIRTIMERLINKHEAP)/libtimerlinkheap.a $(DIRTIMERLINKHEAP)/timertest $(DIRTIMERLINKHEAP)/timertest2
+TIMERLINKHEAP: $(DIRTIMERLINKHEAP)/libtimerlinkheap.a $(DIRTIMERLINKHEAP)/timertest $(DIRTIMERLINKHEAP)/timertest2 $(DIRTIMERLINKHEAP)/timerlinkwheeltest
 
 unit_TIMERLINKHEAP:
 	@true
@@ -34,6 +34,9 @@ $(DIRTIMERLINKHEAP)/timertest: $(DIRTIMERLINKHEAP)/timertest.o $(DIRTIMERLINKHEA
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERLINKHEAP)
 
 $(DIRTIMERLINKHEAP)/timertest2: $(DIRTIMERLINKHEAP)/timertest2.o $(DIRTIMERLINKHEAP)/libtimerlinkheap.a $(MAKEFILES_COMMON) $(MAKEFILES_TIMERLINKHEAP)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERLINKHEAP)
+
+$(DIRTIMERLINKHEAP)/timerlinkwheeltest: $(DIRTIMERLINKHEAP)/timerlinkwheeltest.o $(DIRTIMERLINKHEAP)/libtimerlinkheap.a $(MAKEFILES_COMMON) $(MAKEFILES_TIMERLINKHEAP)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_TIMERLINKHEAP)
 
 $(TIMERLINKHEAP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_TIMERLINKHEAP)
