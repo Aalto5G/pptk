@@ -1,5 +1,5 @@
 IPFRAG_SRC_LIB := ipfrag.c ipreass.c rfc815.c combo.c linux.c rfc791.c iprbexplicit.c iprb815.c
-IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c combotest.c rfc815perf.c ipreassperf.c comboperf.c linuxperf.c rfc791test.c rfc791perf.c linuxtest.c iprbexplicittest.c iprbexplicitperf.c ipreassworst.c iprbexplicitworst.c iprb815test.c iprb815perf.c iprb815worst.c linuxworst.c rfc815worst.c
+IPFRAG_SRC := $(IPFRAG_SRC_LIB) ipfragtest.c ipreasstest.c rfc815test.c combotest.c rfc815perf.c ipreassperf.c comboperf.c linuxperf.c rfc791test.c rfc791perf.c linuxtest.c iprbexplicittest.c iprbexplicitperf.c ipreassworst.c iprbexplicitworst.c iprb815test.c iprb815perf.c iprb815worst.c linuxworst.c rfc815worst.c rfc791worst.c
 
 IPFRAG_SRC_LIB := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC_LIB))
 IPFRAG_SRC := $(patsubst %,$(DIRIPFRAG)/%,$(IPFRAG_SRC))
@@ -22,7 +22,7 @@ clean_$(LCIPFRAG): clean_IPFRAG
 distclean_$(LCIPFRAG): distclean_IPFRAG
 unit_$(LCIPFRAG): unit_IPFRAG
 
-IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest $(DIRIPFRAG)/rfc815test $(DIRIPFRAG)/combotest $(DIRIPFRAG)/rfc815perf $(DIRIPFRAG)/ipreassperf $(DIRIPFRAG)/comboperf $(DIRIPFRAG)/linuxperf $(DIRIPFRAG)/rfc791test $(DIRIPFRAG)/rfc791perf $(DIRIPFRAG)/linuxtest $(DIRIPFRAG)/iprbexplicittest $(DIRIPFRAG)/iprbexplicitperf $(DIRIPFRAG)/ipreassworst $(DIRIPFRAG)/iprbexplicitworst $(DIRIPFRAG)/iprb815test $(DIRIPFRAG)/iprb815perf $(DIRIPFRAG)/iprb815worst $(DIRIPFRAG)/linuxworst $(DIRIPFRAG)/rfc815worst
+IPFRAG: $(DIRIPFRAG)/libipfrag.a $(DIRIPFRAG)/ipfragtest $(DIRIPFRAG)/ipreasstest $(DIRIPFRAG)/rfc815test $(DIRIPFRAG)/combotest $(DIRIPFRAG)/rfc815perf $(DIRIPFRAG)/ipreassperf $(DIRIPFRAG)/comboperf $(DIRIPFRAG)/linuxperf $(DIRIPFRAG)/rfc791test $(DIRIPFRAG)/rfc791perf $(DIRIPFRAG)/linuxtest $(DIRIPFRAG)/iprbexplicittest $(DIRIPFRAG)/iprbexplicitperf $(DIRIPFRAG)/ipreassworst $(DIRIPFRAG)/iprbexplicitworst $(DIRIPFRAG)/iprb815test $(DIRIPFRAG)/iprb815perf $(DIRIPFRAG)/iprb815worst $(DIRIPFRAG)/linuxworst $(DIRIPFRAG)/rfc815worst $(DIRIPFRAG)/rfc791worst
 
 unit_IPFRAG:
 	@true
@@ -62,6 +62,9 @@ $(DIRIPFRAG)/iprb815perf: $(DIRIPFRAG)/iprb815perf.o $(DIRIPFRAG)/libipfrag.a $(
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/iprb815worst: $(DIRIPFRAG)/iprb815worst.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
+	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
+
+$(DIRIPFRAG)/rfc791worst: $(DIRIPFRAG)/rfc791worst.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
 	$(CC) $(CFLAGS) -o $@ $(filter %.o,$^) $(filter %.a,$^) $(CFLAGS_IPFRAG)
 
 $(DIRIPFRAG)/rfc815worst: $(DIRIPFRAG)/rfc815worst.o $(DIRIPFRAG)/libipfrag.a $(LIBS_IPFRAG) $(MAKEFILES_COMMON) $(MAKEFILES_IPFRAG)
