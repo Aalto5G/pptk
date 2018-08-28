@@ -102,7 +102,19 @@ int main(int argc, char **argv)
     abort();
   }
 #endif
+  rfc791ctx_free(&intf, &ctx);
   ll_free_st(&st, reassembled);
+
+  fragment[0].datastart = 0;
+  fragment[0].datalen = 1514 - 14 - 20;
+  fragment[0].pkt = NULL;
+  fragment[1].datastart = 1514 - 14 - 20;
+  fragment[1].datalen = sz - 14 - 20 - (1514 - 14 - 20);
+  fragment[1].pkt = NULL;
+  if (fragment4(&intf, pkt, sz, fragment, 2) != 0)
+  {
+    abort();
+  }
 
   printf("beginning test 2\n");
 
@@ -132,11 +144,9 @@ int main(int argc, char **argv)
     abort();
   }
 #endif
+  rfc791ctx_free(&intf, &ctx);
   ll_free_st(&st, reassembled);
   
-  ll_free_st(&st, fragment[0].pkt);
-  ll_free_st(&st, fragment[1].pkt);
-
   printf("beginning randomized tests\n");
 
   begin = gettime64();

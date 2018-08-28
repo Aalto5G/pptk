@@ -9,6 +9,7 @@
 /linuxtest
 /rfc791test
 /rfc791perf
+/rfc791worst
 /iprbexplicitperf
 /iprbexplicittest
 /ipreassworst
