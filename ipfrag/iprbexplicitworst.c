@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   begin = gettime64();
   for (j = 0; j < 1000; j++)
   {
-    rb_explicit_reassctx_init(&ctx);
+    rb_explicit_reassctx_init(&ctx, 0);
     for (i = 0; i < 65535-14-20; i += 16)
     {
       fragment[0].datastart = i;
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         abort();
       }
       pktcnt++;
-      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
+      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, NULL);
       if (rb_explicit_reassctx_complete(&ctx))
       {
         printf("1\n");

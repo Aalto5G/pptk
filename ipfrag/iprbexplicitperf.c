@@ -27,6 +27,7 @@ int main(int argc, char **argv)
   struct rb_explicit_reassctx ctx;
   int j;
   uint64_t begin, end;
+  int overlap;
 
   memcpy(ether_dst(ether), edst, 6);
   memcpy(ether_src(ether), esrc, 6);
@@ -63,18 +64,18 @@ int main(int argc, char **argv)
     abort();
   }
 
-  rb_explicit_reassctx_init(&ctx);
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
+  rb_explicit_reassctx_init(&ctx, 1);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, &overlap);
   printf("beginning test 1\n");
-  if (rb_explicit_reassctx_complete(&ctx))
+  if (rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     printf("1\n");
     abort();
   }
   printf("beginning test 1\n");
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt, &overlap);
   printf("beginning test 1\n");
-  if (!rb_explicit_reassctx_complete(&ctx))
+  if (!rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     printf("2\n");
     abort();
@@ -106,15 +107,15 @@ int main(int argc, char **argv)
 
   printf("beginning test 2\n");
 
-  rb_explicit_reassctx_init(&ctx);
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
-  if (rb_explicit_reassctx_complete(&ctx))
+  rb_explicit_reassctx_init(&ctx, 1);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt, &overlap);
+  if (rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     printf("5\n");
     abort();
   }
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
-  if (!rb_explicit_reassctx_complete(&ctx))
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, &overlap);
+  if (!rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     printf("6\n");
     abort();
@@ -153,15 +154,15 @@ int main(int argc, char **argv)
       abort();
     }
   
-    rb_explicit_reassctx_init(&ctx);
-    rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
-    if (rb_explicit_reassctx_complete(&ctx))
+    rb_explicit_reassctx_init(&ctx, 1);
+    rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, &overlap);
+    if (rb_explicit_reassctx_complete(&ctx) || overlap)
     {
       printf("1\n");
       abort();
     }
-    rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
-    if (!rb_explicit_reassctx_complete(&ctx))
+    rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt, &overlap);
+    if (!rb_explicit_reassctx_complete(&ctx) || overlap)
     {
       printf("2\n");
       abort();

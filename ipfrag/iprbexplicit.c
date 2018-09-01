@@ -25,13 +25,14 @@ rb_hole_tree_cmp(struct rb_tree_node *a, struct rb_tree_node *b, void *ud)
   abort();
 }
 
-void rb_explicit_reassctx_init(struct rb_explicit_reassctx *ctx)
+void rb_explicit_reassctx_init(struct rb_explicit_reassctx *ctx, int ipv6)
 {
   rb_tree_init(&ctx->hole_tree, rb_hole_tree_cmp, NULL);
   linked_list_head_init(&ctx->packet_list);
   ctx->first_hole.first = 0;
   ctx->first_hole.last = 65535;
   ctx->most_restricting_last = 65535;
+  ctx->ipv6 = ipv6;
   rb_tree_insert(&ctx->hole_tree, &ctx->first_hole.node);
 }
 
@@ -163,10 +164,12 @@ static void print_tree(struct rb_tree_node *node)
 static void add_data(struct rb_explicit_reassctx *ctx,
                      uint16_t data_first, uint16_t data_last,
                      struct rbhole *new_hole,
-                     int *mod)
+                     int *mod,
+                     int *overlap)
 {
   struct rb_tree_node *node;
   struct rbhole *hole;
+  const int ipv6 = ctx->ipv6;
 
 back:
   node = rb_tree_root(&ctx->hole_tree);
@@ -186,6 +189,14 @@ back:
       continue;
     }
     break;
+  }
+  if (ipv6)
+  {
+    if (node == NULL || hole->first > data_first || hole->last < data_last)
+    {
+      *overlap = 1;
+      return;
+    }
   }
   if (node == NULL)
   {
@@ -251,30 +262,41 @@ back:
   {
     rb_tree_delete(&ctx->hole_tree, node);
     *mod = 1;
-    goto back;
+    if (!ipv6)
+    {
+      goto back;
+    }
   }
   if (hole->last <= data_last && hole->last + 1 > data_first)
   {
     hole->last = data_first - 1;
     *mod = 1;
-    goto back;
+    if (!ipv6)
+    {
+      goto back;
+    }
   }
   if (hole->first >= data_first && hole->first < data_last + 1)
   {
     hole->first = data_last + 1;
     *mod = 1;
-    goto back;
+    if (!ipv6)
+    {
+      goto back;
+    }
   }
 }
 
 void rb_explicit_reassctx_add(struct allocif *loc,
-                              struct rb_explicit_reassctx *ctx, struct packet *pkt)
+                              struct rb_explicit_reassctx *ctx, struct packet *pkt,
+                              int *overlapptr)
 {
   const char *ether = pkt->data;
   const char *ip = ether_const_payload(ether);
   uint16_t data_first;
   uint16_t data_last;
   int mod = 0;
+  int overlap = 0;
   //linktest(ctx);
   if (pkt->sz < 34 ||
       ip_total_len(ip) <= ip_hdr_len(ip) ||
@@ -310,12 +332,16 @@ void rb_explicit_reassctx_add(struct allocif *loc,
   printf("-----\n");
   printf("first %d last %d\n", data_first, data_last); // FIXME comment out
 #endif
-  add_data(ctx, data_first, data_last, &pkt->rbhole, &mod);
+  add_data(ctx, data_first, data_last, &pkt->rbhole, &mod, &overlap);
 #ifdef PRINT_TREE
   print_tree(ctx->hole_tree.root);
   printf("-----\n");
 #endif
-  if (mod)
+  if (overlapptr)
+  {
+    *overlapptr = overlap;
+  }
+  if (mod && !overlap)
   {
     linked_list_add_tail(&pkt->node, &ctx->packet_list);
   }
