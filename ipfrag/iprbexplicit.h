@@ -13,9 +13,10 @@ struct rb_explicit_reassctx {
   struct rb_tree hole_tree;
   struct rbhole first_hole;
   uint16_t most_restricting_last;
+  int ipv6;
 };
 
-void rb_explicit_reassctx_init(struct rb_explicit_reassctx *ctx);
+void rb_explicit_reassctx_init(struct rb_explicit_reassctx *ctx, int ipv6);
 
 static inline int rb_explicit_reassctx_complete(struct rb_explicit_reassctx *ctx)
 {
@@ -28,6 +29,7 @@ struct packet *
 rb_explicit_reassctx_reassemble(struct allocif *loc, struct rb_explicit_reassctx *ctx);
 
 void rb_explicit_reassctx_add(struct allocif *loc,
-                              struct rb_explicit_reassctx *ctx, struct packet *pkt);
+                              struct rb_explicit_reassctx *ctx, struct packet *pkt,
+                              int *overlapptr);
 
 #endif

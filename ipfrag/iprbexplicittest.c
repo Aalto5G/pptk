@@ -24,6 +24,7 @@ int main(int argc, char **argv)
   struct packet *reassembled;
   struct rb_explicit_reassctx ctx;
   int i, j;
+  int overlap = 0;
 
   memcpy(ether_dst(ether), edst, 6);
   memcpy(ether_src(ether), esrc, 6);
@@ -60,14 +61,14 @@ int main(int argc, char **argv)
     abort();
   }
 
-  rb_explicit_reassctx_init(&ctx);
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
-  if (rb_explicit_reassctx_complete(&ctx))
+  rb_explicit_reassctx_init(&ctx, 1);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, &overlap);
+  if (rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     abort();
   }
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
-  if (!rb_explicit_reassctx_complete(&ctx))
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt, &overlap);
+  if (!rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     abort();
   }
@@ -82,14 +83,14 @@ int main(int argc, char **argv)
   }
   allocif_free(&intf, reassembled);
 
-  rb_explicit_reassctx_init(&ctx);
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt);
-  if (rb_explicit_reassctx_complete(&ctx))
+  rb_explicit_reassctx_init(&ctx, 1);
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[1].pkt, &overlap);
+  if (rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     abort();
   }
-  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
-  if (!rb_explicit_reassctx_complete(&ctx))
+  rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, &overlap);
+  if (!rb_explicit_reassctx_complete(&ctx) || overlap)
   {
     abort();
   }
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
   {
     printf("seeding random %d\n", j);
     srand(j);
-    rb_explicit_reassctx_init(&ctx);
+    rb_explicit_reassctx_init(&ctx, 0);
     i = 0;
     for (;;)
     {
@@ -129,7 +130,11 @@ int main(int argc, char **argv)
       {
         abort();
       }
-      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt);
+      rb_explicit_reassctx_add(&intf, &ctx, fragment[0].pkt, &overlap);
+      if (overlap)
+      {
+        abort();
+      }
       if (rb_explicit_reassctx_complete(&ctx))
       {
         break;
