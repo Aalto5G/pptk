@@ -2,6 +2,7 @@
 /ipreasstest
 /rfc815test
 /combotest
+/rbcombotest
 /rfc815perf
 /ipreassperf
 /comboperf
