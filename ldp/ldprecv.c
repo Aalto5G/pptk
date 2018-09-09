@@ -58,7 +58,10 @@ int main(int argc, char **argv)
       last_bytes = bytes;
     }
     num = ldp_in_nextpkts(intf->inq[0], pkt_tbl, sizeof(pkt_tbl)/sizeof(*pkt_tbl));
-    pkts += num;
+    if (num > 0)
+    {
+      pkts += (uint64_t)num;
+    }
     for (i = 0; i < num; i++)
     {
       struct ldp_packet *pkt = &pkt_tbl[i];

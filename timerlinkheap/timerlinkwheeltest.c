@@ -51,11 +51,11 @@ int main(int argc, char **argv)
     }
     timer_linkwheel_process(&wheel, gettime64(), NULL);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     periodics[i].link.time64 += periodics_ud[i].period;
     timer_linkwheel_modify(&wheel, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timer_linkwheel_remove(&wheel, &periodics[i]);
     timer_linkwheel_add(&wheel, &periodics[i]);
   }

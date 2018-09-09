@@ -8,8 +8,8 @@
 #include "llalloc.h"
 
 struct ll_alloc_st st;
-const int alloc_capacity = 10000;
-const int alloc_native_size = 1;
+const size_t alloc_capacity = 10000;
+const size_t alloc_native_size = 1;
 
 int main(int argc, char **argv)
 {

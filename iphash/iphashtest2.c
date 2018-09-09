@@ -59,7 +59,7 @@ static int ip_permitted(
   e = &hash->entries[hashval];
   if (e->tokens == INITIAL_TOKENS)
   {
-    e->timer.time64 = gettime64() + TIMER_PERIOD + rand()%(1000*1000);
+    e->timer.time64 = gettime64() + TIMER_PERIOD + ((uint32_t)rand())%(1000*1000);
     //e->timer.time64 = gettime64() + TIMER_PERIOD;
     timer_linkheap_add(heap, &e->timer);
   }
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     }
     for (inner = 0; inner < 64; inner++)
     {
-      addr = rand();
+      addr = (uint32_t)rand();
       if (!ip_permitted(addr, &heap, &hash))
       {
         printf("not permitted at iter %zu\n", iter);

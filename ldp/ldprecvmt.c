@@ -52,7 +52,10 @@ static void *thrfn(void *arg)
       last_bytes = bytes;
     }
     num = ldp_in_nextpkts(intf->inq[id], pkt_tbl, sizeof(pkt_tbl)/sizeof(*pkt_tbl));
-    pkts += num;
+    if (num > 0)
+    {
+      pkts += (uint64_t)num;
+    }
     for (i = 0; i < num; i++)
     {
       struct ldp_packet *pkt = &pkt_tbl[i];
@@ -106,7 +109,7 @@ static int mac_parse(const char *str, char mac[6])
     {
       return -EINVAL;
     }
-    mac[i] = (unsigned char)uli;
+    mac[i] = (char)(unsigned char)uli;
     str = nxt+1;
   }
   return 0;
@@ -116,7 +119,7 @@ int main(int argc, char **argv)
 {
   struct ctx *ctx;
   pthread_t *pth;
-  int num_thr, i;
+  size_t num_thr, i;
   char mac[6];
 
   setlinebuf(stdout);
@@ -127,12 +130,13 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  num_thr = atoi(argv[1]);
-  if (num_thr < 1 || num_thr > 1024)
+  int num_thr_tmp = atoi(argv[1]);
+  if (num_thr_tmp < 1 || num_thr_tmp > 1024)
   {
     printf("usage: %s 3 vale1:0 [02:00:00:00:00:01]\n", argv[0]);
     exit(1);
   }
+  num_thr = (size_t)num_thr_tmp;
   if (argc == 4)
   {
     if (mac_parse(argv[3], mac) != 0)

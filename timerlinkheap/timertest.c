@@ -73,11 +73,11 @@ int main(int argc, char **argv)
     timer_linkheap_remove(&heap, timer);
     timer->fn(timer, &heap, timer->userdata, NULL);
 
-    i = rand()%50;
+    i = (size_t)(rand()%50);
     periodics[i].time64 += periodics_ud[i].period;
     timer_linkheap_modify(&heap, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)(rand()%50);
     timer_linkheap_remove(&heap, &periodics[i]);
     timer_linkheap_add(&heap, &periodics[i]);
   }

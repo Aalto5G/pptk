@@ -170,7 +170,7 @@ int main(int argc, char **argv)
     }
     for (inner = 0; inner < 64; inner++)
     {
-      addr = rand();
+      addr = (uint32_t)rand();
       if (!ip_permitted(addr, &heap, &hash))
       {
         printf("not permitted at iter %zu\n", iter);

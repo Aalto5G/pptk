@@ -77,7 +77,7 @@ reassctx_reassemble(struct allocif *loc, struct reassctx *ctx)
     len = ip_total_len(iporig) - ip_hdr_len(iporig);
     if (first + len - 1 > ctx->most_restricting_last)
     {
-      memcpy(pay2 + first, payorig, 1 + ctx->most_restricting_last - first);
+      memcpy(pay2 + first, payorig, 1U + ctx->most_restricting_last - first);
     }
     else
     {

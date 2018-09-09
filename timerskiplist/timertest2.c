@@ -69,12 +69,12 @@ int main(int argc, char **argv)
     timer_skiplist_remove(&heap, timer);
     timer->fn(timer, &heap, timer->userdata, NULL);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timer_skiplist_remove(&heap, &periodics[i]);
     periodics[i].time64 += periodics_ud[i].period;
     timer_skiplist_add(&heap, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timer_skiplist_remove(&heap, &periodics[i]);
     timer_skiplist_add(&heap, &periodics[i]);
   }

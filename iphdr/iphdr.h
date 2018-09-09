@@ -423,13 +423,13 @@ static inline const void *ether_const_payload(const void *pkt)
   return &cpkt[14];
 }
 
-#define ETHER_HDR_LEN 14
+#define ETHER_HDR_LEN 14U
 
 #define ETHER_TYPE_IP ((uint16_t)0x0800)
 #define ETHER_TYPE_ARP ((uint16_t)0x0806)
 #define ETHER_TYPE_IPV6 ((uint16_t)0x86DD)
 
-#define IP_HDR_MINLEN 20
+#define IP_HDR_MINLEN 20U
 
 static inline uint8_t ip_version(const void *pkt)
 {
@@ -504,7 +504,7 @@ static inline void ipv6_set_hop_limit(void *pkt, uint8_t hl)
 static inline uint32_t ipv6_flow_label(const void *pkt)
 {
   const char *cpkt = pkt;
-  return (((hdr_get8h(&cpkt[1]))&0xF)<<16) | hdr_get16n(&cpkt[2]);
+  return (((hdr_get8h(&cpkt[1]))&0xFU)<<16) | hdr_get16n(&cpkt[2]);
 }
 
 static inline uint32_t ip46_flow_label(const void *pkt)
@@ -741,9 +741,9 @@ static inline void *ipv6_proto_hdr_2(
   int *is_fragmented_ptr, uint16_t *frag_hdr_off_ptr,
   uint16_t *proto_hdr_off_from_frag)
 {
-  char *cipv6 = ipv6;
+  unsigned char *cipv6 = ipv6;
   uint16_t plen = ipv6_payload_len(ipv6);
-  uint32_t tlen = plen + 40;
+  uint32_t tlen = plen + 40U;
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
   int is_fragmented = 0;
@@ -805,9 +805,9 @@ static inline const void *ipv6_const_proto_hdr_2(
   int *is_fragmented_ptr, uint16_t *frag_hdr_off_ptr,
   uint16_t *proto_hdr_off_from_frag)
 {
-  const char *cipv6 = ipv6;
+  const unsigned char *cipv6 = ipv6;
   uint16_t plen = ipv6_payload_len(ipv6);
-  uint32_t tlen = plen + 40;
+  uint32_t tlen = plen + 40U;
   uint16_t off = 40;
   uint8_t nexthdr = ipv6_nexthdr(ipv6);
   int is_fragmented = 0;
@@ -865,7 +865,7 @@ static inline const void *ipv6_const_proto_hdr(
 
 static inline void ip_set_version(void *pkt, uint8_t version)
 {
-  char *cpkt = pkt;
+  unsigned char *cpkt = pkt;
   unsigned char uch = cpkt[0];
   uch &= ~0xF0;
   uch |= (version & 0xF) << 4;
@@ -893,7 +893,7 @@ static inline uint8_t ip46_hdr_len(const void *pkt)
 
 static inline void ip_set_hdr_len(void *pkt, uint8_t hdr_len)
 {
-  char *cpkt = pkt;
+  unsigned char *cpkt = pkt;
   unsigned char uch = cpkt[0];
   if (hdr_len % 4 != 0)
   {

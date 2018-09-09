@@ -109,11 +109,12 @@ int ipv6_permitted(
   const void *src_ip, uint8_t bits, struct ip_hash *hash)
 {
   char src_net[16] = {0};
-  int toset, tomask;
+  size_t toset;
+  int tomask;
   uint32_t hashval;
   memcpy(src_net, src_ip, 16);
-  toset = (128 - bits)/8;
-  tomask = (128 - bits)%8;
+  toset = (128U - bits)/8;
+  tomask = (128U - bits)%8;
   memset(src_net + 16 - toset, 0, toset);
   src_net[16-toset-1] &= ~((1<<tomask) - 1);
   hashval = siphash_buf(hash_seed_get(), src_net, 16)&(hash->hash_size - 1);
@@ -199,11 +200,12 @@ void ipv6_increment_one(
   const void *src_ip, uint8_t bits, struct ip_hash *hash)
 {
   char src_net[16] = {0};
-  int toset, tomask;
+  size_t toset;
+  int tomask;
   uint32_t hashval;
   memcpy(src_net, src_ip, 16);
-  toset = (128 - bits)/8;
-  tomask = (128 - bits)%8;
+  toset = (128U - bits)/8;
+  tomask = (128U - bits)%8;
   memset(src_net + 16 - toset, 0, toset);
   src_net[16-toset-1] &= ~((1<<tomask) - 1);
   hashval = siphash_buf(hash_seed_get(), src_net, 16)&(hash->hash_size - 1);

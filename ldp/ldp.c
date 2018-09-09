@@ -39,7 +39,7 @@ struct feature_state_set {
 
 static int turn_off_offloads(const char *name)
 {
-  int i;
+  size_t i;
   struct ethtool_gstrings *names;
   struct {
     struct ethtool_sset_info hdr;
@@ -94,7 +94,7 @@ static int turn_off_offloads(const char *name)
     return 0;
   }
 
-  for (i = 0; i < (int)len; i++)
+  for (i = 0; i < len; i++)
   {
     names->data[(i+1)*ETH_GSTRING_LEN - 1] = '\0';
   }
@@ -125,7 +125,7 @@ static int turn_off_offloads(const char *name)
 
   setstate = calloc(1,sizeof(*setstate) + ((len+31)/32) * sizeof(setstate->features.features[0]));
 
-  for (i = 0; i < (int)len; i++)
+  for (i = 0; i < len; i++)
   {
     char *offload = (char*)&names->data[i*ETH_GSTRING_LEN];
     int fixed;
@@ -178,7 +178,7 @@ static int turn_off_offloads(const char *name)
 
 static int check_offloads(const char *name)
 {
-  int i;
+  size_t i;
   struct ethtool_gstrings *names;
   struct {
     struct ethtool_sset_info hdr;
@@ -232,7 +232,7 @@ static int check_offloads(const char *name)
     return 0;
   }
 
-  for (i = 0; i < (int)len; i++)
+  for (i = 0; i < len; i++)
   {
     names->data[(i+1)*ETH_GSTRING_LEN - 1] = '\0';
   }
@@ -262,7 +262,7 @@ static int check_offloads(const char *name)
   }
   close(fd);
 
-  for (i = 0; i < (int)len; i++)
+  for (i = 0; i < len; i++)
   {
     char *offload = (char*)&names->data[i*ETH_GSTRING_LEN];
     int x;
@@ -421,10 +421,10 @@ void ldp_config_set(struct ldp_config *config)
 
 struct ldp_in_queue_socket {
   struct ldp_in_queue q;
-  int max_sz;
-  int num_bufs;
-  int buf_start;
-  int buf_end;
+  size_t max_sz;
+  size_t num_bufs;
+  size_t buf_start;
+  size_t buf_end;
   char **bufs; // always at least 1 slot free
 };
 
@@ -441,7 +441,7 @@ struct ldp_out_queue_socket {
 
 static void ldp_in_queue_close_socket(struct ldp_in_queue *inq)
 {
-  int i;
+  size_t i;
   struct ldp_in_queue_socket *insock;
   insock = CONTAINER_OF(inq, struct ldp_in_queue_socket, q);
   close(insock->q.fd);
@@ -481,8 +481,8 @@ int ldp_in_queue_poll(struct ldp_in_queue *inq, uint64_t timeout_usec)
   nfds = inq->fd + 1;
   FD_ZERO(&set);
   FD_SET(inq->fd, &set);
-  timeout.tv_sec = timeout_usec / (1000*1000);
-  timeout.tv_usec = timeout_usec % (1000*1000);
+  timeout.tv_sec = (int64_t)(timeout_usec / (1000U*1000U));
+  timeout.tv_usec = (int)(timeout_usec % (1000U*1000U));
   return select(nfds, &set, NULL, NULL, &timeout);
 }
 
@@ -491,7 +491,7 @@ ldp_in_queue_deallocate_some_socket(struct ldp_in_queue *inq,
                                     struct ldp_packet *pkts, int num)
 {
   int i;
-  int new_end;
+  size_t new_end;
   struct ldp_in_queue_socket *insock;
   insock = CONTAINER_OF(inq, struct ldp_in_queue_socket, q);
   if (num <= 0)
@@ -514,7 +514,7 @@ ldp_in_queue_deallocate_some_socket(struct ldp_in_queue *inq,
 static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
                                         struct ldp_packet *pkts, int num)
 {
-  int i, j, k, l;
+  size_t i, j, k, l;
   int fd = inq->fd;
   int ret;
   int amnt_free;
@@ -526,12 +526,21 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
   // 0 1 2 3
   // ^     ^
 
+  if (num < 0)
+  {
+    abort();
+  }
+
 
   // FIXME this calculation needs to be checked
   amnt_free = insock->buf_end - insock->buf_start - 1;
   if (amnt_free < 0)
   {
-    amnt_free += insock->num_bufs;
+    if (insock->num_bufs > INT_MAX)
+    {
+      abort();
+    }
+    amnt_free += (int)insock->num_bufs;
   }
   if (amnt_free == 0)
   {
@@ -552,7 +561,7 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
   memset(iovecs, 0, sizeof(iovecs));
 
   j = insock->buf_start;
-  for (i = 0; i < num; i++)
+  for (i = 0; i < (unsigned)num; i++)
   {
     msgs[i].msg_hdr.msg_iovlen = 1;
     msgs[i].msg_hdr.msg_iov = iovecs[i];
@@ -565,7 +574,7 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
     iovecs[i][0].iov_base = insock->bufs[j++];
     iovecs[i][0].iov_len = insock->max_sz;
   }
-  ret = recvmmsg(fd, msgs, num, MSG_DONTWAIT, NULL);
+  ret = recvmmsg(fd, msgs, (unsigned)num, MSG_DONTWAIT, NULL);
   if (ret < 0)
   {
     return ret;
@@ -574,7 +583,7 @@ static int ldp_in_queue_nextpkts_socket(struct ldp_in_queue *inq,
   k = insock->buf_start;
   l = 0;
   // FIXME what if all packets are outgoing?
-  for (i = 0; i < ret; i++)
+  for (i = 0; i < (size_t)ret; i++)
   {
     if (names[i].sll_pkttype == PACKET_OUTGOING)
     {
@@ -627,7 +636,7 @@ static int ldp_out_queue_inject_socket(struct ldp_out_queue *outq,
     iovecs[i][0].iov_base = pkts[i].data;
     iovecs[i][0].iov_len = pkts[i].sz;
   }
-  ret = sendmmsg(fd, msgs, num, 0);
+  ret = sendmmsg(fd, msgs, (unsigned)num, 0);
   return ret;
 }
 
@@ -653,7 +662,7 @@ static int ldp_out_queue_inject_chunk_socket(struct ldp_out_queue *outq,
     msgs[i].msg_hdr.msg_iovlen = pkts[i].iovlen;
     msgs[i].msg_hdr.msg_iov = pkts[i].iov;
   }
-  ret = sendmmsg(fd, msgs, num, 0);
+  ret = sendmmsg(fd, msgs, (unsigned)num, 0);
   return ret;
 }
 
@@ -667,11 +676,16 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   struct ldp_in_queue_socket *insock = NULL;
   struct ldp_out_queue_socket *outsock = NULL;
   struct sockaddr_ll sockaddr_ll;
-  int i;
+  size_t i;
   struct ifreq ifr;
   int ifindex;
   int mtu;
   int errnosave;
+
+  if (numinq < 0 || numoutq < 0)
+  {
+    abort();
+  }
 
   if (numinq != 1 || numoutq != 1)
   {
@@ -694,13 +708,13 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   intf->link_status = NULL;
   intf->mac_addr = NULL;
   intf->mac_addr_set = NULL;
-  inqs = malloc(numinq*sizeof(*inqs));
+  inqs = malloc(((unsigned)numinq)*sizeof(*inqs));
   if (inqs == NULL)
   {
     errno = ENOMEM;
     goto err;
   }
-  outqs = malloc(numoutq*sizeof(*outqs));
+  outqs = malloc(((unsigned)numoutq)*sizeof(*outqs));
   if (outqs == NULL)
   {
     errno = ENOMEM;
@@ -815,8 +829,18 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   intf->outq = outqs;
   snprintf(intf->name, sizeof(intf->name), "%s", name);
 
-  insock->max_sz = mtu + 14;
-  insock->num_bufs = ldp_config_get_global()->socket_num_bufs;
+  if (mtu < 0)
+  {
+    abort();
+  }
+  insock->max_sz = ((unsigned)mtu) + 14U;
+  int num_bufs_tmp;
+  num_bufs_tmp = ldp_config_get_global()->socket_num_bufs;
+  if (num_bufs_tmp < 0)
+  {
+    abort();
+  }
+  insock->num_bufs = (unsigned)num_bufs_tmp;
   insock->buf_start = 0;
   insock->buf_end = 0;
   insock->bufs = malloc(insock->num_bufs*sizeof(*insock->bufs));

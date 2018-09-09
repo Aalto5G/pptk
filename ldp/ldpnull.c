@@ -96,7 +96,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   intf->link_status = NULL;
   intf->mac_addr = NULL;
   intf->mac_addr_set = NULL;
-  inqs = malloc(numinq*sizeof(*inqs));
+  inqs = malloc(((unsigned)numinq)*sizeof(*inqs));
   if (inqs == NULL)
   {
     errno = ENOMEM;
@@ -106,7 +106,7 @@ ldp_interface_open_null(const char *name, int numinq, int numoutq,
   {
     inqs[i] = NULL;
   }
-  outqs = malloc(numoutq*sizeof(*outqs));
+  outqs = malloc(((unsigned)numoutq)*sizeof(*outqs));
   if (outqs == NULL)
   {
     errno = ENOMEM;

@@ -111,7 +111,7 @@ void odpfunc3flushdl(struct odpfunc3_userdata *ud)
   {
     sent = 0;
   }
-  lost = ud->dloutcnt - sent;
+  lost = ((int)ud->dloutcnt) - sent;
   ud->dloutcnt = 0;
   odp_packet_free_multi(&ud->dloutbuf[sent], lost);
 }
@@ -125,7 +125,7 @@ void odpfunc3flushul(struct odpfunc3_userdata *ud)
   {
     sent = 0;
   }
-  lost = ud->uloutcnt - sent;
+  lost = ((int)ud->uloutcnt) - sent;
   ud->uloutcnt = 0;
   odp_packet_free_multi(&ud->uloutbuf[sent], lost);
 }

@@ -8,7 +8,7 @@
 struct ldp_interface *dlnmd;
 
 struct pkt {
-  int len;
+  size_t len;
   char data[1514];
 };
 

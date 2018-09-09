@@ -10,7 +10,7 @@
 
 static inline int seq_valid(uint32_t x, uint32_t y)
 {
-  int32_t result = x-y;
+  int32_t result = (int32_t)(x-y);
   if (result > 512*1024*1024 || result < -512*1024*1024)
   {
     return 0;
@@ -28,7 +28,7 @@ static inline int seq_valid(uint32_t x, uint32_t y)
 
 static inline int seq_cmp(uint32_t x, uint32_t y)
 {
-  int32_t result = x-y;
+  int32_t result = (int32_t)(x-y);
   if (result > 512*1024*1024 || result < -512*1024*1024)
   {
     abort();

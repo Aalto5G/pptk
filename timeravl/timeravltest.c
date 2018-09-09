@@ -62,11 +62,11 @@ int main(int argc, char **argv)
     timeravl_remove(&avl, timer);
     timer->fn(timer, &avl, timer->userdata, NULL);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     periodics[i].time64 += periodics_ud[i].period;
     timeravl_modify(&avl, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timeravl_remove(&avl, &periodics[i]);
     timeravl_add(&avl, &periodics[i]);
   }

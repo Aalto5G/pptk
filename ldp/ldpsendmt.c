@@ -15,13 +15,13 @@
 struct ldp_interface *intf;
 
 struct opts {
-  int num_thr;
-  int num_pkt;
+  size_t num_thr;
+  size_t num_pkt;
   int interval_usec;
   uint16_t src_port;
   uint16_t dst_port;
-  int payload_size;
-  int burst_size;
+  size_t payload_size;
+  size_t burst_size;
 
   uint32_t src_ip;
   int src_ip_set;
@@ -86,7 +86,7 @@ static int mac_parse(const char *str, char mac[6])
     {
       return -EINVAL;
     }
-    mac[i] = (unsigned char)uli;
+    mac[i] = (char)(unsigned char)uli;
     str = nxt+1;
   }
   return 0;
@@ -135,7 +135,7 @@ static int ip_parse(const char *str, uint32_t *ip)
     {
       return -EINVAL;
     }
-    *ip |= ((unsigned char)uli) << 8*(3-i);
+    *ip |= ((uint32_t)(unsigned char)uli) << 8*(3-i);
     str = nxt+1;
   }
   return 0;
@@ -203,7 +203,7 @@ static void *thrfn(void *arg)
   uint64_t pkts = 0, bytes = 0;
   uint64_t last_pkts = 0, last_bytes = 0;
   struct ldp_packet pkt_tbl[8192] = {};
-  int i;
+  size_t i;
   char pkt[65536] = {0};
 
   construct_packet(pkt, global_opts.payload_size + 8 + 20 + 14);
@@ -228,8 +228,11 @@ static void *thrfn(void *arg)
     
     num = ldp_out_inject(intf->outq[id], pkt_tbl, left);
     ldp_out_txsync(intf->outq[id]);
-    pkts += num;
-    bytes += num*pkt_tbl[0].sz;
+    if (num > 0)
+    {
+      pkts += (size_t)num;
+      bytes += ((size_t)num)*pkt_tbl[0].sz;
+    }
 
     time64 = gettime64();
     if (time64 - last_time64 > 1000*1000)
@@ -246,7 +249,7 @@ static void *thrfn(void *arg)
 
     if (global_opts.interval_usec > 0)
     {
-      usleep(global_opts.interval_usec);
+      usleep((unsigned)global_opts.interval_usec);
     }
   }
   return NULL;
@@ -256,7 +259,7 @@ int main(int argc, char **argv)
 {
   struct ctx *ctx;
   pthread_t *pth;
-  int i;
+  size_t i;
   struct option long_options[] = {
       {"src_mac",  required_argument, 0,  'S' },
       {"dst_mac",  required_argument, 0,  'D' },

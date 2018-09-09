@@ -20,9 +20,9 @@ int main(int argc, char **argv)
     gettimeofday(&tv1, NULL);
     for (i = 0; i < 1000*1000; i++)
     {
-      int i1 = rand() % (sz-1514);
-      int i2 = rand() % (sz-1514);
-      int i3 = rand() % (sz-1514);
+      int i1 = rand() % (((int)sz)-1514);
+      int i2 = rand() % (((int)sz)-1514);
+      int i3 = rand() % (((int)sz)-1514);
       memcpy(&ptr2[i1], &ptr1[i2], 1514);
       memcpy(&ptr3[i3], &ptr2[i2], 1514);
     }
