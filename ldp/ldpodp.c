@@ -17,7 +17,7 @@
 #include "linkcommon.h"
 #include "containerof.h"
 
-static int ldp_odp_interface_count = 0;
+static unsigned ldp_odp_interface_count = 0;
 
 struct ldp_port_odp {
   odp_pktio_t pktio;
@@ -32,7 +32,12 @@ struct ldp_in_queue_odp {
 
 static uint32_t ldp_in_queue_ring_size_odp(struct ldp_in_queue *inq)
 {
-  return ldp_config_get_global()->odp_num_pkt / (2*ldp_odp_interface_count);
+  int odp_num_pkt_tmp = ldp_config_get_global()->odp_num_pkt;
+  if (odp_num_pkt_tmp < 0)
+  {
+    abort();
+  }
+  return ((unsigned)odp_num_pkt_tmp) / (2*ldp_odp_interface_count);
 }
 
 struct ldp_out_queue_odp {
@@ -86,11 +91,17 @@ static int ldp_odp_promisc_mode_get(struct ldp_in_queue *q)
 static int ldp_odp_mtu_get(struct ldp_in_queue *q)
 {
   struct ldp_in_queue_odp *odpq = CONTAINER_OF(q, struct ldp_in_queue_odp, q);
+  uint32_t mtu;
 #if ODP_VERSION_API_MAJOR >= 17
-  return odp_pktin_maxlen(odpq->port->pktio);
+  mtu = odp_pktin_maxlen(odpq->port->pktio);
 #else
-  return odp_pktio_mtu(odpq->port->pktio);
+  mtu = odp_pktio_mtu(odpq->port->pktio);
 #endif
+  if (mtu > INT_MAX)
+  {
+    abort();
+  }
+  return (int)mtu;
 }
 
 static int ldp_odp_mac_addr_2(struct ldp_interface *intf, void *mac)
@@ -207,9 +218,15 @@ static int init_odp_ctx(void)
   }
 
   odp_pool_param_init(&params);
-  params.pkt.seg_len = ldp_config_get_global()->odp_pkt_len;
-  params.pkt.len = ldp_config_get_global()->odp_pkt_len;
-  params.pkt.num = ldp_config_get_global()->odp_num_pkt;
+  int pkt_len_tmp = ldp_config_get_global()->odp_pkt_len;
+  int pkt_num_tmp = ldp_config_get_global()->odp_num_pkt;
+  if (pkt_len_tmp < 0 || pkt_num_tmp < 0)
+  {
+    abort();
+  }
+  params.pkt.seg_len = (unsigned)pkt_len_tmp;
+  params.pkt.len = (unsigned)pkt_len_tmp;
+  params.pkt.num = (unsigned)pkt_num_tmp;
   params.type = ODP_POOL_PACKET;
   odp_ctx.pool = odp_pool_create("packet pool", &params);
   if (odp_ctx.pool == ODP_POOL_INVALID)
@@ -521,7 +538,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   intf->mtu_get = ldp_odp_mtu_get_2;
   intf->link_wait = ldp_odp_link_wait_2;
   intf->link_status = ldp_odp_link_status_2;
-  inqs = malloc(numinq*sizeof(*inqs));
+  inqs = malloc(((unsigned)numinq)*sizeof(*inqs));
   if (inqs == NULL)
   {
     errno = ENOMEM;
@@ -531,7 +548,7 @@ ldp_interface_open_odp(const char *name, int numinq, int numoutq,
   {
     inqs[i] = NULL;
   }
-  outqs = malloc(numoutq*sizeof(*outqs));
+  outqs = malloc(((unsigned)numoutq)*sizeof(*outqs));
   if (outqs == NULL)
   {
     errno = ENOMEM;

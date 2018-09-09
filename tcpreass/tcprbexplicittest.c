@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     pkt->sz = 14+20+20+tcppay_len;
     ip_set_total_len(ip, 20+20+tcppay_len);
     ip_set_hdr_cksum_calc(ip, 20);
-    tcp_set_seq_number(tcp, cursn + (rand()%10000));
+    tcp_set_seq_number(tcp, cursn + (uint32_t)(rand()%10000));
     tcp_set_cksum_calc(ip, 20, tcp, 20+tcppay_len);
     memcpy(pkt->data, ether, pkt->sz);
     pkt = tcp_rb_explicit_reassctx_add(&loc, &ctx, pkt);

@@ -41,7 +41,7 @@ int pcap_in_ctx_read(
   {
     sec = byteswap32(sec);
   }
-  sec += ctx->thiszone;
+  sec = (uint32_t)((int)sec + ctx->thiszone);
   usec = hdr_get32h(&hdr[4]);
   if (ctx->swap)
   {
@@ -210,11 +210,17 @@ int pcap_in_ctx_init_file(
     fclose(f);
     return -EINVAL;
   }
-  ctx->thiszone = hdr_get32h(&hdr[8]);
+  unsigned thiszonetmp = hdr_get32h(&hdr[8]);
+  if (thiszonetmp > 0)
+  {
+    fclose(f);
+    return -EINVAL;
+  }
   if (ctx->swap)
   {
-    ctx->thiszone = byteswap32(ctx->thiszone);
+    thiszonetmp = byteswap32(thiszonetmp);
   }
+  ctx->thiszone = (int)thiszonetmp;
   network = hdr_get32h(&hdr[20]);
   if (ctx->swap)
   {

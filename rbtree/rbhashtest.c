@@ -65,7 +65,7 @@ struct hash_rb_entry entriesrb[NUM] = {};
 
 int main(int argc, char **argv)
 {
-  int i;
+  size_t i;
   int j;
   uint64_t begin, end;
   begin = gettime64();

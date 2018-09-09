@@ -7,12 +7,12 @@
 
 void random_mt_ctx_init(struct random_mt_ctx *ctx, uint32_t seed)
 {
-  int i;
+  unsigned i;
   ctx->index = 624;
   ctx->mt[0] = seed;
   for (i = 1; i < 624; i++)
   {
-    ctx->mt[i] = (1812433253 * (ctx->mt[i - 1] ^ (ctx->mt[i - 1] >> 30)) + i);
+    ctx->mt[i] = (1812433253U * (ctx->mt[i - 1] ^ (ctx->mt[i - 1] >> 30)) + i);
   }
 }
 

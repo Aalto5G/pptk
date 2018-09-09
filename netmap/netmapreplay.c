@@ -14,7 +14,7 @@
 struct nm_desc *dlnmd, *ulnmd;
 
 struct pkt {
-  int len;
+  size_t len;
   char data[1514];
 };
 

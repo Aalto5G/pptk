@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <limits.h>
 #include "ldp.h"
 #include "ldppcap.h"
 #include "mypcapjoker.h"
@@ -15,9 +16,9 @@ struct ldp_in_queue_pcap {
   char *ifname;
   void **bufs;
   size_t *bufcapacities;
-  int num_bufs;
-  int buf_start;
-  int buf_end;
+  size_t num_bufs;
+  size_t buf_start;
+  size_t buf_end;
   struct ldp_capture_shared_in_pcap *regular;
 };
 
@@ -180,7 +181,7 @@ static struct ldp_capture_shared_out_pcapng *create_out_ng(const char *fname)
 static void ldp_in_queue_close_pcap(struct ldp_in_queue *inq)
 {
   struct ldp_in_queue_pcap *inpcapq;
-  int j;
+  size_t j;
   inpcapq = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
   for (j = 0; j < inpcapq->num_bufs; j++)
   {
@@ -227,7 +228,7 @@ ldp_in_queue_deallocate_some_pcap(struct ldp_in_queue *inq,
                                     struct ldp_packet *pkts, int num)
 {
   int i;
-  int new_end;
+  size_t new_end;
   struct ldp_in_queue_pcap *inpcap;
   inpcap = CONTAINER_OF(inq, struct ldp_in_queue_pcap, q);
   if (num <= 0)
@@ -261,7 +262,11 @@ static void ldp_in_queue_intern(struct ldp_in_queue_pcap *inq,
   int amnt_free = inq->buf_end - inq->buf_start - 1;
   if (amnt_free < 0)
   {
-    amnt_free += inq->num_bufs;
+    if (inq->num_bufs > INT_MAX)
+    {
+      abort();
+    }
+    amnt_free += (int)inq->num_bufs;
   }
   if (amnt_free == 0)
   {
@@ -330,7 +335,11 @@ static int ldp_in_queue_nextpkts_ts_pcap(struct ldp_in_queue *inq,
   amnt_free = inpcapq->buf_end - inpcapq->buf_start - 1;
   if (amnt_free < 0)
   {
-    amnt_free += inpcapq->num_bufs;
+    if (inpcapq->num_bufs > INT_MAX)
+    {
+      abort();
+    }
+    amnt_free += (int)inpcapq->num_bufs;
   }
   if (amnt_free == 0)
   {
@@ -563,7 +572,7 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   struct ldp_interface *intf = NULL;
   struct ldp_in_queue **inqs = NULL;
   struct ldp_out_queue **outqs = NULL;
-  int j;
+  size_t j;
   char *name2 = NULL;
   char *tok, *end, *tok2, *end2;
   char *inname = NULL;
@@ -651,14 +660,14 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
   intf->link_status = NULL;
   intf->mac_addr = NULL;
   intf->mac_addr_set = NULL;
-  inqs = malloc(numinq*sizeof(*inqs));
+  inqs = malloc(((unsigned)numinq)*sizeof(*inqs));
   if (inqs == NULL)
   {
     errno = ENOMEM;
     goto err;
   }
   inqs[0] = NULL;
-  outqs = malloc(numoutq*sizeof(*outqs));
+  outqs = malloc(((unsigned)numoutq)*sizeof(*outqs));
   if (outqs == NULL)
   {
     errno = ENOMEM;
@@ -677,7 +686,12 @@ ldp_interface_open_pcap(const char *name, int numinq, int numoutq,
     }
     inqs[i] = &inpcapq->q;
     inpcapq->ifname = NULL;
-    inpcapq->num_bufs = ldp_config_get_global()->pcap_num_bufs;
+    int num_bufs_tmp = ldp_config_get_global()->pcap_num_bufs;
+    if (num_bufs_tmp < 0)
+    {
+      abort();
+    }
+    inpcapq->num_bufs = (unsigned)num_bufs_tmp;
     inpcapq->bufs = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufs));
     inpcapq->bufcapacities = malloc(inpcapq->num_bufs*sizeof(*inpcapq->bufcapacities));
     for (j = 0; j < inpcapq->num_bufs; j++)

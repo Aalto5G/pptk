@@ -51,11 +51,11 @@ int main(int argc, char **argv)
     }
     timer_rbwheel_process(&wheel, gettime64(), NULL);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     periodics[i].rb.time64 += periodics_ud[i].period;
     timer_rbwheel_modify(&wheel, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timer_rbwheel_remove(&wheel, &periodics[i]);
     timer_rbwheel_add(&wheel, &periodics[i]);
   }

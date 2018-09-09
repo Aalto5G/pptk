@@ -15,8 +15,8 @@
 struct ldp_interface **intfs;
 pthread_t *thrs;
 struct thrctx *thrctxs;
-int num_intfs;
-int num_thrs;
+size_t num_intfs;
+size_t num_thrs;
 
 struct hash_table table;
 
@@ -214,7 +214,8 @@ static void *thrfn(void *arg)
   struct pollfd *pfds_template;
   struct pollfd *pfds;
   int do_poll = 1;
-  int i, j, k, num;
+  size_t i, j, k;
+  int num;
   struct ldp_packet pkt_tbl[256];
   struct ldp_packet pktout_tbl[num_intfs][256];
   int numout[num_intfs];
@@ -268,7 +269,11 @@ static void *thrfn(void *arg)
       char last_mac[6] = {1,0,0,0,0,0};
       time64 = gettime64();
       num = ldp_in_nextpkts(intfs[i]->inq[id], pkt_tbl, sizeof(pkt_tbl)/sizeof(*pkt_tbl));
-      for (j = 0; j < num; j++)
+      if (num < 0)
+      {
+        num = 0;
+      }
+      for (j = 0; j < (size_t)num; j++)
       {
         int port;
         if (pkt_tbl[j].sz >= 12)
@@ -318,7 +323,7 @@ static void *thrfn(void *arg)
 
 int main(int argc, char **argv)
 {
-  int i;
+  size_t i;
   int ret;
 
   hash_seed_init();
@@ -332,19 +337,20 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  num_intfs = argc - 2;
+  num_intfs = (size_t)(argc - 2);
   intfs = malloc(num_intfs*sizeof(*intfs));
   if (intfs == NULL)
   {
     printf("out of memory\n");
     exit(1);
   }
-  num_thrs = atoi(argv[1]);
-  if (num_thrs < 1 || num_thrs > 1024)
+  int num_thrs_tmp = atoi(argv[1]);
+  if (num_thrs_tmp < 1 || num_thrs_tmp > 1024)
   {
     printf("invalid thread count %s\n", argv[1]);
     exit(1);
   }
+  num_thrs = (size_t)num_thrs_tmp;
   if (num_thrs > 1)
   {
     ret = hash_table_init_locked(&table, 8192, mac_hash_fn, NULL, 1);

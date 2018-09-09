@@ -61,7 +61,7 @@ rfc791ctx_reassemble(struct allocif *loc, struct rfc791ctx *ctx)
     len = ip_total_len(iporig) - ip_hdr_len(iporig);
     if (first + len - 1 > ctx->most_restricting_last)
     {
-      memcpy(pay2 + first, payorig, 1 + ctx->most_restricting_last - first);
+      memcpy(pay2 + first, payorig, 1U + ctx->most_restricting_last - first);
     }
     else
     {
@@ -118,17 +118,17 @@ void rfc791ctx_add(struct rfc791ctx *ctx, struct packet *pkt)
   {
     ctx->most_restricting_last = data_last;
   }
-  firsttotal = (data_first + 8*64 - 1) / (8*64);
-  onepastlasttotal = (data_last + 1) / (8*64);
+  firsttotal = (data_first + 8U*64U - 1U) / (8U*64U);
+  onepastlasttotal = (data_last + 1U) / (8U*64U);
   firstmaxbit = firsttotal*64;
-  secondminbit = onepastlasttotal*64;
-  if (firstmaxbit > (uint32_t)((data_last + 1) / 8))
+  secondminbit = onepastlasttotal*64U;
+  if (firstmaxbit > (uint32_t)((data_last + 1U) / 8U))
   {
-    firstmaxbit = (data_last + 1) / 8;
+    firstmaxbit = (data_last + 1U) / 8U;
   }
-  if (secondminbit < data_first / 8)
+  if (secondminbit < data_first / 8U)
   {
-    secondminbit = data_first / 8;
+    secondminbit = data_first / 8U;
   }
 #if 0
   for (i = data_first/8; i < (uint32_t)((data_last + 1) / 8); i++)
@@ -176,5 +176,5 @@ int rfc791ctx_complete(struct rfc791ctx *ctx)
     }
   }
   //printf("calling ffsll\n");
-  return ffsll(~ctx->bits[bitidx]) == bitoff + 1;
+  return ffsll((int64_t)~ctx->bits[bitidx]) == bitoff + 1;
 }

@@ -61,11 +61,11 @@ int main(int argc, char **argv)
     timerrb_remove(&rb, timer);
     timer->fn(timer, &rb, timer->userdata, NULL);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     periodics[i].time64 += periodics_ud[i].period;
     timerrb_modify(&rb, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timerrb_remove(&rb, &periodics[i]);
     timerrb_add(&rb, &periodics[i]);
   }

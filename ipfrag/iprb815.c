@@ -1363,7 +1363,7 @@ struct packet *rb815ctx_reassemble(struct allocif *loc, struct rb815ctx *ctx)
   ip_set_total_len(ip2, ctx->hdr_len - 14 + ctx->most_restricting_last + 1);
   ip_set_hdr_cksum_calc(ip2, ctx->hdr_len - 14);
   pay2 = ether2 + ctx->hdr_len;
-  memcpy(pay2, ctx->pkt, ctx->most_restricting_last + 1);
+  memcpy(pay2, ctx->pkt, (size_t)ctx->most_restricting_last + 1);
   return pkt;
 }
 
@@ -1628,7 +1628,7 @@ void rb815ctx_add(struct rb815ctx *ctx, struct packet *pkt)
   }
   if (ctx->hdr_len == 0)
   {
-    ctx->hdr_len = 14 + ip_hdr_len(ip);
+    ctx->hdr_len = 14 + (size_t)ip_hdr_len(ip);
     memcpy(ctx->pkt_header, ether, ctx->hdr_len);
   }
   data_first = ip_frag_off(ip);
@@ -1664,6 +1664,6 @@ void rb815ctx_add(struct rb815ctx *ctx, struct packet *pkt)
 #endif
   if (mod)
   {
-    memcpy(&ctx->pkt[data_first], ip_const_payload(ip), data_last - data_first + 1);
+    memcpy(&ctx->pkt[data_first], ip_const_payload(ip), (size_t)data_last - (size_t)data_first + 1);
   }
 }

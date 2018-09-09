@@ -3,7 +3,7 @@ ifeq ($(WITH_NETMAP),yes)
 LDP_SRC_LIB += ldpnetmap.c
 endif
 ifeq ($(WITH_DPDK),yes)
-LDP_SRC_LIB += ldpdpdk.c
+LDP_SRC_DPDK += ldpdpdk.c
 endif
 ifeq ($(WITH_ODP),yes)
 LDP_SRC_LIB += ldpodp.c
@@ -13,12 +13,15 @@ ifeq ($(WITH_LUA),yes)
 LDP_SRC += lualdp.c
 endif
 
+LDP_SRC_DPDK := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_DPDK))
 LDP_SRC_LIB := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC_LIB))
 LDP_SRC := $(patsubst %,$(DIRLDP)/%,$(LDP_SRC))
 
+LDP_OBJ_DPDK := $(patsubst %.c,%.o,$(LDP_SRC_DPDK))
 LDP_OBJ_LIB := $(patsubst %.c,%.o,$(LDP_SRC_LIB))
 LDP_OBJ := $(patsubst %.c,%.o,$(LDP_SRC))
 
+LDP_DEP_DPDK := $(patsubst %.c,%.d,$(LDP_SRC_DPDK))
 LDP_DEP_LIB := $(patsubst %.c,%.d,$(LDP_SRC_LIB))
 LDP_DEP := $(patsubst %.c,%.d,$(LDP_SRC))
 
@@ -78,7 +81,7 @@ endif
 unit_LDP:
 	@true
 
-$(DIRLDP)/libldp.a: $(LDP_OBJ_LIB) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
+$(DIRLDP)/libldp.a: $(LDP_OBJ_LIB) $(LDP_OBJ_DPDK) $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	rm -f $@
 	ar rvs $@ $(filter %.o,$^)
 
@@ -125,11 +128,15 @@ $(LDP_OBJ): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_LDP)
 	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_LDP)
 
+$(LDP_OBJ_DPDK): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
+	$(CC) $(CFLAGS) -c -o $*.o $*.c $(CFLAGS_LDP) -Wno-sign-conversion
+	$(CC) $(CFLAGS) -c -S -o $*.s $*.c $(CFLAGS_LDP) -Wno-sign-conversion
+
 $(LDP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_LDP)
 
 clean_LDP:
-	rm -f $(LDP_OBJ) $(LDP_DEP)
+	rm -f $(LDP_OBJ) $(LDP_OBJ_DPDK) $(LDP_DEP)
 
 distclean_LDP: clean_LDP
 	rm -f $(DIRLDP)/libldp.so $(DIRLDP)/libldp.a $(DIRLDP)/testldp $(DIRLDP)/testrss $(DIRLDP)/ldpfwd $(DIRLDP)/ldpfwdmt $(DIRLDP)/ldptunnel $(DIRLDP)/ldprecv $(DIRLDP)/ldpreplay $(DIRLDP)/ldpswitch $(DIRLDP)/ldprecvmt $(DIRLDP)/ldpsend $(DIRLDP)/ldpsendmt

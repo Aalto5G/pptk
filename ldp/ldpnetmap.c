@@ -224,10 +224,15 @@ static int ldp_out_queue_txsync_netmap(struct ldp_out_queue *outq)
 
 static int check_channels(const char *name, int numinq, int numoutq)
 {
-  int rx, tx;
+  size_t rx, tx;
   struct ethtool_channels echannels = {};
   struct ifreq ifr = {};
   int fd;
+
+  if (numinq < 0 || numoutq < 0)
+  {
+    abort();
+  }
 
   fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0)
@@ -257,7 +262,7 @@ static int check_channels(const char *name, int numinq, int numoutq)
   {
     rx = echannels.combined_count;
   }
-  if (rx != numinq)
+  if (rx != ((size_t)numinq))
   {
     errno = ECHRNG;
     return 0;
@@ -267,7 +272,7 @@ static int check_channels(const char *name, int numinq, int numoutq)
   {
     tx = echannels.combined_count;
   }
-  if (tx < numoutq)
+  if (tx < ((size_t)numoutq))
   {
     errno = ECHRNG;
     return 0;
@@ -277,11 +282,16 @@ static int check_channels(const char *name, int numinq, int numoutq)
 
 static int set_channels(const char *name, int numinq, int numoutq)
 {
-  int rx, tx;
+  size_t rx, tx;
   struct ethtool_channels echannels = {};
   struct ifreq ifr = {};
   int fd;
   int use_combined = 0;
+
+  if (numinq < 0 || numoutq < 0)
+  {
+    abort();
+  }
 
   fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0)
@@ -333,12 +343,12 @@ static int set_channels(const char *name, int numinq, int numoutq)
   }
   if (use_combined)
   {
-    echannels.combined_count = numinq;
+    echannels.combined_count = (uint32_t)numinq;
   }
   else
   {
-    echannels.rx_count = numinq;
-    echannels.tx_count = numoutq;
+    echannels.rx_count = (uint32_t)numinq;
+    echannels.tx_count = (uint32_t)numoutq;
   }
   echannels.cmd = ETHTOOL_SCHANNELS;
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
@@ -346,7 +356,7 @@ static int set_channels(const char *name, int numinq, int numoutq)
   if (ioctl(fd, SIOCETHTOOL, &ifr) != 0)
   {
     int errnosave;
-    if (errno == ENOTSUP && numinq == rx && numoutq <= tx)
+    if (errno == ENOTSUP && (size_t)numinq == rx && (size_t)numoutq <= tx)
     {
       close(fd);
       return 1;
@@ -567,7 +577,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   intf->link_status = NULL;
   intf->mac_addr = NULL;
   intf->mac_addr_set = NULL;
-  inqs = malloc(numinq*sizeof(*inqs));
+  inqs = malloc(((unsigned)numinq)*sizeof(*inqs));
   if (inqs == NULL)
   {
     errno = ENOMEM;
@@ -577,7 +587,7 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
   {
     inqs[i] = NULL;
   }
-  outqs = malloc(numoutq*sizeof(*outqs));
+  outqs = malloc(((unsigned)numoutq)*sizeof(*outqs));
   if (outqs == NULL)
   {
     errno = ENOMEM;
@@ -636,8 +646,14 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     nmr.nr_rx_rings = max;
     nmr.nr_flags = NR_REG_ONE_NIC;
     nmr.nr_ringid = i | NETMAP_NO_TX_POLL;
-    nmr.nr_rx_slots = ldp_config_get_global()->netmap_nr_rx_slots;
-    nmr.nr_tx_slots = ldp_config_get_global()->netmap_nr_tx_slots;
+    int nr_rx_slots_tmp = ldp_config_get_global()->netmap_nr_rx_slots;
+    int nr_tx_slots_tmp = ldp_config_get_global()->netmap_nr_tx_slots;
+    if (nr_rx_slots_tmp < 0 || nr_tx_slots_tmp < 0)
+    {
+      abort();
+    }
+    nmr.nr_rx_slots = (unsigned)nr_rx_slots_tmp;
+    nmr.nr_tx_slots = (unsigned)nr_tx_slots_tmp;
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     innmq = CONTAINER_OF(inqs[i], struct ldp_in_queue_netmap, q);
     innmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);
@@ -672,8 +688,14 @@ ldp_interface_open_netmap(const char *name, int numinq, int numoutq,
     nmr.nr_rx_rings = max;
     nmr.nr_flags = NR_REG_ONE_NIC;
     nmr.nr_ringid = i | NETMAP_NO_TX_POLL;
-    nmr.nr_rx_slots = ldp_config_get_global()->netmap_nr_rx_slots;
-    nmr.nr_tx_slots = ldp_config_get_global()->netmap_nr_tx_slots;
+    int nr_rx_slots_tmp = ldp_config_get_global()->netmap_nr_rx_slots;
+    int nr_tx_slots_tmp = ldp_config_get_global()->netmap_nr_tx_slots;
+    if (nr_rx_slots_tmp < 0 || nr_tx_slots_tmp < 0)
+    {
+      abort();
+    }
+    nmr.nr_rx_slots = (unsigned)nr_rx_slots_tmp;
+    nmr.nr_tx_slots = (unsigned)nr_tx_slots_tmp;
     snprintf(nmifnamebuf, sizeof(nmifnamebuf), "%s-%d", name, i);
     outnmq = CONTAINER_OF(outqs[i], struct ldp_out_queue_netmap, q);
     outnmq->nmd = nm_open(nmifnamebuf, &nmr, 0, NULL);

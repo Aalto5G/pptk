@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   }
   while ((result = pcap_joker_ctx_read(&inctx, &buf, &bufcapacity, &len, &snap, &time64, NULL)) > 0)
   {
-    time_t time = time64/1000/1000;
+    time_t time = (time_t)(time64/1000/1000);
     printf("len %zu snap %zu time %s\n", len, snap, ctime(&time));
     if (pcap_out_ctx_write(&outctx, buf, snap, time64) != 0)
     {

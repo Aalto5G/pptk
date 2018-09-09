@@ -113,19 +113,19 @@ int main(int argc, char **argv)
   for (j = 0; j < 10*1000; j++)
   {
     printf("seeding random %d\n", j);
-    srand(j);
+    srand((uint32_t)j);
     ipq_init(&ipq);
     i = 0;
     for (;;)
     {
-      fragment[0].datastart = ((rand() % (sz - 14 - 20)) >> 3) << 3;
+      fragment[0].datastart = (((uint32_t)rand() % (sz - 14 - 20)) >> 3) << 3;
       if (rand() % 2)
       {
         fragment[0].datalen = 0;
       }
       else
       {
-        fragment[0].datalen = 1 + (rand() % (sz - 14 - 20 - fragment[0].datastart));
+        fragment[0].datalen = 1 + ((uint32_t)rand() % (sz - 14 - 20 - fragment[0].datastart));
       }
       fragment[0].pkt = NULL;
       if (fragment4(&intf, pkt, sz, fragment, 1) != 0)

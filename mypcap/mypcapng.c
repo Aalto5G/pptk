@@ -18,19 +18,21 @@ static ssize_t fskip(size_t sz, FILE *f)
   while (skipped < sz)
   {
     size_t remaining = sz - skipped;
-    ssize_t ret;
+    size_t ret;
     ret = fread(buf, 1, (remaining > 512) ? 512 : remaining, f);
     if (ret <= 0)
     {
+#if 0
       if (ret < 0 && skipped == 0)
       {
         return ret;
       }
-      return skipped;
+#endif
+      return (ssize_t)skipped;
     }
     skipped += ret;
   }
-  return skipped;
+  return (ssize_t)skipped;
 }
 
 static inline uint32_t string_hash(const char *str)
@@ -357,7 +359,7 @@ static int pcapng_in_ctx_read_idb(struct pcapng_in_ctx *ctx)
       optlen = byteswap16(optlen);
     }
     remaining_opts -= 4;
-    thisoptlen = (optlen+3)/4*4;
+    thisoptlen = (optlen+3U)/4U*4U;
     if (thisoptlen > remaining_opts)
     {
       return -EINVAL;
@@ -711,7 +713,7 @@ int pcapng_in_ctx_read(
       }
       x *= (1000*1000);
       x += 0.5;
-      time64val = ((uint64_t)x) + intf->tsoffset;
+      time64val = ((uint64_t)(((int64_t)x) + ((int64_t)intf->tsoffset)));
     }
     else
     {
@@ -733,7 +735,7 @@ int pcapng_in_ctx_read(
           ts *= 10;
         }
       }
-      time64val = ts + intf->tsoffset;
+      time64val = (uint64_t)(((int64_t)ts) + ((int64_t)intf->tsoffset));
     }
     ctx->lasttime = time64val;
     if (time64)

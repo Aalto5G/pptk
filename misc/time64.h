@@ -8,7 +8,7 @@ static inline uint64_t gettime64(void)
 {
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000ULL*1000ULL + tv.tv_usec;
+  return ((uint64_t)tv.tv_sec)*1000ULL*1000ULL + ((uint64_t)tv.tv_usec);
 }
 
 #endif

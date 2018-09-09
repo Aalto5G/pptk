@@ -154,7 +154,7 @@ timer_set_running_state(struct timer_skiplist *tim)
 static inline uint32_t
 rte_bsf32(uint32_t v)
 {
-        return __builtin_ctz(v);
+        return (uint32_t)__builtin_ctz(v);
 }
 
 /*
@@ -215,7 +215,7 @@ timer_get_prev_entries_for_node(struct priv_timer *priv, struct timer_skiplist *
 	 * values, and then increment on each level individually if necessary
 	 */
 	timer_get_prev_entries(priv, tim->time64 - 1, prev);
-	for (i = priv->curr_skiplist_depth - 1; i >= 0; i--) {
+	for (i = (int)priv->curr_skiplist_depth - 1; i >= 0; i--) {
 		while (prev[i]->sl_next[i] != NULL &&
 				prev[i]->sl_next[i] != tim &&
 				prev[i]->sl_next[i]->time64 <= tim->time64)
@@ -278,13 +278,13 @@ timer_skiplist_remove(struct priv_timer *priv, struct timer_skiplist *tim)
 
 	/* adjust pointers from previous entries to point past this */
 	timer_get_prev_entries_for_node(priv, tim, prev);
-	for (i = priv->curr_skiplist_depth - 1; i >= 0; i--) {
+	for (i = (int)priv->curr_skiplist_depth - 1; i >= 0; i--) {
 		if (prev[i]->sl_next[i] == tim)
 			prev[i]->sl_next[i] = tim->sl_next[i];
 	}
 
 	/* in case we deleted last entry at a level, adjust down max level */
-	for (i = priv->curr_skiplist_depth - 1; i >= 0; i--)
+	for (i = (int)priv->curr_skiplist_depth - 1; i >= 0; i--)
 		if (priv->pending_head.sl_next[i] == NULL)
 			priv->curr_skiplist_depth --;
 		else
@@ -454,7 +454,7 @@ void timer_skiplist_manage(struct priv_timer *priv, void *threaddata)
 
 	/* break the existing list at current time point */
 	timer_get_prev_entries(priv, cur_time, prev);
-	for (i = priv->curr_skiplist_depth -1; i >= 0; i--) {
+	for (i = (int)priv->curr_skiplist_depth -1; i >= 0; i--) {
 		if (prev[i] == &priv->pending_head)
 			continue;
 		priv->pending_head.sl_next[i] =

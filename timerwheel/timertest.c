@@ -49,11 +49,11 @@ int main(int argc, char **argv)
     }
     timer_wheel_process(&wheel, gettime64(), NULL);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     periodics[i].time64 += periodics_ud[i].period;
     timer_wheel_modify(&wheel, &periodics[i]);
 
-    i = rand()%50;
+    i = (size_t)rand()%50;
     timer_wheel_remove(&wheel, &periodics[i]);
     timer_wheel_add(&wheel, &periodics[i]);
   }

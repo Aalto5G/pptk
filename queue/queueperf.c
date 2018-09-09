@@ -8,7 +8,7 @@
 #include "queue.h"
 
 struct queue queue;
-const int cachesize = 128;
+const size_t cachesize = 128;
 
 static void *producer(void *ud)
 {

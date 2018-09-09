@@ -5,7 +5,7 @@ void tcp_parse_options(
   void *pkt,
   struct tcp_information *info)
 {
-  char *cpkt = pkt;
+  unsigned char *cpkt = pkt;
   size_t dataoff = tcp_data_offset(pkt);
   size_t curoff = 20;
   size_t curoptlen;
@@ -274,8 +274,8 @@ int dns_put_next(void *vdns, uint16_t *off, uint16_t *remcnt,
     {
       return -EFAULT;
     }
-    cdns[(*off)++] = chr-buf;
-    memcpy(&cdns[*off], buf, chr-buf);
+    cdns[(*off)++] = (unsigned char)(chr-buf);
+    memcpy(&cdns[*off], buf, (size_t)(chr-buf));
     (*off) += chr-buf;
     if (chr == buf)
     {
@@ -326,7 +326,7 @@ int dns_put_next_qr(void *vdns, uint16_t *off, uint16_t *remcnt,
       return -EFAULT;
     }
     cdns[(*off)++] = chr-buf;
-    memcpy(&cdns[*off], buf, chr-buf);
+    memcpy(&cdns[*off], buf, (size_t)(chr-buf));
     (*off) += chr-buf;
     if (chr == buf)
     {
@@ -405,7 +405,7 @@ int dns_next(void *vdns, uint16_t *off, uint16_t *remcnt,
     (*off) += labsiz;
     memcpy(buf+strlentmp, &cdns[laboff], tocopy);
     memcpy(buf+strlentmp+tocopy, ".\0", 2);
-    strlentmp += tocopy + 1;
+    strlentmp += tocopy + 1U;
   }
   if (*off + 4 > plen)
   {

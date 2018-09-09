@@ -72,13 +72,13 @@ struct packet *ip_frag_reassemble(struct allocif *loc, struct ipq *qp)
   //printf("%d\n", qp->q.meat);
   ether = pkt->data;
   ip = ether_payload(ether);
-  pkt2 = allocif_alloc(loc, packet_size(14 + ip_hdr_len(ip) + qp->q.len));
+  pkt2 = allocif_alloc(loc, packet_size(14U + (size_t)ip_hdr_len(ip) + (size_t)qp->q.len));
   pkt2->data = packet_calc_data(pkt2);
   ether2 = pkt2->data;
   ip2 = ether_payload(ether2);
   //printf("copying %d\n", 14 + ip_hdr_len(ip));
-  pkt2->sz = qp->q.len + 14 + ip_hdr_len(ip);
-  memcpy(ether2, ether, 14 + ip_hdr_len(ip));
+  pkt2->sz = (size_t)qp->q.len + 14U + ip_hdr_len(ip);
+  memcpy(ether2, ether, 14U + ip_hdr_len(ip));
   ip_set_frag_off(ip2, 0);
   ip_set_more_frags(ip2, 0);
   ip_set_total_len(ip2, ip_hdr_len(ip2) + qp->q.len);
@@ -138,7 +138,7 @@ int ip_frag_queue(struct allocif *loc, struct ipq *qp, struct packet *pkt)
         offset = ip_frag_off(ip);
         ihl = ip_hdr_len(ip);
         /* Determine the position of this fragment. */
-        end = offset + pkt->sz - 14 - ihl;
+        end = (size_t)offset + pkt->sz - 14U - (size_t)ihl;
         err = -EINVAL;
 
         /* Is this the final fragment? */
@@ -203,7 +203,7 @@ found:
          * any overlaps are eliminated.
          */
         if (prev) {
-                int i = (prev->positive.offset + prev->sz - prev->positive.pulled) - offset;
+                int i = (int)(prev->positive.offset + prev->sz - prev->positive.pulled) - offset;
 
                 if (i > 0) {
                         offset += i;
@@ -246,7 +246,7 @@ found:
                         else
                                 qp->q.fragments = next;
 
-                        qp->q.meat -= (free_it->sz - free_it->positive.pulled);
+                        qp->q.meat -= (int)(free_it->sz - free_it->positive.pulled);
                         allocif_free(loc, free_it);
                 }
         }
@@ -262,11 +262,11 @@ found:
         else
                 qp->q.fragments = pkt;
 
-        qp->q.meat += pkt->sz - pkt->positive.pulled;
+        qp->q.meat += (int)pkt->sz - pkt->positive.pulled;
         if (offset == 0)
                 qp->q.flags |= INET_FRAG_FIRST_IN;
 
-        fragsize = pkt->sz - pkt->positive.pulled + ihl;
+        fragsize = (unsigned)pkt->sz - (unsigned)pkt->positive.pulled + (unsigned)ihl;
 
         if (fragsize > qp->q.max_size)
                 qp->q.max_size = fragsize;

@@ -14,11 +14,11 @@
 struct ldp_interface *intf;
 
 struct opts {
-  int num_pkt;
+  size_t num_pkt;
   int interval_usec;
   uint16_t src_port;
   uint16_t dst_port;
-  int payload_size;
+  size_t payload_size;
   int burst_size;
 
   uint32_t src_ip;
@@ -83,7 +83,7 @@ static int mac_parse(const char *str, char mac[6])
     {
       return -EINVAL;
     }
-    mac[i] = (unsigned char)uli;
+    mac[i] = (char)(unsigned char)uli;
     str = nxt+1;
   }
   return 0;
@@ -132,7 +132,7 @@ static int ip_parse(const char *str, uint32_t *ip)
     {
       return -EINVAL;
     }
-    *ip |= ((unsigned char)uli) << 8*(3-i);
+    *ip |= (((uint32_t)(unsigned char)uli) << 8*(3-i));
     str = nxt+1;
   }
   return 0;
@@ -350,8 +350,11 @@ int main(int argc, char **argv)
     
     num = ldp_out_inject(intf->outq[0], pkt_tbl, left);
     ldp_out_txsync(intf->outq[0]);
-    pkts += num;
-    bytes += num*pkt_tbl[0].sz;
+    if (num > 0)
+    {
+      pkts += (size_t)num;
+      bytes += ((size_t)num)*pkt_tbl[0].sz;
+    }
 
     time64 = gettime64();
     if (time64 - last_time64 > 1000*1000)
@@ -368,7 +371,7 @@ int main(int argc, char **argv)
 
     if (global_opts.interval_usec > 0)
     {
-      usleep(global_opts.interval_usec);
+      usleep(((unsigned)global_opts.interval_usec));
     }
   }
 

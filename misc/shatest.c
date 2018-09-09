@@ -12,7 +12,7 @@
 
 static inline uint32_t __get_unaligned_be32(const uint8_t *p)
 {
-        return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+        return ((uint32_t)p[0]) << 24 | ((uint32_t)p[1]) << 16 | ((uint32_t)p[2]) << 8 | ((uint32_t)p[3]);
 }
 
 static inline uint32_t get_unaligned_be32(const void *p)
