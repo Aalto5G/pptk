@@ -188,11 +188,19 @@ static ssize_t memdns(void *mem, size_t off, char *dns)
   {
     return -1;
   }
-  for (i = 0; i <= off - dnsstrlen; i++)
+#if 0
+  // Print the whole buffer to catch uninitialized bytes using Valgrind
+  for (i = 0; i < off; i++)
+  {
+    printf("i %d ", (int)i);
+    printf("bufi %d\n", (uint8_t)buf[i]);
+  }
+#endif
+  for (i = 0; i <= off/* - dnsstrlen*/; i++)
   {
     char *dnsbuf = dns;
     size_t j = i;
-    printf("Comparing %zu: %s\n", i, dns);
+    //printf("Comparing %zu: %s\n", i, dns);
     for (;;)
     {
       char *chr = strchr(dnsbuf, '.');
@@ -200,10 +208,36 @@ static ssize_t memdns(void *mem, size_t off, char *dns)
       {
         chr = dnsbuf+strlen(dnsbuf);
       }
+      if (j >= off)
+      {
+        break;
+      }
+#if 0
+      printf("j %d ", (int)j);
+      printf("bufj %d ", (uint8_t)buf[j]);
+      printf("off %zu\n", off);
+#endif
+      if ((buf[j] & 0xC0) == 0xC0)
+      {
+        size_t newj = 0;
+        newj += ((size_t)(buf[j++] & 0x3F)<<8);
+        if (j >= off)
+        {
+          break;
+        }
+        newj += ((size_t)(buf[j++] & 0xFF)<<0);
+        j = newj;
+      }
       u8 = ((uint8_t)(chr-dnsbuf));
+#if 1
+      if (j >= off)
+      {
+        break;
+      }
+#endif
       if ((uint8_t)buf[j++] != u8)
       {
-        printf("Comparing %zu ended at %zu u8 %d buf %d\n", i, j, u8, buf[j-1]);
+        //printf("Comparing %zu ended at %zu u8 %d buf %d\n", i, j, u8, buf[j-1]);
         break;
       }
       if (chr == dnsbuf)
@@ -212,11 +246,16 @@ static ssize_t memdns(void *mem, size_t off, char *dns)
         {
           return -1;
         }
+        //printf("found match %zu\n", i);
         return (ssize_t)i;
+      }
+      if (j + u8 >= off)
+      {
+        break;
       }
       if (memcmp(&buf[j], dnsbuf, u8) != 0)
       {
-        printf("Comparing %zu ended at %zu: %s\n", i, j, dnsbuf);
+        //printf("Comparing %zu ended at %zu: %s\n", i, j, dnsbuf);
         break;
       }
       j += u8;
