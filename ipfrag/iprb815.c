@@ -1086,8 +1086,8 @@ delete_case4(struct rb815ctx *ctx, uint16_t loc, uint16_t parent_loc)
   struct rb815hole s;
   uint16_t s_left_loc = RB815_HOLE_NULL;
   uint16_t s_right_loc = RB815_HOLE_NULL;
-  struct rb815hole s_left;
-  struct rb815hole s_right;
+  struct rb815hole s_left = {};
+  struct rb815hole s_right = {};
   struct rb815hole parent;
   memcpy(&parent, &ctx->pkt[parent_loc], sizeof(parent));
   if (s_loc != RB815_HOLE_NULL)
@@ -1130,8 +1130,8 @@ delete_case3(struct rb815ctx *ctx, uint16_t loc, uint16_t parent_loc)
   struct rb815hole s;
   uint16_t s_left_loc = RB815_HOLE_NULL;
   uint16_t s_right_loc = RB815_HOLE_NULL;
-  struct rb815hole s_left;
-  struct rb815hole s_right;
+  struct rb815hole s_left = {};
+  struct rb815hole s_right = {};
   struct rb815hole parent;
   memcpy(&parent, &ctx->pkt[parent_loc], sizeof(parent));
   if (s_loc != RB815_HOLE_NULL)
