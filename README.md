@@ -1,5 +1,7 @@
 # PPTK
 
+![PPTK](pptklogo.png)
+
 PPTK is a packet processing toolkit. Originally it was only for processing. It
 was not for reception or transmission, although it was intended to be used with
 netmap. There is however no tight connection to netmap in PPTK, so PPTK can be
