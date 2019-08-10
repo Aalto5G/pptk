@@ -71,6 +71,8 @@ automatically adjusted.
 
 # LDP
 
+![LDP](ldplogo.png)
+
 LDP is L Data Plane. What does the L mean, then? Well, everyone can interpret
 it in a different way. It can mean Linux, as LDP will probably never support
 any other platform. It can also mean lightweight, as LDP is much lighterweight
