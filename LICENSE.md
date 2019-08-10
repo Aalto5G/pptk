@@ -1,9 +1,9 @@
 This license applies only to the software and associated documentation files
-(without the logo as used in documentation). The logo is copyrighted (c) 2019
-by Juha-Matti Tilli, all rights reserved, and can be used only in combination
-with substantially unmodified versions of PPTK, with the substantially
-unmodified versions distributed under the MIT license, with at most minor
-modifications to permit compilation on a certain platform.
+(without the logos as used in documentation). The logos are copyrighted (c)
+2019 by Juha-Matti Tilli, all rights reserved, and can be used only in
+combination with substantially unmodified versions of PPTK and LDP, with the
+substantially unmodified versions distributed under the MIT license, with at
+most minor modifications to permit compilation on a certain platform.
 
 Copyright (c) 2017-2018 Aalto University
 
