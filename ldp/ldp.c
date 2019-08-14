@@ -371,6 +371,22 @@ void ldp_config_init(struct ldp_config *config)
   {
     config->socket_num_bufs = 1024;
   }
+  if (getenv("LDP_SOCKET_RCVBUF"))
+  {
+    config->socket_rcvbuf = atoi(getenv("LDP_SOCKET_RCVBUF"));
+  }
+  else
+  {
+    config->socket_rcvbuf = 0;
+  }
+  if (getenv("LDP_SOCKET_SNDBUF"))
+  {
+    config->socket_sndbuf = atoi(getenv("LDP_SOCKET_SNDBUF"));
+  }
+  else
+  {
+    config->socket_sndbuf = 0;
+  }
   if (getenv("LDP_ODP_NUM_PKT"))
   {
     config->odp_num_pkt = atoi(getenv("LDP_ODP_NUM_PKT"));
@@ -681,6 +697,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   int ifindex;
   int mtu;
   int errnosave;
+  int buf;
 
   if (numinq < 0 || numoutq < 0)
   {
@@ -735,6 +752,16 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
     // errno already set
     goto err;
   }
+  buf = ldp_config_get_global()->socket_rcvbuf;
+  if (buf > 0 && setsockopt(insock->q.fd, SOL_SOCKET, SO_RCVBUF, &buf, sizeof(buf)) != 0)
+  {
+    goto err;
+  }
+  buf = ldp_config_get_global()->socket_sndbuf;
+  if (buf > 0 && setsockopt(insock->q.fd, SOL_SOCKET, SO_SNDBUF, &buf, sizeof(buf)) != 0)
+  {
+    goto err;
+  }
 
   memset(&ifr, 0, sizeof(ifr));
   if (settings && settings->mtu_set)
@@ -785,6 +812,16 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   if (outsock->q.fd < 0)
   {
     // errno already set
+    goto err;
+  }
+  buf = ldp_config_get_global()->socket_rcvbuf;
+  if (buf > 0 && setsockopt(outsock->q.fd, SOL_SOCKET, SO_RCVBUF, &buf, sizeof(buf)) != 0)
+  {
+    goto err;
+  }
+  buf = ldp_config_get_global()->socket_sndbuf;
+  if (buf > 0 && setsockopt(outsock->q.fd, SOL_SOCKET, SO_SNDBUF, &buf, sizeof(buf)) != 0)
+  {
     goto err;
   }
 

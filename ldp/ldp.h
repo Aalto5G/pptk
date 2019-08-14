@@ -17,6 +17,8 @@ struct ldp_config {
   uint16_t dpdk_nb_rxd;
   uint16_t dpdk_nb_txd;
   int socket_num_bufs;
+  int socket_rcvbuf; // 0 == not set
+  int socket_sndbuf; // 0 == not set
   int odp_num_pkt;
   int odp_pkt_len;
   int pcap_num_bufs;
