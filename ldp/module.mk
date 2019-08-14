@@ -26,6 +26,9 @@ LDP_DEP_LIB := $(patsubst %.c,%.d,$(LDP_SRC_LIB))
 LDP_DEP := $(patsubst %.c,%.d,$(LDP_SRC))
 
 CFLAGS_LDP := -I$(DIRMISC) -I$(DIRMYPCAP) -I$(DIRDYNARR) -I$(DIRHASHTABLE) -I$(DIRHASHLIST) -I$(DIRLINKEDLIST) -I$(DIRIPHDR)
+ifeq ($(WITH_NETMAP),yes)
+CFLAGS_LDP += -Wno-sign-conversion
+endif
 MAKEFILES_LDP := $(DIRLDP)/module.mk
 
 LIBS_LDP := $(DIRMYPCAP)/libmypcap.a $(DIRDYNARR)/libdynarr.a $(DIRIPHDR)/libiphdr.a $(DIRMISC)/libmisc.a $(DIRLOG)/liblog.a
@@ -134,6 +137,9 @@ $(LDP_OBJ_DPDK): %.o: %.c %.d $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 
 $(LDP_DEP): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
 	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_LDP)
+
+$(LDP_DEP_DPDK): %.d: %.c $(MAKEFILES_COMMON) $(MAKEFILES_LDP)
+	$(CC) $(CFLAGS) -MM -MP -MT "$*.d $*.o" -o $*.d $*.c $(CFLAGS_LDP) -Wno-sign-conversion
 
 clean_LDP:
 	rm -f $(LDP_OBJ) $(LDP_OBJ_DPDK) $(LDP_DEP)
