@@ -681,6 +681,7 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   int ifindex;
   int mtu;
   int errnosave;
+  int buf;
 
   if (numinq < 0 || numoutq < 0)
   {
@@ -735,6 +736,16 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
     // errno already set
     goto err;
   }
+  buf = 8*1024*1024;
+  if (setsockopt(insock->q.fd, SOL_SOCKET, SO_RCVBUF, &buf, sizeof(buf)) != 0)
+  {
+    goto err;
+  }
+  buf = 8*1024*1024;
+  if (setsockopt(insock->q.fd, SOL_SOCKET, SO_SNDBUF, &buf, sizeof(buf)) != 0)
+  {
+    goto err;
+  }
 
   memset(&ifr, 0, sizeof(ifr));
   if (settings && settings->mtu_set)
@@ -785,6 +796,16 @@ ldp_interface_open_socket(const char *name, int numinq, int numoutq,
   if (outsock->q.fd < 0)
   {
     // errno already set
+    goto err;
+  }
+  buf = 8*1024*1024;
+  if (setsockopt(outsock->q.fd, SOL_SOCKET, SO_RCVBUF, &buf, sizeof(buf)) != 0)
+  {
+    goto err;
+  }
+  buf = 8*1024*1024;
+  if (setsockopt(outsock->q.fd, SOL_SOCKET, SO_SNDBUF, &buf, sizeof(buf)) != 0)
+  {
     goto err;
   }
 
