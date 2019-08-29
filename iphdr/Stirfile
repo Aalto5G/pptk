@@ -1,0 +1,19 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["ipcksum.c", "iphdr.c", "dnshdr.c"]
+$SRC_PROG = ["iphdrtest.c", "ipcksumtest.c", "ipcksumperf.c"]
+$LIB = "libiphdr.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../misc"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = []
+$UNITDEPS = ["iphdrtest", "ipcksumtest", "ipcksumperf"]
+$UNITCMDS = [["./iphdrtest"], ["./ipcksumtest"], ["./ipcksumperf"]]
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

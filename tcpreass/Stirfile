@@ -1,0 +1,21 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["tcprbexplicit.c"]
+$SRC_PROG = ["tcprbexplicittest.c"]
+$LIB = "libtcpreass.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../misc", "-I../iphdr", "-I../alloc", "-I../packet", \
+                "-I../linkedlist", "-I../mypcap", "-I../rbtree"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = ["../alloc/liballoc.a", "../iphdr/libiphdr.a", \
+         "../mypcap/libmypcap.a", "../rbtree/librbtree.a"]
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

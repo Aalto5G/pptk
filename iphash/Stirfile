@@ -1,0 +1,22 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["iphash.c"]
+$SRC_PROG = ["iphashtest.c", "iphashtest2.c", "iphashtest3.c", \
+             "iphashtest4.c", "iphashtest5.c", "iphashtest6.c"]
+$LIB = "libiphash.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc", "-I../hashtable", \
+                "-I../timerlinkheap"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = ["../timerlinkheap/libtimerlinkheap.a", "../misc/libmisc.a", \
+         "../log/liblog.a"]
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

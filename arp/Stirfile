@@ -1,0 +1,21 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["arp.c"]
+$SRC_PROG = []
+$LIB = "libarp.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc", "-I../packet", \
+                "-I../linkedlist", "-I../hashtable", "-I../ports", \
+                "-I../iphdr", "-I../alloc", "-I../timerlinkheap", "-I../rbtree"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = []
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

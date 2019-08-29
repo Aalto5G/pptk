@@ -1,0 +1,20 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["timerlink.c", "timerlinkwheel.c"]
+$SRC_PROG = ["timertest.c", "timertest2.c", \
+             "timerlinkwheeltest.c", "timerlinkwheelperf.c"]
+$LIB = "libtimerlinkheap.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = []
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

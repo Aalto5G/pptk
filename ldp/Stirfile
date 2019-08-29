@@ -1,0 +1,87 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["ldp.c", "ldpnull.c", "linkcommon.c", "ldppcap.c"]
+@if($WITH_NETMAP)
+  $SRC_LIB = [@$SRC_LIB, "ldpnetmap.c"]
+@endif
+@if($WITH_DPDK)
+  $SRC_LIB = [@$SRC_LIB, "ldpdpdk.c"]
+@endif
+@if($WITH_ODP)
+  $SRC_LIB = [@$SRC_LIB, "ldpodp.c"]
+@endif
+$SRC_PROG = ["testldp.c", "testrss.c", "ldpfwd.c", "ldpfwdmt.c", \
+             "ldptunnel.c", "ldprecv.c", "ldpreplay.c", "ldpswitch.c", \
+             "ldprecvmt.c", "ldpsend.c", "ldpsendmt.c"]
+@if($WITH_LUA)
+  $SRC = [@$SRC, "lualdp.c"]
+@endif
+$LIB = "libldp.a"
+$LDFLAGS = []
+$LDFLAGS_DYN = []
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../misc", "-I../mypcap", "-I../dynarr", "-I../hashtable", \
+                "-I../hashlist", "-I../linkedlist", "-I../iphdr"]
+@if($WITH_NETMAP)
+  $EXTRACFLAGS = [@$EXTRACFLAGS, "-Wno-sign-conversion", \
+                  @strappend("-I", $NETMAP_INCDIR), "-DWITH_NETMAP"]
+@endif
+@if($WITH_LUA)
+  $EXTRACFLAGS = [@$EXTRACFLAGS, @strappend("-I", $LUA_INCDIR), "-DWITH_LUA"]
+  $LDFLAGS = [@$LDFLAGS, @$LIBS_LUA]
+  # FIXME ldflags
+@endif
+@if($WITH_ODP)
+  $EXTRACFLAGS = [@$EXTRACFLAGS, \
+                  @strappend(@strappend("-I", $ODP_DIR), "/include"), \
+                  "-DWITH_ODP"]
+  $LDFLAGS = [@$LDFLAGS, @strappend($ODP_DIR, "/lib/libodp-linux.a")]
+  $LDFLAGS = [@$LDFLAGS, @$LIBS_ODPDEP, "-lrt", "-ldl"]
+  $LDFLAGS_DYN = [@$LDFLAGS_DYN, \
+                  @strappend(@strappend("-L", $ODP_DIR), "/lib"), \
+                  @strappend(@strappend("-Wl,-rpath,", $ODP_DIR), "/lib"), \
+                  "-lodp-linux"]
+@endif
+@if($WITH_DPDK)
+  $EXTRACFLAGS = [@$EXTRACFLAGS, @strappend("-I", $DPDK_INCDIR), \
+                  "-DWITH_DPDK", "-msse4.2", "-Wno-sign-conversion"]
+  $LDFLAGS = [@$LDFLAGS, @strappend("-L", $DPDK_LIBDIR), \
+              "-Wl,--whole-archive", \
+              @strappend($DPDK_LIBDIR, "/libdpdk.a"), \
+              "-Wl,--no-whole-archive", "-lm", \
+              "/usr/lib/x86_64-linux-gnu/libnuma.a", \
+              "/usr/lib/x86_64-linux-gnu/libpcap.a"]
+  $LDFLAGS_DYN = [@$LDFLAGS_DYN, @strappend("-L", $DPDK_LIBDIR), \
+                  "-Wl,--whole-archive", "-ldpdk", \
+                  "-Wl,--no-whole-archive", "-lnuma", "-lpcap", "-lm"]
+               
+  # FIXME ldflags
+@endif
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = ["../mypcap/libmypcap.a", "../dynarr/libdynarr.a", \
+         "../iphdr/libiphdr.a", "../misc/libmisc.a", "../log/liblog.a"]
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@if($WITH_LUA)
+@deponly: 'all': 'lualdp.so'
+@endif
+
+@deponly: 'all': 'libldp.so'
+
+'lualdp.so': 'lualdp.o' 'libldp.a' '../mypcap/libmypcap.a' \
+             '../dynarr/libdynarr.a'
+@	[$(CC), "-shared", "-fPIC", "-o", $@, $^, "-Wl,--whole-archive", "libldp.a", "-Wl,--no-whole-archive", "../mypcap/libmypcap.a", "../dynarr/libdynarr.a", @$LDFLAGS_DYN, "-lc"]
+
+'libldp.so': 'libldp.a' '../mypcap/libmypcap.a' '../dynarr/libdynarr.a'
+@	[$(CC), "-shared", "-fPIC", "-o", $@, "-Wl,--whole-archive", "libldp.a", "-Wl,--no-whole-archive", "../mypcap/libmypcap.a", "../dynarr/libdynarr.a", @$LDFLAGS_DYN, "-lc"]
+
+# FIXME FIXME FIXME FIXME FIXME libldp.so
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")
