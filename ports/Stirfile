@@ -1,0 +1,37 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["ports.c"]
+@if($WITH_NETMAP)
+  $SRC_LIB = [@$SRC_LIB, "netmapports.c"]
+@endif
+@if($WITH_ODP)
+  $SRC_LIB = [@$SRC_LIB, "odpports.c"]
+@endif
+$SRC_LIB = [@$SRC_LIB, "ldpports.c"]
+$SRC_PROG = []
+$LIB = "libports.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc", "-I../packet", \
+                "-I../linkedlist", "-I../alloc", "-I../mypcap", "-I../dynarr", \
+                "-I../hashtable", "-I../log", "-I../ldp", "-I../netmap", \
+                "-I../rbtree"]
+@if($WITH_NETMAP)
+  $EXTRACFLAGS = [@$EXTRACFLAGS, @strappend("-I", $NETMAP_INCDIR), \
+                  "-Wno-sign-conversion"]
+@endif
+@if($WITH_ODP)
+  $EXTRACFLAGS = [@$EXTRACFLAGS, \
+                  @strappend(@strappend("-I", $ODP_DIR), "/include")]
+@endif
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = []
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

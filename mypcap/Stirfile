@@ -1,0 +1,21 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["mypcap.c", "mypcapng.c", "mypcapjoker.c"]
+$SRC_PROG = ["testpcap.c", "testpcapng.c", "pcaptong.c", "pcapngcmp.c", \
+             "pcapcmp.c", "pcaptoregular.c"]
+$LIB = "libmypcap.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../misc", "-I../dynarr", "-I../hashtable", "-I../hashlist", \
+                "-I../iphdr"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = ["../dynarr/libdynarr.a", "../hashtable/libhashtable.a"]
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

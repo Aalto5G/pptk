@@ -1,0 +1,19 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["llalloc.c", "directalloc.c"]
+$SRC_PROG = ["llperfst.c", "allociftest.c"]
+$LIB = "liballoc.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc", "-I../linkedlist"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = []
+$UNITDEPS = ["llperfst", "allociftest"]
+$UNITCMDS = [["./llperfst"], ["./allociftest"]]
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

@@ -1,0 +1,19 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["timerskiplist.c"]
+$SRC_PROG = ["timertest.c", "timertest2.c"]
+$LIB = "libtimerskiplist.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc", "-I../random"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = ["../random/librandom.a"]
+$UNITDEPS = []
+$UNITCMDS = []
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

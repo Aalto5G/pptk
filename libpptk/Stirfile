@@ -1,0 +1,44 @@
+@subfile
+@strict
+
+# You can modify these
+$LIB = "libpptk.a"
+$LIBS = ["../alloc/liballoc.a", "../arp/libarp.a", "../avltree/libavltree.a", \
+         "../databuf/libdatabuf.a", "../dynarr/libdynarr.a", \
+         "../hashlist/libhashlist.a", "../hashtable/libhashtable.a", \
+         "../ipfrag/libipfrag.a", "../iphash/libiphash.a", \
+         "../iphdr/libiphdr.a", "../ldp/libldp.a", \
+         "../linkedlist/liblinkedlist.a", "../log/liblog.a", \
+         "../misc/libmisc.a", "../mypcap/libmypcap.a", \
+         "../netmap/libnetmap.a", "../packet/libpacket.a", \
+         "../portlist/libportlist.a", "../ports/libports.a", \
+         "../queue/libqueue.a", "../random/librandom.a", \
+         "../rbtree/librbtree.a", "../timeravl/libtimeravl.a", \
+         "../timerlinkheap/libtimerlinkheap.a", "../timerrb/libtimerrb.a", \
+         "../timerskiplist/libtimerskiplist.a", \
+         "../timerwheel/libtimerwheel.a", "../tuntap/libtuntap.a"]
+
+$LDFLAGS_DYN = []
+
+@if($WITH_ODP)
+  $LDFLAGS_DYN = [@$LDFLAGS_DYN, \
+                  @strappend(@strappend("-L", $ODP_DIR), "/lib"), \
+                  @strappend(@strappend("-Wl,-rpath,", $ODP_DIR), "/lib"), \
+                  "-lodp-linux"]
+@endif
+@if($WITH_DPDK)
+  $LDFLAGS_DYN = [@$LDFLAGS_DYN, \
+                  @strappend("-L", $DPDK_LIBDIR), \
+                  "-Wl,--whole-archive", "-ldpdk", "-Wl,--no-whole-archive", \
+                  "-lnuma", "-lpcap", "-lm"]
+@endif
+# FIXME fix += operator
+
+@phonyrule: 'all': 'libpptk.so' 'libpptk.a'
+@phonyrule: 'unit':
+
+'libpptk.so': $LIBS
+@	[$(CC), "-shared", "-fPIC", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc"]
+
+'libpptk.a': $LIBS
+@	["sh", "-c", @strappend(@strappend("echo \"GROUP ( ", @strlistjoin(" ", $LIBS)), " )\" > libpptk.a")]

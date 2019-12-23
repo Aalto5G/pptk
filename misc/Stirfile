@@ -1,0 +1,23 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["chacha.c", "hashseed.c", "read.c"]
+$SRC_PROG = ["containeroftest.c", "murmurtest.c", "branchpredicttest.c", \
+             "siphashtest.c", "memperftest.c", "chachatest.c", "shatest.c", \
+             "linuxhashperf.c", "murmurperf.c", "siphashperf.c"]
+$LIB = "libmisc.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../log"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = []
+$UNITDEPS = ["containeroftest", "murmurtest", "branchpredicttest", \
+             "siphashtest", "memperftest", "chachatest"]
+$UNITCMDS = [["./containeroftest"], ["./murmurtest"], ["./branchpredicttest"], \
+             ["./siphashtest"], ["./memperftest"], ["./chachatest"]]
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")

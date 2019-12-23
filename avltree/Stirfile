@@ -1,0 +1,19 @@
+@subfile
+@strict
+
+# You can modify these
+$SRC_LIB = ["avltree.c"]
+$SRC_PROG = ["avltreetest.c"]
+$LIB = "libavltree.a"
+# FIXME fix += operator
+$EXTRACFLAGS = ["-I../hashlist", "-I../misc"]
+$CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
+$LIBS = ["../misc/libmisc.a"]
+$UNITDEPS = ["avltreetest"]
+$UNITCMDS = [["./avltreetest"]]
+
+# You won't want to modify anything below this line
+@call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
+
+@cdepincludes @autophony @autotarget @ignore \
+  @sufsuball([@$SRC_PROG, @$SRC_LIB], ".c", ".d")
