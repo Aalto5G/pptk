@@ -5,7 +5,7 @@ combination with substantially unmodified versions of PPTK and LDP, with the
 substantially unmodified versions distributed under the MIT license, with at
 most minor modifications to permit compilation on a certain platform.
 
-Copyright (c) 2017-2018 Aalto University
+Copyright (c) 2017-2019 Aalto University
 
 Copyright (c) 2018 Juha-Matti Tilli
 
