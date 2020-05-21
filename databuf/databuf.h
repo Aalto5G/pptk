@@ -148,14 +148,14 @@ static inline int databuf_add_u64(struct databuf *buf, uint64_t u64)
   {
     return result;
   }
-  buf->buf[buf->size++] = (u64>>56)&0xFF;
-  buf->buf[buf->size++] = (u64>>48)&0xFF;
-  buf->buf[buf->size++] = (u64>>40)&0xFF;
-  buf->buf[buf->size++] = (u64>>32)&0xFF;
-  buf->buf[buf->size++] = (u64>>24)&0xFF;
-  buf->buf[buf->size++] = (u64>>16)&0xFF;
-  buf->buf[buf->size++] = (u64>>8)&0xFF;
-  buf->buf[buf->size++] = (u64>>0)&0xFF;
+  buf->buf[buf->size++] = (char)((u64>>56)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>48)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>40)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>32)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>24)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>16)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>8)&0xFF);
+  buf->buf[buf->size++] = (char)((u64>>0)&0xFF);
   return 0;
 }
 
@@ -167,10 +167,10 @@ static inline int databuf_add_u32(struct databuf *buf, uint32_t u32)
   {
     return result;
   }
-  buf->buf[buf->size++] = (u32>>24)&0xFF;
-  buf->buf[buf->size++] = (u32>>16)&0xFF;
-  buf->buf[buf->size++] = (u32>>8)&0xFF;
-  buf->buf[buf->size++] = (u32>>0)&0xFF;
+  buf->buf[buf->size++] = (char)((u32>>24)&0xFF);
+  buf->buf[buf->size++] = (char)((u32>>16)&0xFF);
+  buf->buf[buf->size++] = (char)((u32>>8)&0xFF);
+  buf->buf[buf->size++] = (char)((u32>>0)&0xFF);
   return 0;
 }
 

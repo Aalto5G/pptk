@@ -176,5 +176,5 @@ int rfc791ctx_complete(struct rfc791ctx *ctx)
     }
   }
   //printf("calling ffsll\n");
-  return ffsll((int64_t)~ctx->bits[bitidx]) == bitoff + 1;
+  return ffsll((int64_t)~ctx->bits[bitidx]) == (int)(bitoff + 1);
 }
