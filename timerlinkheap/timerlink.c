@@ -9,10 +9,12 @@ static inline size_t timer_linkheap_parent(size_t i)
   return (i-1)/2;
 }
 
+#if 0
 static inline size_t timer_linkheap_first_child(size_t i)
 {
   return 2*i+1;
 }
+#endif
 
 static struct timer_link *timer_linkheap_nth(
   struct timer_linkheap *heap, size_t n)

@@ -150,6 +150,7 @@ struct avl_tree_node *avl_tree_rightmost(struct avl_tree *tree)
   }
 }
 
+#if 0
 static inline struct avl_tree_node *sibling(struct avl_tree_node *node)
 {
   struct avl_tree_node *p = node->parent;
@@ -193,6 +194,7 @@ static inline struct avl_tree_node *uncle(struct avl_tree_node *node)
   }
   return sibling(p);
 }
+#endif
 
 static struct avl_tree_node *
 rotate_left(struct avl_tree_node *X, struct avl_tree_node *Z)
