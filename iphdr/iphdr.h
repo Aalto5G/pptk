@@ -88,7 +88,7 @@ static inline void pcp_set_lifetime(void *vpkt, uint32_t lifetime)
 static inline int pcp_req_is_ipv4(void *vpkt)
 {
   unsigned char *pkt = vpkt;
-  static const char compar[12] = {0,0,0,0,0,0,0,0,0,0,0xff,0xff};
+  static const char compar[12] = {0,0,0,0,0,0,0,0,0,0,(char)0xff,(char)0xff};
   return memcmp(&pkt[8], compar, sizeof(compar)) == 0;
 }
 static inline uint32_t pcp_req_get_ipv4(void *vpkt)

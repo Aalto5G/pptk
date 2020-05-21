@@ -129,7 +129,7 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
           "%s.%.6d {%s} [%s] (%s) <%s:%s:%zu> missed %u events of level %s",
           timebuf, (int)tv.tv_usec, progname, "LOG", "MISSED",
           __FILE__, __FUNCTION__, (size_t)__LINE__,
-          globals.missed_events[i], log_level_string(i));
+          globals.missed_events[i], log_level_string((enum log_level)i));
         if (globals.f)
         {
           fprintf(globals.f, "%s\n", linebuf);
@@ -141,7 +141,7 @@ void log_impl_vlog(enum log_level level, const char *compname, const char *file,
       globals.missed_events[i] = 0;
     }
   }
-  for (i = level; i < LOG_LEVEL_COUNT; i++)
+  for (i = (int)level; i < LOG_LEVEL_COUNT; i++)
   {
     if (globals.burst[i] > 0)
     {

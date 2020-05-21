@@ -163,7 +163,7 @@ int main(int argc, char **argv)
   if (argc == 4 && strncmp(argv[2], "vale", 4) == 0)
   {
     /* Teach VALE learning switch we're on this port */
-    char pktdata[14] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    char pktdata[14] = {(char)0xff, (char)0xff, (char)0xff, (char)0xff, (char)0xff, (char)0xff,
                         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
                         0, 0};
     struct ldp_packet pkt = { .data = pktdata, .sz = sizeof(pktdata) };
