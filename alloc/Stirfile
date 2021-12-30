@@ -2,15 +2,15 @@
 @strict
 
 # You can modify these
-$SRC_LIB = ["llalloc.c", "directalloc.c"]
-$SRC_PROG = ["llperfst.c", "allociftest.c"]
+$SRC_LIB = ["asalloc.c", "rballoc.c", "llalloc.c", "directalloc.c"]
+$SRC_PROG = ["asperfmt.c", "asperfst.c", "mallocperfmt.c", "rbperfmt.c", "rbperfst.c", "directallocperfmt.c", "llperfmt.c", "llperfst.c", "allociftest.c"]
 $LIB = "liballoc.a"
 # FIXME fix += operator
-$EXTRACFLAGS = ["-I../hashlist", "-I../misc", "-I../linkedlist"]
+$EXTRACFLAGS = ["-I../queue", "-I../hashlist", "-I../misc", "-I../linkedlist"]
 $CFLAGS = [@$CFLAGS, @$EXTRACFLAGS]
-$LIBS = []
-$UNITDEPS = ["llperfst", "allociftest"]
-$UNITCMDS = [["./llperfst"], ["./allociftest"]]
+$LIBS = ["../queue/libqueue.a"]
+$UNITDEPS = ["asperfmt", "asperfst", "mallocperfmt", "rbperfmt", "rbperfst", "directallocperfmt", "llperfmt", "llperfst", "allociftest"]
+$UNITCMDS = [["./asperfmt"], ["./asperfst"], ["./mallocperfmt"], ["./rbperfmt"], ["./rbperfst"], ["./directallocperfmt"], ["./llperfmt"], ["./llperfst"], ["./allociftest"]]
 
 # You won't want to modify anything below this line
 @call $MODULE($LIB, $SRC_LIB, $SRC_PROG, $LIBS, $UNITDEPS, $UNITCMDS)
