@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-char hash_seed[16];
-int hash_seed_inited;
+extern char hash_seed[16];
+extern int hash_seed_inited;
 
 static inline void *hash_seed_get(void)
 {
