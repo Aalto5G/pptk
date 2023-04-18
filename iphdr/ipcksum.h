@@ -21,7 +21,7 @@ static inline uint16_t ip_cksum_postprocess(struct ip_cksum_ctx *ctx)
   {
     sum = (sum & 0xffff) + (sum >> 16);
   }
-  return htons(~sum);
+  return ntohs(~sum);
 }
 
 static inline void ip_cksum_add16(struct ip_cksum_ctx *ctx, uint16_t val16)
@@ -31,7 +31,7 @@ static inline void ip_cksum_add16(struct ip_cksum_ctx *ctx, uint16_t val16)
 
 static inline void ip_cksum_add_leftover(struct ip_cksum_ctx *ctx, uint8_t val)
 {
-  ctx->sum += val;
+  ctx->sum += htons(((uint16_t)val)<<8);
 }
 
 static inline void ip_cksum_feed32ptr(struct ip_cksum_ctx *ctx, const void *buf)
